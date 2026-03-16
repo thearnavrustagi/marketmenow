@@ -111,6 +111,57 @@ async def _carousel_export_async(
         console.print(f"[green]Published![/green] Result: {result}")
 
 
+@carousel_app.command("generate")
+def carousel_generate(
+    output_dir: Annotated[
+        Optional[Path],
+        typer.Option("--output-dir", help="Output directory"),
+    ] = None,
+    publish: Annotated[
+        bool, typer.Option("--publish", help="Publish to Instagram after generation")
+    ] = False,
+) -> None:
+    """Generate a fresh Top-5 carousel using AI (Gemini + Imagen)."""
+    asyncio.run(_carousel_generate_async(output_dir, publish))
+
+
+async def _carousel_generate_async(
+    output_dir: Path | None,
+    publish: bool,
+) -> None:
+    settings = _get_settings()
+    if output_dir:
+        settings = settings.model_copy(update={"output_dir": output_dir})
+
+    from .carousel.orchestrator import CarouselOrchestrator
+
+    orch = CarouselOrchestrator(settings)
+
+    with console.status("[bold green]Generating carousel (Gemini + Imagen)..."):
+        carousel = await orch.create_carousel()
+
+    console.print(
+        f"[green]Carousel created with {len(carousel.slides)} slides[/green]"
+    )
+    for i, slide in enumerate(carousel.slides):
+        console.print(f"  Slide {i + 1}: {slide.media.uri}")
+    console.print(f"\n[bold]Caption:[/bold] {carousel.caption}")
+
+    if publish:
+        from . import create_instagram_bundle
+        from marketmenow.core.pipeline import ContentPipeline
+        from marketmenow.registry import AdapterRegistry
+
+        registry = AdapterRegistry()
+        bundle = create_instagram_bundle(settings)
+        registry.register(bundle)
+
+        pipeline = ContentPipeline(registry)
+        with console.status("[bold blue]Publishing to Instagram..."):
+            result = await pipeline.execute(carousel, "instagram")
+        console.print(f"[green]Published![/green] Result: {result}")
+
+
 # ---------------------------------------------------------------------------
 # Reel commands
 # ---------------------------------------------------------------------------
@@ -137,7 +188,27 @@ def reel_create(
     ] = None,
     tts: Annotated[
         str,
-        typer.Option("--tts", help="TTS provider: elevenlabs, openai, or local"),
+        typer.Option("--tts", help="TTS provider: elevenlabs, openai, local, or kokoro"),
+    ] = "",
+    reaction_image: Annotated[
+        Optional[Path],
+        typer.Option("--reaction-image", help="Path to reaction image (e.g. funny dog)"),
+    ] = None,
+    comment_username: Annotated[
+        str,
+        typer.Option("--comment-username", help="Username for the TikTok-style comment hook"),
+    ] = "",
+    comment_avatar: Annotated[
+        Optional[Path],
+        typer.Option("--comment-avatar", help="Path to commenter's avatar image"),
+    ] = None,
+    comment_text: Annotated[
+        str,
+        typer.Option("--comment-text", help="Comment text for the TikTok hook"),
+    ] = "",
+    student_name: Annotated[
+        str,
+        typer.Option("--student-name", help="Student name shown on the grading card"),
     ] = "",
     publish: Annotated[
         bool, typer.Option("--publish", help="Publish to Instagram after render")
@@ -146,7 +217,9 @@ def reel_create(
     """Generate a reel from a YAML template and assignment image."""
     asyncio.run(
         _reel_create_async(
-            assignment, template, rubric, caption, hashtags, output_dir, tts, publish
+            assignment, template, rubric, caption, hashtags, output_dir, tts,
+            reaction_image, comment_username, comment_avatar, comment_text,
+            student_name, publish,
         )
     )
 
@@ -159,6 +232,11 @@ async def _reel_create_async(
     hashtags: str | None,
     output_dir: Path | None,
     tts: str,
+    reaction_image: Path | None,
+    comment_username: str,
+    comment_avatar: Path | None,
+    comment_text: str,
+    student_name: str,
     publish: bool,
 ) -> None:
     settings = _get_settings()
@@ -197,9 +275,26 @@ async def _reel_create_async(
             rubric_items=rubric_items,
             caption=caption,
             hashtags=tags,
+            reaction_image=reaction_image,
+            comment_username=comment_username,
+            comment_avatar=comment_avatar,
+            comment_text=comment_text,
+            student_name=student_name,
         )
 
     console.print(f"[green]Reel rendered:[/green] {reel.video.uri}")
+
+    hashtag_str = " ".join(f"#{t}" for t in reel.hashtags)
+    full_caption = f"{reel.caption}\n\n{hashtag_str}"
+
+    console.print()
+    console.print("[bold]Caption:[/bold]")
+    console.print(full_caption)
+    console.print()
+
+    caption_path = Path(reel.video.uri).with_suffix(".caption.txt")
+    caption_path.write_text(full_caption)
+    console.print(f"[dim]Caption saved to {caption_path}[/dim]")
 
     if publish:
         from . import create_instagram_bundle

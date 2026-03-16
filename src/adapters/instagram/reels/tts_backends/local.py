@@ -23,15 +23,23 @@ class LocalTTS:
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._engine = self._detect_engine()
 
-    async def synthesize(self, text: str) -> SynthesisResult:
+    async def synthesize(self, text: str, voice_id: str = "") -> SynthesisResult:
         run_id = uuid4().hex
         wav_path = self._output_dir / f"{run_id}.wav"
         mp3_path = self._output_dir / f"{run_id}.mp3"
 
         if self._engine == "say":
-            await self._run(["say", "-o", str(wav_path), "--data-format=LEI16@22050", text])
+            cmd = ["say", "-o", str(wav_path), "--data-format=LEI16@22050"]
+            if voice_id:
+                cmd.extend(["-v", voice_id])
+            cmd.append(text)
+            await self._run(cmd)
         elif self._engine == "espeak-ng":
-            await self._run(["espeak-ng", "-w", str(wav_path), text])
+            cmd = ["espeak-ng", "-w", str(wav_path)]
+            if voice_id:
+                cmd.extend(["-v", voice_id])
+            cmd.append(text)
+            await self._run(cmd)
         else:
             self._generate_silence(wav_path, duration_sec=max(1.0, len(text) * 0.06))
 

@@ -17,6 +17,7 @@ class AudioSpec(BaseModel, frozen=True):
     type: AudioType
     text: str = ""
     file: str = ""
+    voice: str = ""
 
 
 class VisualSpec(BaseModel, frozen=True):
@@ -32,6 +33,7 @@ class BeatDefinition(BaseModel, frozen=True):
     scene: str
     audio: AudioSpec
     duration: str = "from_audio"
+    fixed_seconds: float = 0.0
     pad_seconds: float = 0.0
     visual: dict[str, object] = Field(default_factory=dict)
 
@@ -56,6 +58,7 @@ class ResolvedBeat(BaseModel, frozen=True):
     duration_seconds: float
     duration_frames: int
     visual: dict[str, object] = Field(default_factory=dict)
+    subtitle: str = ""
 
 
 class ReelScript(BaseModel, frozen=True):

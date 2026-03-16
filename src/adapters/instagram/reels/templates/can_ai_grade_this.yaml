@@ -6,43 +6,91 @@ fps: 30
 variables:
   - assignment_image
   - reaction_text
+  - roast_text
+  - gradeasy_response
+  - reaction_image
   - rubric_items
   - grading_result
   - rubric_narration
   - grading_narration
   - result_comment
+  - gradeasy_voice_id
+  - kid_voice_id
 
 beats:
-  - id: hook
-    scene: HookScene
+  - id: hook_text
+    scene: TikTokCommentScene
     audio:
       type: tts
-      text: "Can you grade my assignment bro"
+      text: "{{ comment_text }}"
+      voice: "{{ kid_voice_id }}"
     duration: from_audio
+    pad_seconds: 0.1
     visual:
-      text_overlay: "Can you grade my assignment bro"
+      username: "{{ comment_username }}"
+      avatar: "{{ comment_avatar }}"
+      comment_text: "{{ comment_text }}"
+      show_image: false
       animation: fade_in_scale
 
-  - id: reveal
+  - id: hook_image
+    scene: TikTokCommentScene
+    audio:
+      type: sfx
+      file: ""
+    duration: fixed
+    fixed_seconds: 0.8
+    visual:
+      username: "{{ comment_username }}"
+      avatar: "{{ comment_avatar }}"
+      comment_text: "{{ comment_text }}"
+      comment_image: "{{ assignment_image }}"
+      show_image: true
+      animation: fade_in_scale
+
+  - id: bruh_reveal
     scene: RevealScene
     audio:
       type: sfx
       file: assets/sfx/bruh.mp3
-    duration: from_audio
+    duration: fixed
+    fixed_seconds: 1.2
     visual:
       image: "{{ assignment_image }}"
-      animation: spring_slide_in
 
   - id: reaction
-    scene: ReactionScene
+    scene: FlashRevealScene
+    audio:
+      type: sfx
+      file: assets/sfx/tinnitus.mp3
+    duration: fixed
+    fixed_seconds: 2.0
+    visual:
+      image: "{{ reaction_image }}"
+      flash_color: "#ffffff"
+      flash_duration: 0.3
+
+  - id: roast
+    scene: RoastScene
     audio:
       type: tts
-      text: "{{ reaction_text }}"
+      text: "{{ roast_text }}"
     duration: from_audio
+    pad_seconds: 0.3
     visual:
       image: "{{ assignment_image }}"
-      text_overlay: "{{ reaction_text }}"
-      animation: text_pop
+      text_overlay: "{{ roast_text }}"
+
+  - id: gradeasy_response
+    scene: GradeasyResponseScene
+    audio:
+      type: tts
+      text: "{{ gradeasy_response }}"
+      voice: "{{ gradeasy_voice_id }}"
+    duration: from_audio
+    pad_seconds: 0.2
+    visual:
+      text_overlay: "{{ gradeasy_response }}"
 
   - id: transition
     scene: TransitionScene
@@ -50,16 +98,27 @@ beats:
       type: sfx
       file: assets/sfx/whoosh.mp3
     duration: from_audio
-    pad_seconds: 0.5
+    pad_seconds: 0.3
     visual:
       image: "{{ assignment_image }}"
       animation: slide_to_platform
+
+  - id: segmentation
+    scene: SegmentationScene
+    audio:
+      type: sfx
+      file: ""
+    duration: fixed
+    fixed_seconds: 2.5
+    visual:
+      image: "{{ assignment_image }}"
 
   - id: rubric_creation
     scene: RubricScene
     audio:
       type: tts
       text: "{{ rubric_narration }}"
+      voice: "{{ gradeasy_voice_id }}"
     duration: from_audio
     visual:
       rubric_items: "{{ rubric_items }}"
@@ -70,10 +129,13 @@ beats:
     audio:
       type: tts
       text: "{{ grading_narration }}"
+      voice: "{{ gradeasy_voice_id }}"
     duration: from_audio
     visual:
+      student_name: "{{ student_name }}"
       rubric_items: "{{ rubric_items }}"
       grading_result: "{{ grading_result }}"
+      background_image: "{{ assignment_image }}"
       animation: progress_checkmarks
 
   - id: result
@@ -82,7 +144,7 @@ beats:
       type: tts
       text: "{{ result_comment }}"
     duration: from_audio
-    pad_seconds: 1.0
+    pad_seconds: 0.5
     visual:
       grade: "{{ grading_result.points_awarded }}/{{ grading_result.max_points }}"
       feedback: "{{ grading_result.feedback }}"

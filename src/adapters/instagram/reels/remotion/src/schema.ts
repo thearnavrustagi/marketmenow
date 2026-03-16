@@ -8,6 +8,7 @@ export const beatSchema = z.object({
   audioSrc: z.string(),
   durationFrames: z.number().int().positive(),
   visual: visualPropsSchema,
+  subtitle: z.string().default(""),
 });
 
 export const reelPropsSchema = z.object({

@@ -3,6 +3,7 @@ import {
   Img,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -12,7 +13,8 @@ export const ReactionScene: React.FC<{ visual: VisualProps }> = ({ visual }) => 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const imageSrc = (visual.image as string) ?? "";
+  const rawImage = (visual.image as string) ?? "";
+  const imageSrc = rawImage ? staticFile(rawImage) : "";
   const reactionText = (visual.text_overlay as string) ?? "";
 
   const textScale = spring({

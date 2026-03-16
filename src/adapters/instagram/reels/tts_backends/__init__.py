@@ -15,6 +15,12 @@ def create_tts_service(
     openai_api_key: str = "",
     openai_voice: str = "alloy",
     openai_model: str = "tts-1",
+    kokoro_model_dir: Path | None = None,
+    kokoro_default_voice: str = "af_bella",
+    kokoro_speed: float = 1.0,
+    kokoro_lang: str = "en-us",
+    kokoro_voice_overrides: dict[str, str] | None = None,
+    kokoro_pitch_shift_semitones: dict[str, float] | None = None,
 ) -> TTSService:
     """Factory that returns the correct TTS backend based on provider enum."""
     if provider == TTSProvider.ELEVENLABS:
@@ -41,5 +47,18 @@ def create_tts_service(
         from .local import LocalTTS
 
         return LocalTTS(output_dir=output_dir)
+
+    if provider == TTSProvider.KOKORO:
+        from .kokoro import KokoroTTS
+
+        return KokoroTTS(
+            output_dir=output_dir,
+            model_dir=kokoro_model_dir,
+            default_voice=kokoro_default_voice,
+            speed=kokoro_speed,
+            lang=kokoro_lang,
+            voice_overrides=kokoro_voice_overrides,
+            pitch_shift_semitones=kokoro_pitch_shift_semitones,
+        )
 
     raise ValueError(f"Unknown TTS provider: {provider}")
