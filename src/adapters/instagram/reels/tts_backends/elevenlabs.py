@@ -24,9 +24,10 @@ class ElevenLabsTTS:
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._model_id = model_id
 
-    async def synthesize(self, text: str) -> SynthesisResult:
+    async def synthesize(self, text: str, voice_id: str = "") -> SynthesisResult:
+        effective_voice = voice_id or self._voice_id
         response = await self._client.text_to_speech.convert_with_timestamps(
-            voice_id=self._voice_id,
+            voice_id=effective_voice,
             text=text,
             model_id=self._model_id,
             output_format="mp3_44100_128",

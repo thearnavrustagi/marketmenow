@@ -40,8 +40,10 @@ class ReelTemplateLoader:
                     type=AudioType(b["audio"]["type"]),
                     text=b["audio"].get("text", ""),
                     file=b["audio"].get("file", ""),
+                    voice=b["audio"].get("voice", ""),
                 ),
                 duration=b.get("duration", "from_audio"),
+                fixed_seconds=b.get("fixed_seconds", 0.0),
                 pad_seconds=b.get("pad_seconds", 0.0),
                 visual=b.get("visual", {}),
             )
@@ -76,7 +78,11 @@ class ReelTemplateLoader:
 
             if beat.audio.type == AudioType.TTS and not beat.audio.text:
                 issues.append(f"Beat '{beat.id}': TTS audio has no text")
-            if beat.audio.type == AudioType.SFX and not beat.audio.file:
+            if (
+                beat.audio.type == AudioType.SFX
+                and not beat.audio.file
+                and beat.duration != "fixed"
+            ):
                 issues.append(f"Beat '{beat.id}': SFX audio has no file path")
 
         return issues

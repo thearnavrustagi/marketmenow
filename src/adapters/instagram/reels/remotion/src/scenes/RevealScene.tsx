@@ -3,6 +3,7 @@ import {
   Img,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -12,7 +13,8 @@ export const RevealScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const imageSrc = (visual.image as string) ?? "";
+  const rawImage = (visual.image as string) ?? "";
+  const imageSrc = rawImage ? staticFile(rawImage) : "";
 
   const slideIn = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
   const translateY = interpolate(slideIn, [0, 1], [800, 0]);
@@ -20,7 +22,7 @@ export const RevealScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
   return (
     <AbsoluteFill
       style={{
-        background: "#1a1a2e",
+        background: "#000000",
         justifyContent: "center",
         alignItems: "center",
       }}

@@ -1,23 +1,49 @@
-# Python-generated files
+# ── Python ──────────────────────────────────────────────
 __pycache__/
-*.py[oc]
+*.py[cod]
+*.pyo
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+*.egg
+*.whl
+.python-version
 
-# Virtual environments
-.venv
+# ── Virtual environments ────────────────────────────────
+.venv/
+venv/
+env/
 
-# Environment variables
+# ── Environment / secrets ──────────────────────────────
 .env
+vertex.json
 
-# Output artifacts
+# ── ML model weights ───────────────────────────────────
+models/
+
+# ── Generated output (reels, carousels, TTS, uploads) ──
 output/
 
-# Node.js (Remotion)
+# ── Node.js (Remotion) ─────────────────────────────────
 node_modules/
+src/adapters/instagram/reels/remotion/dist/
 
-# Remotion render artifacts
-adapters/instagram/reels/remotion/dist/
-vertex.json
+# ── IDE / editor ───────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Testing / coverage ────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Misc ───────────────────────────────────────────────
+*.log

@@ -31,7 +31,8 @@ class OpenAITTS:
         self._output_dir = output_dir / "tts"
         self._output_dir.mkdir(parents=True, exist_ok=True)
 
-    async def synthesize(self, text: str) -> SynthesisResult:
+    async def synthesize(self, text: str, voice_id: str = "") -> SynthesisResult:
+        effective_voice = voice_id or self._voice
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 _OPENAI_TTS_URL,
@@ -42,7 +43,7 @@ class OpenAITTS:
                 json={
                     "model": self._model,
                     "input": text,
-                    "voice": self._voice,
+                    "voice": effective_voice,
                     "response_format": "mp3",
                 },
             )

@@ -23,6 +23,20 @@ class InstagramSettings(BaseSettings):
     # ElevenLabs
     elevenlabs_api_key: str = ""
     elevenlabs_voice_id: str = ""
+    elevenlabs_gradeasy_voice_id: str = ""
+
+    # Local TTS (macOS say / espeak-ng) voice overrides
+    local_tts_gradeasy_voice: str = "Daniel"
+    local_tts_kid_voice: str = "Junior"
+
+    # Kokoro TTS (local neural TTS via kokoro-onnx)
+    kokoro_model_dir: str = ""
+    kokoro_speed: float = 1.25
+    kokoro_lang: str = "en-us"
+    kokoro_teacher_voice: str = "af_bella"
+    kokoro_gradeasy_voice: str = "am_adam"
+    kokoro_child_voice: str = "am_fenrir"
+    kokoro_child_pitch_semitones: float = 2.0
 
     # OpenAI TTS
     openai_api_key: str = ""
@@ -30,7 +44,7 @@ class InstagramSettings(BaseSettings):
     openai_tts_model: str = "tts-1"
 
     # Vertex AI / Gemini
-    google_application_credentials: Path = Path("credentials.json")
+    google_application_credentials: Path = Path("vertex.json")
     vertex_ai_project: str = ""
     vertex_ai_location: str = "us-central1"
 

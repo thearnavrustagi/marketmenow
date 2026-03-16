@@ -27,13 +27,14 @@ class TTSProvider(str, enum.Enum):
     ELEVENLABS = "elevenlabs"
     OPENAI = "openai"
     LOCAL = "local"
+    KOKORO = "kokoro"
 
 
 @runtime_checkable
 class TTSService(Protocol):
     """Protocol that all TTS backends must satisfy."""
 
-    async def synthesize(self, text: str) -> SynthesisResult: ...
+    async def synthesize(self, text: str, voice_id: str = "") -> SynthesisResult: ...
 
     async def get_audio_duration(self, audio_path: Path) -> float: ...
 
