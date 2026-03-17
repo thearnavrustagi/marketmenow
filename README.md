@@ -13,7 +13,7 @@
 
 MarketMeNow is a **modular, async-first** Python framework for automating content creation, publishing, and engagement across social media platforms. It uses a **hexagonal (ports-and-adapters) architecture** so the core engine is completely platform-agnostic — you add platform support by implementing a small set of Protocol interfaces and registering them with the adapter registry.
 
-It ships with first-class integrations for **LangChain** and **OpenClaw**, making it easy to plug into any AI agent workflow.
+It ships with first-class integrations for **LangChain** and **[OpenClaw](https://openclaw.dev)**, so you can drop it straight into any AI agent workflow — use natural language through an OpenClaw channel (Slack, Discord, Telegram) or wire it into a LangChain agent graph.
 
 ## Platform Support
 
@@ -21,56 +21,50 @@ It ships with first-class integrations for **LangChain** and **OpenClaw**, makin
 |---|---|---|---|
 | **Instagram** | :white_check_mark: Implemented | Reels, Carousels | AI reel generation (Gemini + Remotion + TTS), Figma-to-carousel export, AI carousel generation (Gemini + Imagen) |
 | **X / Twitter** | :white_check_mark: Implemented | Replies, Threads | Browser-based engagement automation, AI reply generation (Gemini), stealth Playwright session management |
-| **Facebook** | :construction: Planned | Reels, Carousels, DMs | |
-| **LinkedIn** | :construction: Planned | Threads, Carousels | |
-| **TikTok** | :construction: Planned | Reels | |
-| **YouTube Shorts** | :construction: Planned | Reels | |
-| **Gmail / Email** | :construction: Planned | Direct Messages | |
-| **Threads (Meta)** | :construction: Planned | Threads | |
-| **Pinterest** | :construction: Planned | Carousels | |
-| **Bluesky** | :construction: Planned | Threads | |
-| **Reddit** | :construction: Planned | Threads, Replies | |
-| **WhatsApp Business** | :construction: Planned | Direct Messages | |
 
 > **Want to add a platform?** See [Contributing](#contributing) — the ports-and-adapters design makes it straightforward.
 
 ## Architecture
 
 ```mermaid
-graph TB
-    subgraph core ["Core (platform-agnostic)"]
-        Orchestrator --> Pipeline
-        Pipeline --> Normaliser["ContentNormaliser"]
-        Pipeline --> RendererPort["ContentRenderer (Protocol)"]
-        Pipeline --> UploaderPort["Uploader (Protocol)"]
-        Pipeline --> AdapterPort["PlatformAdapter (Protocol)"]
+graph LR
+    subgraph integrations [" Integrations"]
+        LC["LangChain"]
+        OC["OpenClaw"]
+    end
+
+    subgraph core [" Core"]
+        direction TB
         Scheduler --> Orchestrator
+        Orchestrator --> Pipeline
+        Pipeline --> Normaliser["Normaliser"]
     end
 
-    subgraph registry ["Registry"]
-        AdapterRegistry --> PlatformBundle
-        PlatformBundle --> AdapterPort
-        PlatformBundle --> RendererPort
-        PlatformBundle --> UploaderPort
-        PlatformBundle --> AnalyticsPort["AnalyticsCollector (Protocol)"]
+    subgraph ports [" Protocols"]
+        direction TB
+        Renderer["ContentRenderer"]
+        Uploader["Uploader"]
+        Adapter["PlatformAdapter"]
+        Analytics["AnalyticsCollector"]
     end
 
-    subgraph adapters ["Adapters"]
-        IG["Instagram Adapter"]
-        TW["Twitter/X Adapter"]
-        FB["Facebook Adapter ..."]
+    subgraph adapters [" Adapters"]
+        direction TB
+        IG["Instagram"]
+        TW["Twitter / X"]
     end
 
-    subgraph integrations ["Integrations"]
-        LC["LangChain Tools"]
-        OC["OpenClaw Plugin"]
-    end
-
-    IG --> PlatformBundle
-    TW --> PlatformBundle
-    FB -.-> PlatformBundle
     LC --> Orchestrator
-    OC -->|"via CLI"| Pipeline
+    OC -->|CLI| Pipeline
+    Pipeline --> Renderer
+    Pipeline --> Uploader
+    Pipeline --> Adapter
+    IG -.-> Renderer
+    IG -.-> Uploader
+    IG -.-> Adapter
+    TW -.-> Renderer
+    TW -.-> Uploader
+    TW -.-> Adapter
 ```
 
 ### Content Pipeline
@@ -96,14 +90,17 @@ Every publish goes through the same pipeline regardless of platform:
 
 ### Instagram Reel
 
-<video src="docs/assets/example_reel.mp4" controls width="320"></video>
+<p align="center">
+  <img src="docs/assets/example_reel.gif" alt="Example reel preview" width="270" />
+</p>
 
 <sub>Generated with <code>mmn instagram reel create</code> — AI script, TTS, and Remotion video composition.</sub>
 
 ### Instagram Carousel
 
 <p align="center">
-  <img src="docs/assets/example_carousel_cover.png" alt="Example carousel cover slide" width="400" />
+  <img src="docs/assets/example_carousel_cover.png" alt="Example carousel cover slide" width="360" />&nbsp;&nbsp;
+  <img src="docs/assets/example_carousel_slide1.png" alt="Example carousel first slide" width="360" />
 </p>
 
 <sub>Generated with <code>mmn instagram carousel generate</code> — Gemini + Imagen pipeline.</sub>

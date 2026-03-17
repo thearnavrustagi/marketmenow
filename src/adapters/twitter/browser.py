@@ -100,11 +100,20 @@ class StealthBrowser:
     async def close(self) -> None:
         if self._context is not None:
             await self.save_session()
-            await self._context.close()
+            try:
+                await self._context.close()
+            except Exception:
+                logger.debug("Context already closed", exc_info=True)
         if self._browser is not None:
-            await self._browser.close()
+            try:
+                await self._browser.close()
+            except Exception:
+                logger.debug("Browser already closed", exc_info=True)
         if hasattr(self, "_stealth_cm") and self._stealth_cm is not None:
-            await self._stealth_cm.__aexit__(None, None, None)
+            try:
+                await self._stealth_cm.__aexit__(None, None, None)
+            except Exception:
+                logger.debug("Stealth cleanup failed", exc_info=True)
             self._stealth_cm = None
         self._page = None
         self._context = None
@@ -114,7 +123,11 @@ class StealthBrowser:
     async def save_session(self) -> None:
         if self._context is None:
             return
-        state = await self._context.storage_state()
+        try:
+            state = await self._context.storage_state()
+        except Exception:
+            logger.warning("Could not save session (browser context already closed)")
+            return
         self._session_path.parent.mkdir(parents=True, exist_ok=True)
         self._session_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
         logger.info("Session saved to %s", self._session_path)
