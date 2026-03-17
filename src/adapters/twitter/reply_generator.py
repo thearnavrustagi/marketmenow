@@ -37,7 +37,7 @@ class ReplyGenerator:
     def __init__(
         self,
         gemini_model: str = "gemini-2.5-flash",
-        mention_rate: int = 45,
+        mention_rate: int = 25,
         vertex_project: str = "",
         vertex_location: str = "us-central1",
     ) -> None:
@@ -80,7 +80,7 @@ class ReplyGenerator:
                     contents=user_prompt,
                     config=GenerateContentConfig(
                         system_instruction=system_prompt,
-                        temperature=0.9,
+                        temperature=1.0,
                     ),
                 )
                 reply_text = (response.text or "").strip().strip('"').strip("'")
