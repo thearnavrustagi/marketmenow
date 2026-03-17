@@ -46,7 +46,7 @@ class ReelScriptGenerator:
             project=vertex_project,
             location=vertex_location,
         )
-        self._model = "gemini-3-flash-preview"
+        self._model = "gemini-2.5-flash"
 
     async def generate(
         self,

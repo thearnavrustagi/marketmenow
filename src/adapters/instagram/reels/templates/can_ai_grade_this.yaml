@@ -45,7 +45,7 @@ pipeline:
       type: llm
       inputs:
         prompt: script_generation
-        model: gemini-3-flash-preview
+        model: gemini-2.5-flash
         temperature: 0.8
         context:
           template_name: "{{ name }}"

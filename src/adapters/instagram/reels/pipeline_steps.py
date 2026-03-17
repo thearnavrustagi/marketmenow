@@ -115,7 +115,7 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
         raise RuntimeError("genai_client not found in pipeline services")
 
     prompt_name = str(inputs.get("prompt", ""))
-    model = str(inputs.get("model", "gemini-3-flash-preview"))
+    model = str(inputs.get("model", "gemini-2.5-flash"))
     temperature = float(inputs.get("temperature", 0.8))
     context_vars = inputs.get("context", {})
     output_fields = inputs.get("output_fields", [])

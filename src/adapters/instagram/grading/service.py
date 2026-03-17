@@ -23,7 +23,7 @@ class SimpleGradingService:
             project=project,
             location=location,
         )
-        self._model = "gemini-3-flash-preview"
+        self._model = "gemini-2.5-flash"
 
     async def grade(
         self,

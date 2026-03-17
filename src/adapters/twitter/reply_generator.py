@@ -36,7 +36,7 @@ class ReplyGenerator:
 
     def __init__(
         self,
-        gemini_model: str = "gemini-3-flash-preview",
+        gemini_model: str = "gemini-2.5-flash",
         mention_rate: int = 45,
         vertex_project: str = "",
         vertex_location: str = "us-central1",

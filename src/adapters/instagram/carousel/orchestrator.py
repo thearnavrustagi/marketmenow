@@ -25,7 +25,7 @@ def _ensure_vertex_credentials(settings: InstagramSettings) -> None:
 class CarouselOrchestrator:
     """End-to-end pipeline: Gemini topic -> Imagen images -> Pillow slides -> Carousel."""
 
-    GEMINI_MODEL = "gemini-3-flash-preview"
+    GEMINI_MODEL = "gemini-2.5-flash"
     IMAGEN_MODEL = "imagen-3.0-generate-002"
 
     def __init__(self, settings: InstagramSettings) -> None:
