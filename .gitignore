@@ -18,7 +18,7 @@ env/
 # ── Environment / secrets ──────────────────────────────
 .env
 vertex.json
-.twitter_session.json
+*_session.json
 .twitter_browser_profile/
 .twitter_audit_log.jsonl
 .twitter_reply_history.json
