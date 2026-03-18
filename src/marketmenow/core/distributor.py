@@ -48,18 +48,14 @@ class ContentDistributor:
 
         if not resolved:
             logger.warning(
-                "No registered platforms matched for modality %s "
-                "(wanted %s, registered %s)",
+                "No registered platforms matched for modality %s (wanted %s, registered %s)",
                 content.modality.value,
                 sorted(target_platforms),
                 sorted(registered),
             )
             return CampaignResult(campaign_id=content.id)
 
-        targets = [
-            CampaignTarget(platform=p, modality=content.modality)
-            for p in sorted(resolved)
-        ]
+        targets = [CampaignTarget(platform=p, modality=content.modality) for p in sorted(resolved)]
 
         campaign = Campaign(
             name=f"distribute-{content.modality.value}",

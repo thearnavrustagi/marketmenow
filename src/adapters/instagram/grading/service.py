@@ -36,8 +36,7 @@ class SimpleGradingService:
 
         prompt = load_prompt("autograde")
         rubric_text = "\n".join(
-            f"- {item.name} ({item.max_points} pts): {item.description}"
-            for item in rubric_items
+            f"- {item.name} ({item.max_points} pts): {item.description}" for item in rubric_items
         )
         user_prompt = prompt["user"].format(rubric_text=rubric_text)
 

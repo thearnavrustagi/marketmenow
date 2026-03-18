@@ -26,8 +26,75 @@ hashtags:
   - AI
   - SchoolHacks
 
+hook_lines:
+  - "can you grade my assignment twin?"
+  - "bro rate my homework fr fr"
+  - "someone grade this rn"
+  - "yo can someone grade this for me"
+  - "grade my paper bestie"
+  - "be honest how bad is this"
+  - "am i cooked or nah"
+  - "tell me i passed please"
+  - "ai grade my homework pls"
+  - "can your ai even handle this"
+  - "grade this or im dropping out"
+  - "my teacher hates me just grade it"
+
+worksheet:
+  question_types:
+    - type: labeling
+      description: "Label parts of a diagram"
+      needs_image_prompt: true
+    - type: match_the_following
+      description: "Match items from column A to column B"
+    - type: fill_in_the_blanks
+      description: "Fill in missing words in sentences"
+    - type: multiple_choice
+      description: "Choose the correct answer from 4 options"
+    - type: short_answer
+      description: "Brief 1-2 sentence written response"
+    - type: true_false
+      description: "Mark statements as true or false"
+    - type: word_problem
+      description: "Solve a math or science word problem"
+    - type: long_essay
+      description: "Write a long-form paragraph essay response"
+  subjects:
+    - Math
+    - Science
+    - History
+    - English
+    - Geography
+    - Biology
+    - Physics
+    - Chemistry
+  num_questions: [1, 3]
+  fill_prompt: >-
+    Fill in this worksheet as a dumb kid would. Write hilariously wrong answers
+    in messy, bad handwriting. Use brainrot humor — stuff like '67', 'skibidi',
+    'rizz', 'sigma', 'fanum tax', 'ohio', 'gyatt'. Make it look like a real
+    student filled it in poorly. The answers should be confidently wrong and
+    funny ragebait. Write with a pen in blue or black ink, messy kid handwriting.
+    Don't leave any question blank — every answer should be wrong and hilarious.
+
 pipeline:
   steps:
+    - id: generate_worksheet
+      type: worksheet
+      inputs: {}
+      output_var: worksheet_result
+      output_fields:
+        - worksheet_image
+        - labeling_image_prompt
+        - worksheet_subject
+        - worksheet_question_types
+
+    - id: fill_worksheet
+      type: fill_worksheet
+      inputs:
+        worksheet_image: "{{ worksheet_image }}"
+      output_var: assignment_image
+
     - id: generate_rubric
       type: rubric
       inputs:
@@ -63,6 +130,10 @@ pipeline:
 
 variables:
   - assignment_image
+  - worksheet_image
+  - worksheet_subject
+  - worksheet_question_types
+  - labeling_image_prompt
   - reaction_text
   - roast_text
   - gradeasy_response

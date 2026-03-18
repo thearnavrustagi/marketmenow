@@ -259,21 +259,15 @@ class StealthBrowser:
         await self._random_delay(1.0, 3.0)
         await self.scroll_down(times=random.randint(0, 1))
 
-        reply_box = self.page.locator(
-            'div[data-testid="tweetTextarea_0"]'
-        )
+        reply_box = self.page.locator('div[data-testid="tweetTextarea_0"]')
         try:
             await reply_box.wait_for(state="visible", timeout=10_000)
         except Exception:
             logger.warning("Reply box not found, trying click on reply area")
-            reply_area = self.page.locator(
-                'div[data-testid="tweetTextarea_0_label"]'
-            )
+            reply_area = self.page.locator('div[data-testid="tweetTextarea_0_label"]')
             await reply_area.click()
             await self._random_delay(0.5, 1.0)
-            reply_box = self.page.locator(
-                'div[data-testid="tweetTextarea_0"]'
-            )
+            reply_box = self.page.locator('div[data-testid="tweetTextarea_0"]')
             await reply_box.wait_for(state="visible", timeout=10_000)
 
         await reply_box.click()
@@ -331,8 +325,7 @@ class StealthBrowser:
 
         for idx, tweet_text in enumerate(tweets[1:], start=1):
             add_btn = self.page.locator(
-                'button[data-testid="addButton"], '
-                'div[role="button"][data-testid="addButton"]'
+                'button[data-testid="addButton"], div[role="button"][data-testid="addButton"]'
             )
             try:
                 await add_btn.wait_for(state="visible", timeout=5_000)

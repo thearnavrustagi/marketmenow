@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Generate Content - MarketMeNow{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Generate Content</h1>
+  <div class="header-actions">
+    <button class="btn btn-success btn-lg"
+            hx-post="/generate/all"
+            hx-target="#generation-result"
+            hx-swap="afterbegin"
+            hx-disabled-elt="this"
+            hx-indicator="#batch-spinner">
+      Generate &amp; Publish All
+    </button>
+    <span id="batch-spinner" class="htmx-indicator spinner"></span>
+  </div>
+</div>
+
+<div class="generate-layout">
+  <form id="generate-form"
+        hx-post="/generate"
+        hx-target="#generation-result"
+        hx-swap="afterbegin"
+        class="card generate-form">
+
+    <div class="form-group">
+      <label for="platform">Platform</label>
+      <select name="platform" id="platform" required onchange="updateCommands()">
+        <option value="">Select platform...</option>
+        {% for platform_name, commands in platforms.items() %}
+          <option value="{{ platform_name }}">{{ platform_name | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="command_type">Content Type</label>
+      <select name="command_type" id="command_type" required onchange="updateParams()">
+        <option value="">Select content type...</option>
+      </select>
+    </div>
+
+    <div id="dynamic-params"></div>
+
+    <button type="submit" class="btn btn-primary btn-full">Generate</button>
+  </form>
+
+  <div id="generation-result" class="generation-result"></div>
+</div>
+
+<script>
+const platformData = {{ platforms | tojson }};
+
+function updateCommands() {
+  const platform = document.getElementById('platform').value;
+  const cmdSelect = document.getElementById('command_type');
+  cmdSelect.innerHTML = '<option value="">Select content type...</option>';
+  document.getElementById('dynamic-params').innerHTML = '';
+
+  if (!platform || !platformData[platform]) return;
+
+  for (const [key, spec] of Object.entries(platformData[platform])) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = spec.label;
+    cmdSelect.appendChild(opt);
+  }
+}
+
+function updateParams() {
+  const platform = document.getElementById('platform').value;
+  const cmdType = document.getElementById('command_type').value;
+  const container = document.getElementById('dynamic-params');
+  container.innerHTML = '';
+
+  if (!platform || !cmdType) return;
+  const spec = platformData[platform]?.[cmdType];
+  if (!spec?.params) return;
+
+  for (const param of spec.params) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', param.name);
+    label.textContent = param.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    div.appendChild(label);
+
+    let input;
+    if (param.type === 'textarea') {
+      input = document.createElement('textarea');
+      input.rows = 3;
+    } else if (param.type === 'select') {
+      input = document.createElement('select');
+      const emptyOpt = document.createElement('option');
+      emptyOpt.value = '';
+      emptyOpt.textContent = 'Default';
+      input.appendChild(emptyOpt);
+      for (const o of (param.options || [])) {
+        const opt = document.createElement('option');
+        opt.value = o;
+        opt.textContent = o;
+        input.appendChild(opt);
+      }
+    } else {
+      input = document.createElement('input');
+      input.type = param.type === 'number' ? 'number' : 'text';
+    }
+
+    input.name = param.name;
+    input.id = param.name;
+    if (param.required) input.required = true;
+    if (param.help) input.placeholder = param.help;
+    div.appendChild(input);
+
+    container.appendChild(div);
+  }
+}
+</script>
+{% endblock %}

@@ -165,7 +165,11 @@ def _draw_brand_mark(
 
 
 def _draw_gradient_overlay(
-    base: Image.Image, rect_x: int, rect_y: int, w: int, h: int,
+    base: Image.Image,
+    rect_x: int,
+    rect_y: int,
+    w: int,
+    h: int,
     start_frac: float = 0.40,
 ) -> None:
     overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -212,7 +216,10 @@ class SlideRenderer:
 
         # Prepare fonts
         font_heading = _shrink_font_to_fit(
-            heading, _load_space_grotesk, 108, COVER_TEXT_MAX_W,
+            heading,
+            _load_space_grotesk,
+            108,
+            COVER_TEXT_MAX_W,
         )
         font_sub = _load_dm_sans(40)
         wrapped_sub = _wrap_text(subtitle, font_sub, COVER_TEXT_MAX_W) if subtitle else ""
@@ -224,7 +231,10 @@ class SlideRenderer:
         sub_h = 0
         if wrapped_sub:
             s_bbox = draw.multiline_textbbox(
-                (0, 0), wrapped_sub, font=font_sub, spacing=self.LINE_SPACING,
+                (0, 0),
+                wrapped_sub,
+                font=font_sub,
+                spacing=self.LINE_SPACING,
             )
             sub_h = s_bbox[3] - s_bbox[1]
 
@@ -297,7 +307,10 @@ class SlideRenderer:
 
         # Prepare fonts & wrap text
         font_heading = _shrink_font_to_fit(
-            heading, _load_space_grotesk, 72, ITEM_TEXT_MAX_W,
+            heading,
+            _load_space_grotesk,
+            72,
+            ITEM_TEXT_MAX_W,
         )
         font_sub = _load_dm_sans(36)
         wrapped_sub = _wrap_text(sub_heading, font_sub, ITEM_TEXT_MAX_W)
@@ -307,7 +320,10 @@ class SlideRenderer:
         heading_h = h_bbox[3] - h_bbox[1]
 
         s_bbox = draw.multiline_textbbox(
-            (0, 0), wrapped_sub, font=font_sub, spacing=self.LINE_SPACING + 2,
+            (0, 0),
+            wrapped_sub,
+            font=font_sub,
+            spacing=self.LINE_SPACING + 2,
         )
         sub_h = s_bbox[3] - s_bbox[1]
 

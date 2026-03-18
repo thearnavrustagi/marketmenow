@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Queues - MarketMeNow{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Platform Queues</h1>
+</div>
+
+<section class="section">
+  <h2>Rate Limits</h2>
+  <div id="rate-limits-table">
+    {% include "partials/rate_limits_table.html" %}
+  </div>
+</section>
+
+<section class="section">
+  <h2>Queue</h2>
+  {% if queue_items %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Content</th>
+        <th>Modality</th>
+        <th>Status</th>
+        <th>Queued At</th>
+        <th>Posted At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in queue_items %}
+      <tr>
+        <td><span class="platform-badge {{ q.platform }}">{{ q.platform }}</span></td>
+        <td>{{ q.title or 'Untitled' }}</td>
+        <td>{{ q.modality }}</td>
+        <td><span class="status-badge {{ q.status }}">{{ q.status }}</span></td>
+        <td>{{ q.created_at.strftime('%b %d, %H:%M') if q.created_at else '-' }}</td>
+        <td>{{ q.posted_at.strftime('%b %d, %H:%M') if q.posted_at else '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted">Queue is empty.</p>
+  {% endif %}
+</section>
+
+<section class="section">
+  <h2>Post History</h2>
+  {% if post_log %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Content</th>
+        <th>Posted At</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in post_log %}
+      <tr>
+        <td><span class="platform-badge {{ log.platform }}">{{ log.platform }}</span></td>
+        <td>{{ log.title or 'Untitled' }}</td>
+        <td>{{ log.posted_at.strftime('%b %d, %H:%M') if log.posted_at else '-' }}</td>
+        <td>
+          {% if log.success %}
+            <span class="status-badge posted">success</span>
+          {% else %}
+            <span class="status-badge failed">failed</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted">No posts yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

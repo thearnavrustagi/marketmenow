@@ -1,0 +1,139 @@
+<div class="content-card {{ item.status }}"
+     id="card-{{ item.id }}"
+     data-item-id="{{ item.id }}"
+     data-status="{{ item.status }}"
+     {% if item.status == 'generating' %}
+       hx-get="/content/{{ item.id }}/status"
+       hx-trigger="every 5s"
+       hx-swap="outerHTML"
+     {% endif %}>
+
+  <div class="card-header">
+    <span class="platform-badge {{ item.platform }}">{{ item.platform }}</span>
+    <span class="modality-tag">{{ item.modality }}</span>
+    <span class="status-badge {{ item.status }}">{{ item.status | replace('_', ' ') }}</span>
+  </div>
+
+  <div class="card-title">{{ item.title or 'Untitled' }}</div>
+
+  {% if item.status in ('generating', 'queued', 'posting') %}
+    <div class="progress-panel" id="progress-{{ item.id }}">
+      <div class="phase-stepper">
+        {% set pd = item.progress_data or {} %}
+        {% set phase = pd.get('phase', 'generation' if item.status == 'generating' else ('waiting' if item.status == 'queued' else 'posting')) %}
+        {% set phase_order = ['discovery', 'generation', 'posting'] %}
+        {% set phase_idx = phase_order.index(phase) if phase in phase_order else 1 %}
+        {% for p in phase_order %}
+          <div class="phase-step {% if loop.index0 < phase_idx %}done{% elif loop.index0 == phase_idx %}active{% endif %}">
+            <span class="phase-dot"></span>
+            <span class="phase-label">{{ p | capitalize }}</span>
+          </div>
+          {% if not loop.last %}
+            <div class="phase-connector {% if loop.index0 < phase_idx %}done{% endif %}"></div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="progress-bar-track">
+        {% set pct = ((pd.get('current', 0) / pd.get('total', 1)) * 100) | int if pd.get('total') else 0 %}
+        <div class="progress-bar-fill" style="width: {{ pct }}%" data-progress="{{ pct }}"></div>
+      </div>
+      {% if pd.get('current') and pd.get('total') %}
+        <div class="progress-label">{{ pd.get('current') }} / {{ pd.get('total') }}</div>
+      {% endif %}
+
+      <div class="countdown-timer" id="timer-{{ item.id }}" {% if not pd.get('wait_seconds') %}style="display:none"{% endif %}>
+        {% if pd.get('wait_seconds') %}
+          <span class="timer-icon">&#9202;</span>
+          <span class="timer-text">Next action in <strong class="timer-value">{{ pd.get('wait_seconds') }}s</strong></span>
+        {% endif %}
+      </div>
+
+      <div class="log-stream-wrap">
+        <details class="log-details" open>
+          <summary>Live Output</summary>
+          <pre class="log-stream" id="logs-{{ item.id }}">{% if pd.get('last_message') %}{{ pd.get('last_message') }}
+{% endif %}</pre>
+        </details>
+      </div>
+    </div>
+
+  {% elif item.preview_data %}
+    <div class="card-body">
+      {% if item.preview_data.files %}
+        <div class="preview-gallery">
+        {% for f in item.preview_data.files[:6] %}
+          {% if f.endswith('.mp4') %}
+            <video controls class="preview-media" preload="metadata">
+              <source src="{{ f | output_url }}" type="video/mp4">
+            </video>
+            <a href="{{ f | output_url }}" target="_blank" rel="noopener" class="open-link">Open video &#x2197;</a>
+          {% elif f.endswith('.png') or f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.webp') %}
+            <img src="{{ f | output_url }}" class="preview-media" alt="Preview">
+          {% elif f.endswith('.csv') %}
+            <a href="{{ f | output_url }}" class="file-link">{{ f.split('/')[-1] }}</a>
+          {% endif %}
+        {% endfor %}
+        </div>
+      {% elif item.output_path %}
+        {% if item.output_path.endswith('.mp4') %}
+          <video controls class="preview-media" preload="metadata">
+            <source src="{{ item.output_path | output_url }}" type="video/mp4">
+          </video>
+          <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="open-link">Open video &#x2197;</a>
+        {% elif item.output_path.endswith('.png') or item.output_path.endswith('.jpg') or item.output_path.endswith('.jpeg') or item.output_path.endswith('.webp') %}
+            <img src="{{ item.output_path | output_url }}" class="preview-media" alt="Preview">
+        {% endif %}
+      {% endif %}
+      {% if item.preview_data.stdout %}
+        <details class="preview-text">
+          <summary>CLI Output</summary>
+          <pre>{{ item.preview_data.stdout[:1500] }}</pre>
+        </details>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if item.error_message and item.status == 'failed' %}
+    <div class="card-error">
+      <details>
+        <summary>Error</summary>
+        <pre>{{ item.error_message }}</pre>
+      </details>
+    </div>
+  {% endif %}
+
+  <div class="card-actions">
+    {% if item.status == 'pending_review' %}
+      <button class="btn btn-success"
+              hx-post="/content/{{ item.id }}/approve"
+              hx-target="#card-{{ item.id }}"
+              hx-swap="outerHTML">
+        Approve
+      </button>
+      <button class="btn btn-warning"
+              hx-post="/content/{{ item.id }}/regenerate"
+              hx-target="#card-{{ item.id }}"
+              hx-swap="outerHTML">
+        Regenerate
+      </button>
+      <button class="btn btn-danger"
+              hx-post="/content/{{ item.id }}/reject"
+              hx-target="#card-{{ item.id }}"
+              hx-swap="outerHTML">
+        Reject
+      </button>
+    {% elif item.status == 'failed' %}
+      <button class="btn btn-warning"
+              hx-post="/content/{{ item.id }}/regenerate"
+              hx-target="#card-{{ item.id }}"
+              hx-swap="outerHTML">
+        Retry
+      </button>
+    {% endif %}
+  </div>
+
+  <div class="card-footer">
+    <time>{{ item.created_at.strftime('%b %d, %H:%M') if item.created_at else '' }}</time>
+  </div>
+</div>

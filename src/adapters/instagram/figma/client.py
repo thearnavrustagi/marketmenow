@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 _FIGMA_API_BASE = "https://api.figma.com/v1"
 
@@ -72,10 +72,7 @@ class FigmaClient:
         resp.raise_for_status()
         images_map: dict[str, str | None] = resp.json().get("images", {})
 
-        return [
-            ExportedImage(node_id=nid, image_url=url or "")
-            for nid, url in images_map.items()
-        ]
+        return [ExportedImage(node_id=nid, image_url=url or "") for nid, url in images_map.items()]
 
     async def download_image(self, url: str, dest: Path) -> Path:
         """Download an image from a URL to a local path."""

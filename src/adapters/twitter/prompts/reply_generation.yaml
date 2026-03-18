@@ -66,6 +66,19 @@ system: |
   - Occasionally use line breaks for comedic timing in longer replies
 
 user: |
+  {% if winning_examples %}
+  WINNING EXAMPLES (these are your past replies that got real engagement — match this energy and tone, but NEVER copy them verbatim):
+  {% for ex in winning_examples %}
+  {% if ex.parent_author %}
+  Original by @{{ ex.parent_author }}: "{{ ex.parent_text }}"
+  Your reply ({{ ex.likes }} likes, {{ ex.retweets }} RTs): "{{ ex.our_reply }}"
+  {% else %}
+  Your reply ({{ ex.likes }} likes, {{ ex.retweets }} RTs): "{{ ex.our_reply }}"
+  {% endif %}
+  {% endfor %}
+  ---
+  {% endif %}
+
   ORIGINAL POST by @{{ author_handle }}:
   """
   {{ post_text }}

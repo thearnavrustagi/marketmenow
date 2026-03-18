@@ -4,12 +4,14 @@ import asyncio
 import json
 import logging
 import random
+from pathlib import Path
 
 from google import genai
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel, Field
 
+from .performance_tracker import WinningPost, load_examples_cache
 from .prompts import load_prompt
 
 logger = logging.getLogger(__name__)
@@ -61,6 +63,8 @@ class ThreadGenerator:
         gemini_model: str = "gemini-2.5-flash",
         vertex_project: str = "",
         vertex_location: str = "us-central1",
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
     ) -> None:
         self._client = genai.Client(
             vertexai=True,
@@ -68,6 +72,21 @@ class ThreadGenerator:
             location=vertex_location,
         )
         self._model = gemini_model
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+
+    def _load_winning_posts(self) -> list[WinningPost]:
+        if self._top_examples_path is None:
+            return []
+        cache = load_examples_cache(self._top_examples_path)
+        if not cache.posts:
+            return []
+        ranked = sorted(
+            cache.posts,
+            key=lambda p: p.likes + p.retweets,
+            reverse=True,
+        )
+        return ranked[: self._max_examples]
 
     async def generate_thread(
         self,
@@ -76,12 +95,17 @@ class ThreadGenerator:
         if not topic_hint:
             topic_hint = random.choice(_TOPIC_HINTS)
 
+        winning_posts = self._load_winning_posts()
+
         prompt_data = load_prompt("thread_generation")
 
         system_prompt = prompt_data["system"]
 
         user_template = Template(prompt_data["user"])
-        user_prompt = user_template.render(topic_hint=topic_hint)
+        user_prompt = user_template.render(
+            topic_hint=topic_hint,
+            winning_posts=[p.model_dump() for p in winning_posts],
+        )
 
         raw_json: str | None = None
         last_exc: BaseException | None = None

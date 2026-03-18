@@ -1,0 +1,31 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Platform</th>
+      <th>Max / Hour</th>
+      <th>Max / Day</th>
+      <th>Min Interval (s)</th>
+      <th>Queued</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for rl in rate_limits %}
+    <tr>
+      <form hx-put="/queues/rate-limit"
+            hx-target="#rate-limits-table"
+            hx-swap="innerHTML">
+        <td>
+          <span class="platform-badge {{ rl.platform }}">{{ rl.platform }}</span>
+          <input type="hidden" name="platform" value="{{ rl.platform }}">
+        </td>
+        <td><input type="number" name="max_per_hour" value="{{ rl.max_per_hour }}" min="1" class="input-sm"></td>
+        <td><input type="number" name="max_per_day" value="{{ rl.max_per_day }}" min="1" class="input-sm"></td>
+        <td><input type="number" name="min_interval_seconds" value="{{ rl.min_interval_seconds }}" min="0" class="input-sm"></td>
+        <td>{{ queue_counts.get(rl.platform, 0) }}</td>
+        <td><button type="submit" class="btn btn-sm">Save</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

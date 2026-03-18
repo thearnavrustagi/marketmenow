@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import httpx
 
-from ..tts import SynthesisResult, WordTiming, _mp3_duration_estimate
+from ..tts import SynthesisResult, _mp3_duration_estimate
 
 _OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech"
 

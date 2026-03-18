@@ -76,9 +76,7 @@ class KokoroTTS:
         loop = asyncio.get_event_loop()
         samples, sample_rate = await loop.run_in_executor(
             None,
-            lambda: self._kokoro.create(
-                text, voice=voice, speed=self._speed, lang=self._lang
-            ),
+            lambda: self._kokoro.create(text, voice=voice, speed=self._speed, lang=self._lang),
         )
 
         pitch_semitones = self._pitch_shift_semitones.get(voice, 0.0)
@@ -96,13 +94,19 @@ class KokoroTTS:
         final_path: Path
         if shutil.which("ffmpeg"):
             proc = await asyncio.create_subprocess_exec(
-                "ffmpeg", "-y", "-i", str(wav_path),
-                "-codec:a", "libmp3lame", "-b:a", "192k",
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(wav_path),
+                "-codec:a",
+                "libmp3lame",
+                "-b:a",
+                "192k",
                 str(mp3_path),
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.PIPE,
             )
-            _, stderr = await proc.communicate()
+            _, _stderr = await proc.communicate()
             if proc.returncode == 0:
                 wav_path.unlink(missing_ok=True)
                 final_path = mp3_path
@@ -133,9 +137,7 @@ class KokoroTTS:
             return 2.0
 
 
-def _pitch_shift(
-    samples: np.ndarray, sample_rate: int, semitones: float
-) -> np.ndarray:
+def _pitch_shift(samples: np.ndarray, sample_rate: int, semitones: float) -> np.ndarray:
     """Shift pitch by resampling (no external DSP library required).
 
     Positive *semitones* raises pitch; negative lowers it.  The output
@@ -144,9 +146,7 @@ def _pitch_shift(
     factor = 2.0 ** (semitones / 12.0)
     indices = np.arange(0, len(samples), factor)
     indices = indices[indices < len(samples)]
-    shifted = np.interp(indices, np.arange(len(samples)), samples).astype(
-        samples.dtype
-    )
+    shifted = np.interp(indices, np.arange(len(samples)), samples).astype(samples.dtype)
     if len(shifted) < len(samples):
         shifted = np.pad(shifted, (0, len(samples) - len(shifted)))
     else:

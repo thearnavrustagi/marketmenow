@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from marketmenow.models.content import ContentModality, MediaAsset
-from marketmenow.models.result import MediaRef
-from marketmenow.models.result import PublishResult
+from marketmenow.models.result import MediaRef, PublishResult
 from marketmenow.models.result import SendResult as CoreSendResult
 from marketmenow.normaliser import NormalisedContent
 from marketmenow.registry import PlatformBundle

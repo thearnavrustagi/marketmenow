@@ -8,7 +8,7 @@ from jinja2 import Environment
 from ..grading.models import GradingResult, RubricItem
 from ..grading.service import SimpleGradingService
 from ..prompts import load_prompt
-from .models import AudioType, BeatDefinition, ReelTemplate
+from .models import BeatDefinition, ReelTemplate
 from .pipeline_steps import (
     PipelineContext,
     StepRegistry,
@@ -51,22 +51,36 @@ class ReelScriptGenerator:
     async def generate(
         self,
         template: ReelTemplate,
-        assignment_image: Path,
+        assignment_image: Path | None = None,
         rubric_items: list[RubricItem] | None = None,
         extra_variables: dict[str, object] | None = None,
+        extra_services: dict[str, object] | None = None,
     ) -> tuple[dict[str, object], list[BeatDefinition]]:
         """Fill template variables and resolve Jinja placeholders in beats.
 
         Returns ``(variables_dict, resolved_beats)``.  Audio durations are NOT
         yet computed -- that happens in the orchestrator after TTS synthesis.
+
+        *assignment_image* may be ``None`` when the template pipeline generates
+        the worksheet image automatically.
         """
         if template.pipeline.steps:
             variables = await self._run_pipeline(
-                template, assignment_image, rubric_items, extra_variables,
+                template,
+                assignment_image,
+                rubric_items,
+                extra_variables,
+                extra_services,
             )
         else:
+            if assignment_image is None:
+                raise ValueError(
+                    "assignment_image is required for templates without a pipeline"
+                )
             variables = await self._legacy_generate(
-                template, assignment_image, rubric_items,
+                template,
+                assignment_image,
+                rubric_items,
             )
 
         if extra_variables:
@@ -82,19 +96,25 @@ class ReelScriptGenerator:
     async def _run_pipeline(
         self,
         template: ReelTemplate,
-        assignment_image: Path,
+        assignment_image: Path | None,
         rubric_items: list[RubricItem] | None,
         extra_variables: dict[str, object] | None,
+        extra_services: dict[str, object] | None = None,
     ) -> dict[str, object]:
+        initial_vars: dict[str, object] = {"name": template.name}
+        if assignment_image is not None:
+            initial_vars["assignment_image"] = str(assignment_image.resolve())
+
+        services: dict[str, object] = {
+            "grader": self._grader,
+            "genai_client": self._client,
+        }
+        if extra_services:
+            services.update(extra_services)
+
         ctx = PipelineContext(
-            variables={
-                "assignment_image": str(assignment_image.resolve()),
-                "name": template.name,
-            },
-            services={
-                "grader": self._grader,
-                "genai_client": self._client,
-            },
+            variables=initial_vars,
+            services=services,
         )
 
         if rubric_items is not None:
@@ -133,7 +153,6 @@ class ReelScriptGenerator:
         assignment_image: Path,
         rubric_items: list[RubricItem] | None,
     ) -> dict[str, object]:
-        from google.genai import types as genai_types
 
         if rubric_items is None:
             rubric_items = await self._grader.generate_rubric(assignment_image)
@@ -146,9 +165,7 @@ class ReelScriptGenerator:
             "assignment_image": str(assignment_image.resolve()),
             "reaction_text": script_vars["reaction_text"],
             "roast_text": script_vars.get("roast_text", script_vars["reaction_text"]),
-            "gradeasy_response": script_vars.get(
-                "gradeasy_response", "I gotchu bro, let me cook"
-            ),
+            "gradeasy_response": script_vars.get("gradeasy_response", "I gotchu bro, let me cook"),
             "reaction_image": "",
             "comment_username": "student",
             "comment_avatar": "",
@@ -270,9 +287,7 @@ def _render_template_value(text: str, variables: dict[str, object]) -> object:
     return _render_template_str(text, variables)
 
 
-def _resolve_dict(
-    d: dict[str, object], variables: dict[str, object]
-) -> dict[str, object]:
+def _resolve_dict(d: dict[str, object], variables: dict[str, object]) -> dict[str, object]:
     """Recursively resolve Jinja2 strings inside a dict."""
     out: dict[str, object] = {}
     for k, v in d.items():

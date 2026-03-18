@@ -69,8 +69,6 @@ def _print_distribution_result(console: Console, result: CampaignResult) -> None
             )
         )
     elif successes > 0:
-        console.print(
-            f"[yellow]{successes} succeeded, {failures} failed[/yellow]"
-        )
+        console.print(f"[yellow]{successes} succeeded, {failures} failed[/yellow]")
     else:
         console.print("[red]Distribution failed on all platforms.[/red]")

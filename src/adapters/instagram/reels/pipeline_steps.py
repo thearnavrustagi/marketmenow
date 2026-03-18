@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Coroutine
 
 from jinja2 import Environment
 
@@ -96,8 +96,7 @@ async def _grading_step(ctx: PipelineContext, inputs: dict[str, object]) -> obje
     raw_items = inputs.get("rubric_items", [])
     if isinstance(raw_items, list):
         rubric_items = [
-            RubricItem(**item) if isinstance(item, dict) else item
-            for item in raw_items
+            RubricItem(**item) if isinstance(item, dict) else item for item in raw_items
         ]
     else:
         rubric_items = []
@@ -107,7 +106,6 @@ async def _grading_step(ctx: PipelineContext, inputs: dict[str, object]) -> obje
 
 async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
     """Run an LLM call using a named prompt file and return parsed JSON fields."""
-    from google import genai
     from google.genai import types as genai_types
 
     client = ctx.services.get("genai_client")
@@ -131,13 +129,17 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
             if isinstance(v, str):
                 resolved_context[k] = v
             elif isinstance(v, list):
-                resolved_context[k] = "\n".join(
-                    f"  - {ev.get('rubric_item_name', ev.get('name', ''))}: "
-                    f"{ev.get('points_awarded', ev.get('max_points', ''))}/{ev.get('max_points', '')} "
-                    f"-- {ev.get('feedback', ev.get('description', ''))}"
-                    for ev in v
-                    if isinstance(ev, dict)
-                ) if v and isinstance(v[0], dict) else str(v)
+                resolved_context[k] = (
+                    "\n".join(
+                        f"  - {ev.get('rubric_item_name', ev.get('name', ''))}: "
+                        f"{ev.get('points_awarded', ev.get('max_points', ''))}/{ev.get('max_points', '')} "
+                        f"-- {ev.get('feedback', ev.get('description', ''))}"
+                        for ev in v
+                        if isinstance(ev, dict)
+                    )
+                    if v and isinstance(v[0], dict)
+                    else str(v)
+                )
             else:
                 resolved_context[k] = str(v)
         user_text = prompt["user"].format(**resolved_context)
@@ -174,10 +176,14 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
 
 
 def create_default_registry() -> StepRegistry:
+    from .worksheet import _fill_worksheet_step, _worksheet_step
+
     registry = StepRegistry()
     registry.register("rubric", _rubric_step)
     registry.register("grading", _grading_step)
     registry.register("llm", _llm_step)
+    registry.register("worksheet", _worksheet_step)
+    registry.register("fill_worksheet", _fill_worksheet_step)
     return registry
 
 

@@ -35,9 +35,7 @@ class AdapterRegistry:
                 f"renderer does not satisfy ContentRenderer protocol: {type(bundle.renderer)}"
             )
         if not isinstance(bundle.uploader, Uploader):
-            raise TypeError(
-                f"uploader does not satisfy Uploader protocol: {type(bundle.uploader)}"
-            )
+            raise TypeError(f"uploader does not satisfy Uploader protocol: {type(bundle.uploader)}")
         self._platforms[name] = bundle
 
     def get(self, platform: str) -> PlatformBundle:

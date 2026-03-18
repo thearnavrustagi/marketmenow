@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from marketmenow.models.content import ContentModality
 from marketmenow.models.result import PublishResult, SendResult
@@ -66,7 +66,7 @@ class TwitterAdapter:
                 platform="twitter",
                 success=success,
                 remote_url=post_url,
-                published_at=datetime.now(timezone.utc),
+                published_at=datetime.now(UTC),
             )
         except Exception as exc:
             logger.exception("Failed to post reply to %s", post_url)
@@ -90,7 +90,7 @@ class TwitterAdapter:
             return PublishResult(
                 platform="twitter",
                 success=success,
-                published_at=datetime.now(timezone.utc),
+                published_at=datetime.now(UTC),
             )
         except Exception as exc:
             logger.exception("Failed to post thread")
@@ -103,9 +103,7 @@ class TwitterAdapter:
     async def send_dm(self, content: NormalisedContent) -> SendResult:
         return SendResult(
             platform="twitter",
-            recipient_handle=(
-                content.recipient_handles[0] if content.recipient_handles else ""
-            ),
+            recipient_handle=(content.recipient_handles[0] if content.recipient_handles else ""),
             success=False,
             error_message="Twitter DMs are not supported in this adapter",
         )

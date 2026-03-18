@@ -27,7 +27,7 @@ class TwitterSettings(BaseSettings):
 
     # Rate limiting
     max_replies_per_day: int = 20
-    min_delay_seconds: int = 180
+    min_delay_seconds: int = 300
     max_delay_seconds: int = 600
     cooldown_hours: int = 24
 
@@ -44,3 +44,8 @@ class TwitterSettings(BaseSettings):
     # Audit
     audit_log_path: Path = Path(".twitter_audit_log.jsonl")
     reply_history_path: Path = Path(".twitter_reply_history.json")
+
+    # In-context learning from top-performing posts
+    top_examples_path: Path = Path(".twitter_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly

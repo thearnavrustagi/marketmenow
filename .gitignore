@@ -49,6 +49,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# ── Vault (contact CSVs, offset markers) ──────────────
+vault/
+
 # ── Misc ───────────────────────────────────────────────
 *.log
 replies_*

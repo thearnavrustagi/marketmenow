@@ -20,6 +20,19 @@ logger = logging.getLogger(__name__)
 _LINKEDIN_HOME = "https://www.linkedin.com/feed/"
 _LINKEDIN_BASE = "https://www.linkedin.com"
 
+# Consistent UA used across Stealth, context, and client-hint headers.
+_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/131.0.0.0 Safari/537.36"
+)
+# Client Hints that must match the UA above.
+_CLIENT_HINT_HEADERS = {
+    "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"macOS"',
+}
+
 
 class LinkedInBrowser:
     """Playwright wrapper with anti-detection for LinkedIn."""
@@ -33,6 +46,7 @@ class LinkedInBrowser:
         proxy_url: str = "",
         viewport_width: int = 1280,
         viewport_height: int = 900,
+        organization_id: str = "",
     ) -> None:
         self._session_path = session_path
         self._user_data_dir = user_data_dir
@@ -41,11 +55,19 @@ class LinkedInBrowser:
         self._proxy_url = proxy_url
         self._viewport_width = viewport_width
         self._viewport_height = viewport_height
+        self._organization_id = organization_id
 
         self._pw: Playwright | None = None
         self._browser: Browser | None = None
         self._context: BrowserContext | None = None
         self._page: Page | None = None
+
+    @property
+    def _feed_url(self) -> str:
+        """Personal feed or company page depending on organization_id."""
+        if self._organization_id:
+            return f"{_LINKEDIN_BASE}/company/{self._organization_id}/"
+        return _LINKEDIN_HOME
 
     @property
     def page(self) -> Page:
@@ -54,10 +76,29 @@ class LinkedInBrowser:
         return self._page
 
     async def launch(self) -> Page:
-        self._stealth = Stealth(navigator_platform_override="MacIntel")
+        self._stealth = Stealth(
+            navigator_platform_override="MacIntel",
+            # Provide an explicit UA so stealth patches stay in sync with
+            # what we set on the context below.
+            navigator_user_agent_override=_USER_AGENT,
+            # Real Chrome always exposes window.chrome.runtime; enabling it
+            # here prevents LinkedIn's bot-detection from flagging the absence.
+            chrome_runtime=True,
+        )
         self._stealth_cm = self._stealth.use_async(async_playwright())
         self._pw = await self._stealth_cm.__aenter__()
 
+        headless_args: list[str] = (
+            [
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                f"--window-size={self._viewport_width},{self._viewport_height}",
+            ]
+            if self._headless
+            else []
+        )
         launch_kwargs: dict[str, object] = {
             "headless": self._headless,
             "slow_mo": self._slow_mo_ms,
@@ -65,6 +106,7 @@ class LinkedInBrowser:
                 "--disable-blink-features=AutomationControlled",
                 "--no-first-run",
                 "--no-default-browser-check",
+                *headless_args,
             ],
         }
         if self._proxy_url:
@@ -77,13 +119,12 @@ class LinkedInBrowser:
                 "width": self._viewport_width,
                 "height": self._viewport_height,
             },
-            "user_agent": (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
-            ),
+            "user_agent": _USER_AGENT,
             "locale": "en-US",
             "timezone_id": "America/New_York",
+            # Client-Hint headers must match the UA; headless Chromium omits
+            # them by default, which is a reliable bot signal.
+            "extra_http_headers": _CLIENT_HINT_HEADERS,
         }
 
         if self._session_path.exists():
@@ -91,6 +132,9 @@ class LinkedInBrowser:
             logger.info("Restoring session from %s", self._session_path)
 
         self._context = await self._browser.new_context(**context_kwargs)  # type: ignore[arg-type]
+        # Belt-and-suspenders: apply stealth scripts to the context directly
+        # in addition to the hook already applied via use_async().
+        await self._stealth.apply_stealth_async(self._context)
         self._page = await self._context.new_page()
         return self._page
 
@@ -220,12 +264,13 @@ class LinkedInBrowser:
     async def create_text_post(self, text: str) -> bool:
         """Create a text-only post via the LinkedIn web UI."""
         page = self.page
-        await self.navigate(_LINKEDIN_HOME)
+        await self.navigate(self._feed_url)
         await self._random_delay(1.0, 2.0)
+        await self.scroll_down(times=random.randint(0, 1))
 
         start_post = page.locator("button.share-box-feed-entry__trigger")
         await start_post.wait_for(state="visible", timeout=15_000)
-        await start_post.click()
+        await self._smart_click(start_post)
         await self._random_delay(1.0, 2.0)
 
         editor = page.locator("div.ql-editor[contenteditable='true']")
@@ -238,7 +283,7 @@ class LinkedInBrowser:
 
         post_btn = page.locator("button.share-actions__primary-action")
         await post_btn.wait_for(state="visible", timeout=10_000)
-        await post_btn.click()
+        await self._smart_click(post_btn)
         await self._random_delay(3.0, 5.0)
 
         logger.info("Text post created on LinkedIn")
@@ -247,21 +292,22 @@ class LinkedInBrowser:
     async def create_image_post(self, text: str, image_paths: list[Path]) -> bool:
         """Create a post with images via the LinkedIn web UI."""
         page = self.page
-        await self.navigate(_LINKEDIN_HOME)
+        await self.navigate(self._feed_url)
         await self._random_delay(1.0, 2.0)
+        await self.scroll_down(times=random.randint(0, 1))
 
         start_post = page.locator("button.share-box-feed-entry__trigger")
         await start_post.wait_for(state="visible", timeout=15_000)
-        await start_post.click()
+        await self._smart_click(start_post)
         await self._random_delay(1.0, 2.0)
 
         media_btn = page.locator(
             'button[aria-label="Add media"],'
             'button[aria-label="Add a photo"],'
-            'button.image-sharing-detour-button'
+            "button.image-sharing-detour-button"
         ).first
         await media_btn.wait_for(state="visible", timeout=10_000)
-        await media_btn.click()
+        await self._smart_click(media_btn)
         await self._random_delay(1.0, 2.0)
 
         file_input = page.locator('input[type="file"][accept*="image"]').first
@@ -269,13 +315,11 @@ class LinkedInBrowser:
         await self._random_delay(2.0, 4.0)
 
         done_btn = page.locator(
-            'button[aria-label="Done"],'
-            'button:has-text("Done"),'
-            'button:has-text("Next")'
+            'button[aria-label="Done"],button:has-text("Done"),button:has-text("Next")'
         ).first
         try:
             await done_btn.wait_for(state="visible", timeout=5_000)
-            await done_btn.click()
+            await self._smart_click(done_btn)
             await self._random_delay(1.0, 2.0)
         except Exception:
             pass
@@ -290,7 +334,7 @@ class LinkedInBrowser:
 
         post_btn = page.locator("button.share-actions__primary-action")
         await post_btn.wait_for(state="visible", timeout=10_000)
-        await post_btn.click()
+        await self._smart_click(post_btn)
         await self._random_delay(3.0, 5.0)
 
         logger.info("Image post created on LinkedIn (%d images)", len(image_paths))
@@ -299,21 +343,22 @@ class LinkedInBrowser:
     async def create_video_post(self, text: str, video_path: Path) -> bool:
         """Create a post with a video via the LinkedIn web UI."""
         page = self.page
-        await self.navigate(_LINKEDIN_HOME)
+        await self.navigate(self._feed_url)
         await self._random_delay(1.0, 2.0)
+        await self.scroll_down(times=random.randint(0, 1))
 
         start_post = page.locator("button.share-box-feed-entry__trigger")
         await start_post.wait_for(state="visible", timeout=15_000)
-        await start_post.click()
+        await self._smart_click(start_post)
         await self._random_delay(1.0, 2.0)
 
         media_btn = page.locator(
             'button[aria-label="Add media"],'
             'button[aria-label="Add a video"],'
-            'button.image-sharing-detour-button'
+            "button.image-sharing-detour-button"
         ).first
         await media_btn.wait_for(state="visible", timeout=10_000)
-        await media_btn.click()
+        await self._smart_click(media_btn)
         await self._random_delay(1.0, 2.0)
 
         file_input = page.locator('input[type="file"]').first
@@ -321,13 +366,11 @@ class LinkedInBrowser:
         await self._random_delay(3.0, 6.0)
 
         done_btn = page.locator(
-            'button[aria-label="Done"],'
-            'button:has-text("Done"),'
-            'button:has-text("Next")'
+            'button[aria-label="Done"],button:has-text("Done"),button:has-text("Next")'
         ).first
         try:
             await done_btn.wait_for(state="visible", timeout=10_000)
-            await done_btn.click()
+            await self._smart_click(done_btn)
             await self._random_delay(1.0, 2.0)
         except Exception:
             pass
@@ -342,7 +385,7 @@ class LinkedInBrowser:
 
         post_btn = page.locator("button.share-actions__primary-action")
         await post_btn.wait_for(state="visible", timeout=10_000)
-        await post_btn.click()
+        await self._smart_click(post_btn)
         await self._random_delay(3.0, 5.0)
 
         logger.info("Video post created on LinkedIn")
@@ -351,21 +394,19 @@ class LinkedInBrowser:
     async def create_document_post(self, text: str, doc_path: Path, title: str = "") -> bool:
         """Create a post with a document (PDF/PPT) via the LinkedIn web UI."""
         page = self.page
-        await self.navigate(_LINKEDIN_HOME)
+        await self.navigate(self._feed_url)
         await self._random_delay(1.0, 2.0)
+        await self.scroll_down(times=random.randint(0, 1))
 
         start_post = page.locator("button.share-box-feed-entry__trigger")
         await start_post.wait_for(state="visible", timeout=15_000)
-        await start_post.click()
+        await self._smart_click(start_post)
         await self._random_delay(1.0, 2.0)
 
-        more_btn = page.locator(
-            'button[aria-label="More"],'
-            'button:has-text("More")'
-        ).first
+        more_btn = page.locator('button[aria-label="More"],button:has-text("More")').first
         try:
             await more_btn.wait_for(state="visible", timeout=5_000)
-            await more_btn.click()
+            await self._smart_click(more_btn)
             await self._random_delay(0.5, 1.0)
         except Exception:
             pass
@@ -376,7 +417,7 @@ class LinkedInBrowser:
             'li-icon[type="document"]'
         ).first
         await doc_btn.wait_for(state="visible", timeout=10_000)
-        await doc_btn.click()
+        await self._smart_click(doc_btn)
         await self._random_delay(1.0, 2.0)
 
         file_input = page.locator('input[type="file"]').first
@@ -385,25 +426,23 @@ class LinkedInBrowser:
 
         if title:
             title_input = page.locator(
-                'input[placeholder*="title"],'
-                'input[aria-label*="title"],'
-                'input[name*="title"]'
+                'input[placeholder*="title"],input[aria-label*="title"],input[name*="title"]'
             ).first
             try:
                 await title_input.wait_for(state="visible", timeout=5_000)
-                await title_input.fill(title)
+                await title_input.click()
+                await self._random_delay(0.2, 0.5)
+                await self._human_type(title)
                 await self._random_delay(0.5, 1.0)
             except Exception:
                 logger.debug("Could not find document title input")
 
         done_btn = page.locator(
-            'button[aria-label="Done"],'
-            'button:has-text("Done"),'
-            'button:has-text("Next")'
+            'button[aria-label="Done"],button:has-text("Done"),button:has-text("Next")'
         ).first
         try:
             await done_btn.wait_for(state="visible", timeout=10_000)
-            await done_btn.click()
+            await self._smart_click(done_btn)
             await self._random_delay(1.0, 2.0)
         except Exception:
             pass
@@ -418,7 +457,7 @@ class LinkedInBrowser:
 
         post_btn = page.locator("button.share-actions__primary-action")
         await post_btn.wait_for(state="visible", timeout=10_000)
-        await post_btn.click()
+        await self._smart_click(post_btn)
         await self._random_delay(3.0, 5.0)
 
         logger.info("Document post created on LinkedIn")
@@ -433,21 +472,19 @@ class LinkedInBrowser:
     ) -> bool:
         """Create a poll post via the LinkedIn web UI."""
         page = self.page
-        await self.navigate(_LINKEDIN_HOME)
+        await self.navigate(self._feed_url)
         await self._random_delay(1.0, 2.0)
+        await self.scroll_down(times=random.randint(0, 1))
 
         start_post = page.locator("button.share-box-feed-entry__trigger")
         await start_post.wait_for(state="visible", timeout=15_000)
-        await start_post.click()
+        await self._smart_click(start_post)
         await self._random_delay(1.0, 2.0)
 
-        more_btn = page.locator(
-            'button[aria-label="More"],'
-            'button:has-text("More")'
-        ).first
+        more_btn = page.locator('button[aria-label="More"],button:has-text("More")').first
         try:
             await more_btn.wait_for(state="visible", timeout=5_000)
-            await more_btn.click()
+            await self._smart_click(more_btn)
             await self._random_delay(0.5, 1.0)
         except Exception:
             pass
@@ -458,7 +495,7 @@ class LinkedInBrowser:
             'li-icon[type="poll"]'
         ).first
         await poll_btn.wait_for(state="visible", timeout=10_000)
-        await poll_btn.click()
+        await self._smart_click(poll_btn)
         await self._random_delay(1.0, 2.0)
 
         q_input = page.locator(
@@ -467,35 +504,32 @@ class LinkedInBrowser:
             'textarea[aria-label*="question"]'
         ).first
         await q_input.wait_for(state="visible", timeout=10_000)
-        await q_input.fill(question)
+        await q_input.click()
+        await self._random_delay(0.2, 0.5)
+        await self._human_type(question)
         await self._random_delay(0.5, 1.0)
 
-        option_inputs = page.locator(
-            'input[placeholder*="Option"],'
-            'input[aria-label*="Option"]'
-        )
+        option_inputs = page.locator('input[placeholder*="Option"],input[aria-label*="Option"]')
         for idx, opt_text in enumerate(options):
             if idx >= await option_inputs.count():
                 add_option_btn = page.locator(
-                    'button:has-text("Add option"),'
-                    'button[aria-label="Add option"]'
+                    'button:has-text("Add option"),button[aria-label="Add option"]'
                 ).first
                 try:
-                    await add_option_btn.click()
+                    await self._smart_click(add_option_btn)
                     await self._random_delay(0.3, 0.6)
                 except Exception:
                     break
 
             option_input = option_inputs.nth(idx)
-            await option_input.fill(opt_text)
+            await option_input.click()
+            await self._random_delay(0.1, 0.3)
+            await self._human_type(opt_text)
             await self._random_delay(0.3, 0.6)
 
-        done_btn = page.locator(
-            'button:has-text("Done"),'
-            'button[aria-label="Done"]'
-        ).first
+        done_btn = page.locator('button:has-text("Done"),button[aria-label="Done"]').first
         await done_btn.wait_for(state="visible", timeout=5_000)
-        await done_btn.click()
+        await self._smart_click(done_btn)
         await self._random_delay(1.0, 2.0)
 
         if text:
@@ -508,7 +542,7 @@ class LinkedInBrowser:
 
         post_btn = page.locator("button.share-actions__primary-action")
         await post_btn.wait_for(state="visible", timeout=10_000)
-        await post_btn.click()
+        await self._smart_click(post_btn)
         await self._random_delay(3.0, 5.0)
 
         logger.info("Poll post created on LinkedIn")
@@ -520,6 +554,17 @@ class LinkedInBrowser:
     # ------------------------------------------------------------------
     # Human-like behaviour
     # ------------------------------------------------------------------
+
+    async def _smart_click(self, locator: object) -> None:
+        """Click at a random position within the element's bounding box."""
+        box = await locator.bounding_box()  # type: ignore[union-attr]
+        if box:
+            x = box["x"] + random.uniform(2, box["width"] - 2)
+            y = box["y"] + random.uniform(2, box["height"] - 2)
+            await self.page.mouse.click(x, y)
+        else:
+            await locator.click()  # type: ignore[union-attr]
+        await self._random_delay(0.3, 1.0)
 
     async def _human_type(self, text: str) -> None:
         for char in text:

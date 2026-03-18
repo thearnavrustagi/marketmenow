@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import shutil
-import struct
 import wave
 from pathlib import Path
 from uuid import uuid4
 
-from ..tts import SynthesisResult, WordTiming, _mp3_duration_estimate
+from ..tts import SynthesisResult, _mp3_duration_estimate
 
 
 class LocalTTS:
@@ -45,17 +44,29 @@ class LocalTTS:
 
         final_path: Path
         if shutil.which("ffmpeg"):
-            await self._run([
-                "ffmpeg", "-y", "-i", str(wav_path),
-                "-codec:a", "libmp3lame", "-b:a", "128k",
-                str(mp3_path),
-            ])
+            await self._run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(wav_path),
+                    "-codec:a",
+                    "libmp3lame",
+                    "-b:a",
+                    "128k",
+                    str(mp3_path),
+                ]
+            )
             wav_path.unlink(missing_ok=True)
             final_path = mp3_path
         else:
             final_path = wav_path
 
-        duration = self._wav_duration(final_path) if final_path.suffix == ".wav" else _mp3_duration_estimate(final_path.read_bytes())
+        duration = (
+            self._wav_duration(final_path)
+            if final_path.suffix == ".wav"
+            else _mp3_duration_estimate(final_path.read_bytes())
+        )
 
         return SynthesisResult(
             audio_path=final_path,

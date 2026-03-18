@@ -1,6 +1,6 @@
 routes:
   - modality: video
-    platforms: [instagram, linkedin]
+    platforms: [instagram, linkedin, youtube]
   - modality: image
     platforms: [instagram, linkedin]
   - modality: thread

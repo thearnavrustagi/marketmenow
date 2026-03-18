@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from jinja2 import Environment
+
 from marketmenow.models.content import MediaAsset, VideoPost
 
 from ..grading.models import RubricItem
@@ -91,7 +92,7 @@ class ReelOrchestrator:
 
     async def create_reel(
         self,
-        assignment_image: Path,
+        assignment_image: Path | None = None,
         template_id: str = "can_ai_grade_this",
         rubric_items: list[RubricItem] | None = None,
         caption: str = "",
@@ -102,12 +103,26 @@ class ReelOrchestrator:
         comment_text: str = "",
         student_name: str = "",
     ) -> VideoPost:
-        """Full pipeline: grade -> script -> TTS -> render -> VideoPost model."""
+        """Full pipeline: grade -> script -> TTS -> render -> VideoPost model.
+
+        When *assignment_image* is ``None`` and the template has a ``worksheet``
+        config, the pipeline auto-generates a worksheet and fills it in.
+        """
         template = self._loader.load(template_id)
+
+        extra_services: dict[str, object] = {
+            "output_dir": str(self._output_dir),
+            "vertex_project": self._settings.vertex_ai_project,
+            "vertex_location": self._settings.vertex_ai_location,
+        }
+        if template.worksheet is not None:
+            extra_services["worksheet_config"] = template.worksheet
+
         variables, resolved_beats = await self._script_gen.generate(
             template=template,
             assignment_image=assignment_image,
             rubric_items=rubric_items,
+            extra_services=extra_services,
         )
 
         if reaction_image and reaction_image.exists():
@@ -123,6 +138,10 @@ class ReelOrchestrator:
             variables["comment_username"] = self._pick_random_username()
         if comment_text:
             variables["comment_text"] = comment_text
+        elif not variables.get("comment_text") and template.hook_lines:
+            import random
+
+            variables["comment_text"] = random.choice(template.hook_lines)
         if comment_avatar and comment_avatar.exists():
             variables["comment_avatar"] = str(comment_avatar.resolve())
         elif not variables.get("comment_avatar"):
@@ -141,29 +160,24 @@ class ReelOrchestrator:
             variables["gradeasy_voice_id"] = self._settings.local_tts_gradeasy_voice
             variables["kid_voice_id"] = self._settings.local_tts_kid_voice
         else:
-            variables["gradeasy_voice_id"] = self._settings.elevenlabs_gradeasy_voice_id
-            variables["kid_voice_id"] = ""
+            variables["gradeasy_voice_id"] = (
+                self._settings.elevenlabs_gradeasy_voice_id
+                or self._settings.elevenlabs_voice_id
+            )
+            variables["kid_voice_id"] = self._settings.elevenlabs_voice_id
 
-        resolved_beats = self._script_gen._resolve_beats(
-            template.beats, variables
-        )
+        resolved_beats = self._script_gen._resolve_beats(template.beats, variables)
 
         # Merge default_visual from template into each beat
         if template.default_visual:
             resolved_beats = [
                 beat.model_copy(
-                    update={
-                        "visual": _merge_default_visual(
-                            beat.visual, template.default_visual
-                        )
-                    }
+                    update={"visual": _merge_default_visual(beat.visual, template.default_visual)}
                 )
                 for beat in resolved_beats
             ]
 
-        beats_with_audio = await self._synthesize_all(
-            resolved_beats, template.fps
-        )
+        beats_with_audio = await self._synthesize_all(resolved_beats, template.fps)
 
         reel_script = ReelScript(
             template_id=template.id,
@@ -202,9 +216,17 @@ class ReelOrchestrator:
                 "Try Gradeasy now at gradeasy.ai"
             )
 
-        final_hashtags = hashtags or template.hashtags or [
-            "AIGrading", "EdTech", "Gradeasy", "AI", "SchoolHacks",
-        ]
+        final_hashtags = (
+            hashtags
+            or template.hashtags
+            or [
+                "AIGrading",
+                "EdTech",
+                "Gradeasy",
+                "AI",
+                "SchoolHacks",
+            ]
+        )
 
         return VideoPost(
             video=video_asset,
@@ -282,11 +304,7 @@ class ReelOrchestrator:
         usernames_file = Path(__file__).resolve().parent / "assets" / "usernames.txt"
         if not usernames_file.exists():
             return "student"
-        names = [
-            line.strip()
-            for line in usernames_file.read_text().splitlines()
-            if line.strip()
-        ]
+        names = [line.strip() for line in usernames_file.read_text().splitlines() if line.strip()]
         return random.choice(names) if names else "student"
 
     @staticmethod
@@ -387,16 +405,18 @@ class ReelOrchestrator:
                 "easing": exit_t.get("easing", ""),
             }
 
-            beat_props.append({
-                "id": b.id,
-                "scene": b.scene,
-                "audioSrc": audio_src,
-                "durationFrames": b.duration_frames,
-                "visual": _rewrite_visual(b.visual),
-                "subtitle": b.subtitle,
-                "entryTransition": entry_t,
-                "exitTransition": exit_t,
-            })
+            beat_props.append(
+                {
+                    "id": b.id,
+                    "scene": b.scene,
+                    "audioSrc": audio_src,
+                    "durationFrames": b.duration_frames,
+                    "visual": _rewrite_visual(b.visual),
+                    "subtitle": b.subtitle,
+                    "entryTransition": entry_t,
+                    "exitTransition": exit_t,
+                }
+            )
 
         props = {"fps": script.fps, "beats": beat_props}
 
@@ -416,9 +436,12 @@ class ReelOrchestrator:
             str(output_path.resolve()),
             "--props",
             str(props_path.resolve()),
-            "--width", "1080",
-            "--height", "1920",
-            "--codec", "h264",
+            "--width",
+            "1080",
+            "--height",
+            "1920",
+            "--codec",
+            "h264",
         ]
 
         proc = await asyncio.create_subprocess_exec(
@@ -427,12 +450,11 @@ class ReelOrchestrator:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate()
+        _stdout, stderr = await proc.communicate()
 
         if proc.returncode != 0:
             raise RuntimeError(
-                f"Remotion render failed (exit {proc.returncode}):\n"
-                f"{stderr.decode()}"
+                f"Remotion render failed (exit {proc.returncode}):\n{stderr.decode()}"
             )
 
         return output_path

@@ -10,8 +10,10 @@ from .models import (
     BeatDefinition,
     PipelineConfig,
     PipelineStepDef,
+    QuestionTypeDef,
     ReelTemplate,
     TransitionSpec,
+    WorksheetConfig,
 )
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -25,6 +27,31 @@ def _parse_transition(raw: dict[str, object] | None) -> TransitionSpec:
         duration_frames=int(raw.get("duration_frames", 0)),
         direction=str(raw.get("direction", "")),
         easing=str(raw.get("easing", "")),
+    )
+
+
+def _parse_worksheet(raw: dict[str, object] | None) -> WorksheetConfig | None:
+    if not raw:
+        return None
+    question_types = [
+        QuestionTypeDef(
+            type=qt["type"],
+            description=qt.get("description", ""),
+            needs_image_prompt=qt.get("needs_image_prompt", False),
+        )
+        for qt in raw.get("question_types", [])
+    ]
+    num_range = raw.get("num_questions", [1, 3])
+    if isinstance(num_range, list) and len(num_range) == 2:
+        num_min, num_max = int(num_range[0]), int(num_range[1])
+    else:
+        num_min, num_max = 1, 3
+    return WorksheetConfig(
+        question_types=question_types,
+        subjects=raw.get("subjects", []),
+        num_questions_min=num_min,
+        num_questions_max=num_max,
+        fill_prompt=raw.get("fill_prompt", WorksheetConfig().fill_prompt),
     )
 
 
@@ -54,17 +81,13 @@ class ReelTemplateLoader:
 
     def list_templates(self) -> list[str]:
         """Return IDs of all available templates (filename without extension)."""
-        return sorted(
-            p.stem for p in self._dir.glob("*.yaml") if p.is_file()
-        )
+        return sorted(p.stem for p in self._dir.glob("*.yaml") if p.is_file())
 
     def load(self, template_id: str) -> ReelTemplate:
         """Load and validate a template by its ID."""
         path = self._dir / f"{template_id}.yaml"
         if not path.exists():
-            raise FileNotFoundError(
-                f"Template '{template_id}' not found at {path}"
-            )
+            raise FileNotFoundError(f"Template '{template_id}' not found at {path}")
 
         with path.open("r", encoding="utf-8") as f:
             raw = yaml.safe_load(f)
@@ -101,6 +124,8 @@ class ReelTemplateLoader:
             default_visual=raw.get("default_visual", {}),
             caption_template=raw.get("caption_template", ""),
             hashtags=raw.get("hashtags", []),
+            hook_lines=raw.get("hook_lines", []),
+            worksheet=_parse_worksheet(raw.get("worksheet")),
         )
 
     def validate(self, template_id: str) -> list[str]:
@@ -133,8 +158,7 @@ class ReelTemplateLoader:
                 valid_types = {"none", "fade", "slide", "scale", "wipe", "spring"}
                 if t.type not in valid_types:
                     issues.append(
-                        f"Beat '{beat.id}': {label}_transition type "
-                        f"'{t.type}' not in {valid_types}"
+                        f"Beat '{beat.id}': {label}_transition type '{t.type}' not in {valid_types}"
                     )
 
         for step in tmpl.pipeline.steps:

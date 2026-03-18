@@ -11,18 +11,14 @@ class ContentPipeline:
         self._registry = registry
         self._normaliser = ContentNormaliser()
 
-    async def execute(
-        self, content: BaseContent, platform: str
-    ) -> PublishResult | SendResult:
+    async def execute(self, content: BaseContent, platform: str) -> PublishResult | SendResult:
         bundle = self._registry.get(platform)
 
         normalised: NormalisedContent = self._normaliser.normalise(content)
 
         rendered: NormalisedContent = await bundle.renderer.render(normalised)
 
-        media_refs: list[MediaRef] = await bundle.uploader.upload_batch(
-            rendered.media_assets
-        )
+        media_refs: list[MediaRef] = await bundle.uploader.upload_batch(rendered.media_assets)
         rendered = rendered.model_copy(
             update={"extra": {**rendered.extra, "_media_refs": media_refs}}
         )

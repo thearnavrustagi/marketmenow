@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+from pathlib import Path
 
 from google import genai
 from google.genai.types import GenerateContentConfig
@@ -10,6 +11,7 @@ from jinja2 import Template
 from pydantic import BaseModel
 
 from .discovery import DiscoveredPost
+from .performance_tracker import WinningReply, load_examples_cache
 from .prompts import load_prompt
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,8 @@ class ReplyGenerator:
         mention_rate: int = 25,
         vertex_project: str = "",
         vertex_location: str = "us-central1",
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
     ) -> None:
         self._client = genai.Client(
             vertexai=True,
@@ -49,6 +53,21 @@ class ReplyGenerator:
         self._model = gemini_model
         self._mention_rate = mention_rate
         self._context = GradeasyContext()
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+
+    def _load_winning_replies(self) -> list[WinningReply]:
+        if self._top_examples_path is None:
+            return []
+        cache = load_examples_cache(self._top_examples_path)
+        if not cache.replies:
+            return []
+        ranked = sorted(
+            cache.replies,
+            key=lambda r: r.likes + r.retweets,
+            reverse=True,
+        )
+        return ranked[: self._max_examples]
 
     async def generate_reply(
         self,
@@ -56,6 +75,7 @@ class ReplyGenerator:
         reply_number: int = 1,
     ) -> str:
         should_mention = random.randint(1, 100) <= self._mention_rate
+        winning_examples = self._load_winning_replies()
 
         prompt_data = load_prompt("reply_generation")
 
@@ -68,6 +88,7 @@ class ReplyGenerator:
             post_text=post.post_text[:500],
             reply_number=reply_number,
             should_mention=should_mention,
+            winning_examples=[e.model_dump() for e in winning_examples],
         )
 
         reply_text: str | None = None

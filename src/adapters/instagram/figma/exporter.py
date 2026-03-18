@@ -51,9 +51,7 @@ class CarouselExporter:
             )
 
         if len(images) < 2:
-            raise ValueError(
-                f"Only {len(images)} images exported successfully; need at least 2"
-            )
+            raise ValueError(f"Only {len(images)} images exported successfully; need at least 2")
 
         return ImagePost(
             images=images,

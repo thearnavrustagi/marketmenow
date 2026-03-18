@@ -2,7 +2,7 @@
   <br />
   <strong>MarketMeNow</strong>
   <br />
-  <em>Open-source agentic marketing framework</em>
+  <em>The marketing intern that never sleeps.</em>
   <br /><br />
   <a href="https://github.com/Wayground/marketmenow/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://www.python.org/downloads/"><img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-blue.svg" /></a>
@@ -11,38 +11,205 @@
 
 ---
 
-MarketMeNow is a **modular, async-first** Python framework for automating content creation, publishing, and engagement across social media platforms. It uses a **hexagonal (ports-and-adapters) architecture** so the core engine is completely platform-agnostic — you add platform support by implementing a small set of Protocol interfaces and registering them with the adapter registry.
+MarketMeNow is an open-source framework that generates, schedules, and publishes content across every major social platform — **from a single command**. It handles Instagram Reels, carousels, Twitter threads, Reddit comments, LinkedIn posts, YouTube Shorts, and email outreach so solo founders and small teams can run a real content operation without hiring a marketing team.
 
-It ships with first-class integrations for **LangChain** and **[OpenClaw](https://openclaw.dev)**, so you can drop it straight into any AI agent workflow — use natural language through an OpenClaw channel (Slack, Discord, Telegram) or wire it into a LangChain agent graph.
+One button. Seven platforms. Zero manual posting.
 
-## Platform Support
+## Results
 
-| Platform | Status | Modalities | Highlights |
-|---|---|---|---|
-| **Instagram** | :white_check_mark: Implemented | Reels, Carousels | AI reel generation (Gemini + Remotion + TTS), Figma-to-carousel export, AI carousel generation (Gemini + Imagen) |
-| **X / Twitter** | :white_check_mark: Implemented | Replies, Threads | Browser-based engagement automation, AI reply generation (Gemini), AI thread generation (viral "5 things" listicles with hashtags & CTA), stealth Playwright session management |
-| **LinkedIn** | :white_check_mark: Implemented | Text, Images, Videos, Documents, Articles | Organization page posting via OAuth 2.0 REST API |
-| **Email / SMTP** | :white_check_mark: Implemented | Bulk outreach | CSV contact lists with row-range slicing, Jinja2 HTML templates, BCC to sender |
+After one week of running MarketMeNow for [Gradeasy](https://gradeasy.com):
 
-> **Want to add a platform?** See [Contributing](#contributing) — the ports-and-adapters design makes it straightforward.
+| Metric | Result |
+|---|---|
+| Reels published | 7 |
+| Total impressions | **14,000–15,000** |
+| New website visits | **700+** |
+| Platforms active simultaneously | 6 |
+| Time spent per day | ~5 minutes (review + approve) |
+
+All content was AI-generated, template-driven, and published automatically via the dashboard.
+
+## Platform & Content Support
+
+| Platform | Content Types | How It Works |
+|---|---|---|
+| **Instagram** | Reels, Carousels | AI script generation (Gemini) → TTS (ElevenLabs/OpenAI/Kokoro) → Remotion video composition → Meta Graph API upload. Carousels via Gemini + Imagen or Figma export. |
+| **X / Twitter** | Replies, Threads | Stealth Playwright browser automation. AI reply generation with in-context learning from your top-performing posts. Viral thread generation with hooks, CTAs, and hashtags. |
+| **Reddit** | Comments | Cookie-based JSON API. AI comment generation (Gemini) with a 90/10 value-first strategy. Configurable subreddit and keyword targeting. |
+| **LinkedIn** | Posts, Images, Videos, Documents | OAuth 2.0 REST API. AI-generated post text or manual input. Organization page publishing. |
+| **YouTube** | Shorts | Reuses generated Reel MP4s. OAuth 2.0 upload via YouTube Data API v3. |
+| **Email** | Bulk outreach | CSV contact lists with row-range batching (100 at a time). Jinja2 HTML templates. Gemini-powered per-recipient paraphrasing. |
+
+## Dashboard
+
+MarketMeNow ships with a **real-time web dashboard** built on FastAPI + HTMX with WebSocket-powered progress streaming.
+
+<p align="center">
+  <img src="docs/assets/dashboard.png" alt="MarketMeNow Dashboard" width="800" />
+</p>
+
+**What you see:**
+- Every content item across all platforms in one view, with status badges (Generating, Pending Review, Queued, Posting, Posted, Failed)
+- **Live progress bars** with phase indicators (Discovery → Generation → Posting) and countdown timers for rate-limited waits
+- **Streaming logs** — every line of CLI output pushed to your browser in real-time via WebSocket
+- **"Generate & Publish All"** button — one click creates content for all 7 platforms and publishes them in parallel
+- Approve, reject, or regenerate individual pieces before they go live
+
+## Key Features
+
+### In-Context Learning
+
+MarketMeNow scrapes your own profile to find your top-performing posts and replies (by likes, retweets, and engagement). These winning examples are automatically injected as few-shot examples into the AI prompt when generating new content. The more you post, the better it gets at matching your voice and what resonates with your audience.
+
+### Brand Identity Through Templates
+
+AI-generated content has a reputation problem — it all looks the same. MarketMeNow solves this with **Figma MCP integration** and **YAML-based templates** that lock in your brand's visual identity, fonts, color palette, and layout. The AI fills in the content; your templates control how it looks. The result: you're pushing AI-assisted content, but it's *your* AI-assisted content — consistent, on-brand, and recognizable. This matters especially for solo founders and small teams who can't afford to have every post look like it came from a different person.
+
+### Engagement Automation
+
+Twitter and Reddit adapters don't just post — they discover relevant conversations in your niche, generate contextual replies, and post them with human-like timing (5–10 minute randomized delays between actions). Rate limits, cooldowns, and anti-detection measures are handled automatically.
+
+### Email Batching
+
+Drop a CSV of contacts into `vault/teachers.csv` and MarketMeNow will send the next 100 emails every time you hit "Generate & Publish All." It tracks its position with a simple offset file, so it picks up where it left off. Templates support Jinja2 variables from any CSV column.
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) package manager
+- Node.js 18+ (only for Instagram Reels — Remotion video composition)
+- PostgreSQL database (for the web dashboard)
+
+### Install
+
+```bash
+git clone https://github.com/Wayground/marketmenow.git
+cd marketmenow
+uv sync
+```
+
+### Configure
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys and credentials
+```
+
+Required credentials by platform:
+
+| Platform | What you need |
+|---|---|
+| Instagram | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` |
+| Twitter/X | `TWITTER_USERNAME`, `TWITTER_PASSWORD` (or cookie auth) |
+| Reddit | `REDDIT_SESSION` cookie, `REDDIT_USERNAME` |
+| LinkedIn | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_ORGANIZATION_ID` |
+| YouTube | Google OAuth 2.0 (run `mmn youtube auth`) |
+| Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` |
+| AI (all platforms) | `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
+
+### Run the Dashboard
+
+```bash
+# Set up the database URL in .env
+# MMN_WEB_DATABASE_URL=postgresql://user:pass@host/db
+
+# Start the web server
+uv run mmn-web
+```
+
+Open `http://localhost:8000`. Click **"Generate & Publish All"** to kick off the full pipeline.
+
+### Or Use the CLI
+
+```bash
+# Instagram
+mmn reel create --output-dir output/    # Generate a reel
+mmn reel create --publish               # Generate and publish
+mmn carousel generate --publish         # AI carousel
+
+# Twitter/X
+mmn twitter login                       # One-time browser login
+mmn twitter all                         # Full pipeline: replies + thread
+mmn twitter engage                      # Generate replies (CSV)
+mmn twitter reply -f replies.csv        # Post from CSV
+mmn twitter thread --post               # Generate and post a thread
+
+# Reddit
+mmn reddit engage                       # Discover + generate comments
+mmn reddit reply -f comments.csv        # Post from reviewed CSV
+
+# LinkedIn
+mmn linkedin auth                       # One-time OAuth
+mmn linkedin post --text "Hello!"       # Publish a post
+
+# YouTube
+mmn youtube auth                        # One-time OAuth
+mmn youtube upload video.mp4            # Upload a Short
+
+# Email
+mmn email send -f contacts.csv -t template.html -r 0-100
+```
+
+## Examples
+
+### Instagram Reel
+
+<p align="center">
+  <img src="docs/assets/example_reel.gif" alt="Example reel" width="270" />
+</p>
+
+AI-generated script → ElevenLabs TTS → Remotion video composition with template-driven branding. Published via `mmn reel create --publish`.
+
+### Instagram Carousel
+
+<p align="center">
+  <img src="docs/assets/example_carousel_cover.png" alt="Carousel cover" width="340" />&nbsp;&nbsp;
+  <img src="docs/assets/example_carousel_slide1.png" alt="Carousel slide" width="340" />
+</p>
+
+Generated with Gemini + Imagen, or exported from Figma designs via the Figma MCP integration.
+
+### Twitter Thread
+
+```
+Tweet 1 (Hook): "Most teachers spend 5+ hours a week grading. Here's what happens
+when you let AI do it instead:"
+
+Tweet 2: "1. Upload the assignment photo..."
+Tweet 3: "2. AI reads the handwriting..."
+...
+Tweet 6 (CTA): "Try it free → gradeasy.com"
+```
+
+AI-generated with topic-aware hooks, numbered listicle format, and a CTA. Published with human-like timing via stealth browser automation.
+
+### Reddit Comment
+
+> Discovered a post in r/Teachers asking about grading tools → Generated a helpful, non-promotional comment with genuine advice → Posted with randomized 2–5 minute delays between comments.
+
+### Email Outreach
+
+Jinja2 HTML templates with per-recipient personalization (`{{ first_name }}`). Optional Gemini-powered paraphrasing so no two emails read identically.
 
 ## Architecture
 
 ```mermaid
 graph LR
-    subgraph integrations [" Integrations"]
+    subgraph integrations [Integrations]
         LC["LangChain"]
         OC["OpenClaw"]
     end
 
-    subgraph core [" Core"]
+    subgraph core [Core]
         direction TB
         Scheduler --> Orchestrator
         Orchestrator --> Pipeline
-        Pipeline --> Normaliser["Normaliser"]
+        Pipeline --> Normaliser
     end
 
-    subgraph ports [" Protocols"]
+    subgraph ports [Protocols]
         direction TB
         Renderer["ContentRenderer"]
         Uploader["Uploader"]
@@ -50,11 +217,13 @@ graph LR
         Analytics["AnalyticsCollector"]
     end
 
-    subgraph adapters [" Adapters"]
+    subgraph adapters [Adapters]
         direction TB
         IG["Instagram"]
         TW["Twitter / X"]
+        RD["Reddit"]
         LI["LinkedIn"]
+        YT["YouTube"]
         EM["Email / SMTP"]
     end
 
@@ -63,378 +232,49 @@ graph LR
     Pipeline --> Renderer
     Pipeline --> Uploader
     Pipeline --> Adapter
-    IG -.-> Renderer
-    IG -.-> Uploader
     IG -.-> Adapter
-    TW -.-> Renderer
-    TW -.-> Uploader
     TW -.-> Adapter
-    LI -.-> Renderer
-    LI -.-> Uploader
+    RD -.-> Adapter
     LI -.-> Adapter
-    EM -.-> Renderer
-    EM -.-> Uploader
+    YT -.-> Adapter
     EM -.-> Adapter
 ```
 
+**Ports-and-adapters design** — the core engine knows nothing about Instagram, Twitter, or any specific platform. Each adapter implements `PlatformAdapter`, `ContentRenderer`, and `Uploader` protocols. Adding a new platform requires zero changes to `core/`, `models/`, or `ports/`.
+
 ### Content Pipeline
 
-Every publish goes through the same pipeline regardless of platform:
+Every publish goes through the same pipeline:
 
-1. **Normalise** — The `ContentNormaliser` converts any content model (`Reel`, `Carousel`, `Thread`, `DirectMessage`, `Reply`) into a platform-agnostic `NormalisedContent` envelope.
-2. **Render** — The platform's `ContentRenderer` transforms the envelope into platform-specific form (caption limits, aspect ratio adjustments, hashtag formatting, etc.).
-3. **Upload** — The platform's `Uploader` pushes media assets to their destination and returns opaque `MediaRef` handles.
-4. **Publish / Send** — The platform's `PlatformAdapter` makes the final API call to publish the post or send the DM.
+1. **Normalise** — Convert any content model into a platform-agnostic envelope
+2. **Render** — Transform into platform-specific form (caption limits, hashtag formatting, etc.)
+3. **Upload** — Push media assets and get back opaque handles
+4. **Publish** — Make the final API call
 
 ### Content Modalities
 
-| Modality | Model | Description |
+| Modality | Model | Used By |
 |---|---|---|
-| `reel` | `Reel` | Short-form video with caption, hashtags, optional thumbnail |
-| `carousel` | `Carousel` | Multi-slide media post with per-slide captions |
-| `thread` | `Thread` | Ordered list of text + media entries |
-| `direct_message` | `DirectMessage` | Private message with recipients, subject, body, attachments |
-| `reply` | `Reply` | Reply to an existing post on any platform |
-
-## Examples
-
-### Instagram Reel
-
-<p align="center">
-  <img src="docs/assets/example_reel.gif" alt="Example reel preview" width="270" />
-</p>
-
-<sub>Generated with <code>mmn instagram reel create</code> — AI script, TTS, and Remotion video composition.</sub>
-
-### Instagram Carousel
-
-<p align="center">
-  <img src="docs/assets/example_carousel_cover.png" alt="Example carousel cover slide" width="360" />&nbsp;&nbsp;
-  <img src="docs/assets/example_carousel_slide1.png" alt="Example carousel first slide" width="360" />
-</p>
-
-<sub>Generated with <code>mmn instagram carousel generate</code> — Gemini + Imagen pipeline.</sub>
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
-- Node.js 18+ (only needed for Instagram Reels — Remotion video composition)
-
-### Installation
-
-```bash
-git clone https://github.com/Wayground/marketmenow.git
-cd marketmenow
-uv sync
-```
-
-For LangChain integration:
-
-```bash
-uv sync --extra langchain
-```
-
-### Environment Setup
-
-Copy the example environment variables into a `.env` file:
-
-```bash
-# Instagram
-INSTAGRAM_ACCESS_TOKEN=your_token
-INSTAGRAM_BUSINESS_ACCOUNT_ID=your_account_id
-FIGMA_API_TOKEN=your_figma_token
-
-# Twitter/X
-TWITTER_USERNAME=your_username
-TWITTER_PASSWORD=your_password
-
-# LinkedIn
-LINKEDIN_CLIENT_ID=your_client_id
-LINKEDIN_CLIENT_SECRET=your_client_secret
-LINKEDIN_ORGANIZATION_ID=your_org_id
-
-# Email / SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=you@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM=you@gmail.com
-SMTP_USE_TLS=true
-
-# AI / TTS
-GOOGLE_APPLICATION_CREDENTIALS=vertex.json
-VERTEX_AI_PROJECT=your_project_id
-ELEVENLABS_API_KEY=your_key
-OPENAI_API_KEY=your_key
-```
-
-### First Run
-
-```bash
-# See the welcome banner and available commands
-mmn
-
-# List supported platforms
-mmn platforms
-
-# Generate an Instagram reel
-mmn instagram reel create \
-  --assignment ./my_image.png \
-  --template can_ai_grade_this
-
-# Run Twitter/X engagement
-mmn twitter login              # one-time interactive login
-mmn twitter engage --dry-run   # preview without posting
-mmn twitter thread             # generate a viral thread (preview)
-mmn twitter thread --post      # generate and publish a thread
-
-# Publish to LinkedIn
-mmn linkedin auth              # one-time OAuth consent
-mmn linkedin post --text "Hello from MarketMeNow!"
-
-# Send emails from a CSV
-mmn email send -f contacts.csv -t invite.html \
-  -s "Hey {{ name }}" -r 0-50 --dry-run
-```
-
-## CLI Reference
-
-MarketMeNow provides a unified `mmn` CLI with platform sub-commands:
-
-```
-mmn                             Show welcome banner
-mmn --help                      Full help menu
-mmn version                     Show version
-mmn platforms                   List platforms & modalities
-```
-
-### Instagram
-
-```
-mmn instagram reel create       Generate a reel from template + image
-mmn instagram reel preview      Open Remotion Studio for live preview
-mmn instagram reel list-templates   List available YAML reel templates
-mmn instagram reel validate     Validate a template file
-mmn instagram carousel export   Export Figma frames as carousel
-mmn instagram carousel generate Generate an AI carousel (Gemini + Imagen)
-```
-
-### Twitter / X
-
-```
-mmn twitter login               Interactive browser login (saves session)
-mmn twitter engage              Discover posts + generate & post replies
-mmn twitter discover            Preview discovered posts
-mmn twitter test-reply <URL>    Generate a reply for a specific tweet
-mmn twitter thread              Generate a viral thread (preview only)
-mmn twitter thread --post       Generate and publish a thread to X
-  -t, --topic   TEXT            Topic hint (e.g. "grading mistakes")
-  --headless                    Run the browser in headless mode
-```
-
-### LinkedIn
-
-```
-mmn linkedin auth               OAuth 2.0 browser authorization
-mmn linkedin status             Check auth status and organization info
-mmn linkedin post               Publish to your organization page
-                                  --text, --image, --video, --document, --article
-```
-
-### Email
-
-```
-mmn email send                  Send templated emails to a CSV slice
-  -f, --file      PATH          CSV file (must have an 'email' column)
-  -t, --template  PATH          HTML Jinja2 template file
-  -s, --subject   TEXT          Subject line (supports Jinja2 placeholders)
-  -r, --range     START-END    Row range, inclusive start / exclusive end
-  --dry-run                     Render without sending
-```
-
-## Integrations
-
-### LangChain
-
-MarketMeNow ships LangChain-compatible tools so any agent can publish content or run campaigns:
-
-```python
-from marketmenow import AdapterRegistry
-from marketmenow.integrations.langchain import get_tools
-
-from adapters.instagram import create_instagram_bundle
-from adapters.twitter import create_twitter_bundle
-
-registry = AdapterRegistry()
-registry.register(create_instagram_bundle())
-registry.register(create_twitter_bundle())
-
-tools = get_tools(registry)
-
-# Use with any LangChain agent
-from langchain_openai import ChatOpenAI
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-
-llm = ChatOpenAI(model="gpt-4o")
-agent = create_tool_calling_agent(llm, tools, prompt=...)
-executor = AgentExecutor(agent=agent, tools=tools)
-executor.invoke({"input": "Create a carousel about Python tips and publish it to Instagram"})
-```
-
-**Available tools:**
-- `mmn_list_platforms` — discover available platforms and modalities
-- `mmn_publish` — publish a single piece of content to any platform
-- `mmn_run_campaign` — run a multi-platform campaign
-
-### OpenClaw
-
-MarketMeNow includes a native OpenClaw plugin. Install it from the repo root:
-
-```bash
-openclaw plugins install ./
-```
-
-This registers MarketMeNow tools in the OpenClaw Gateway, letting you use natural language to trigger content creation and publishing through any OpenClaw channel (Slack, Discord, Telegram, etc.).
-
-See [`openclaw/`](openclaw/) for the plugin manifest and tool schemas.
-
-## Programmatic Usage
-
-### Publishing a Single Reel
-
-```python
-import asyncio
-from marketmenow import AdapterRegistry, ContentPipeline, Reel, MediaAsset
-from adapters.instagram import create_instagram_bundle
-
-registry = AdapterRegistry()
-registry.register(create_instagram_bundle())
-
-pipeline = ContentPipeline(registry)
-
-reel = Reel(
-    video=MediaAsset(uri="./output/my_reel.mp4", mime_type="video/mp4"),
-    caption="Check this out!",
-    hashtags=["python", "coding"],
-)
-
-result = asyncio.run(pipeline.execute(reel, "instagram"))
-print(result)
-```
-
-### Running a Multi-Platform Campaign
-
-```python
-import asyncio
-from marketmenow import (
-    Campaign, CampaignTarget, ContentModality,
-    Orchestrator, AdapterRegistry, Carousel, CarouselSlide, MediaAsset,
-)
-from adapters.instagram import create_instagram_bundle
-
-registry = AdapterRegistry()
-registry.register(create_instagram_bundle())
-
-orchestrator = Orchestrator(registry)
-
-campaign = Campaign(
-    name="Product Launch",
-    content=Carousel(
-        slides=[
-            CarouselSlide(
-                media=MediaAsset(uri="./slide1.png", mime_type="image/png"),
-                caption="Slide 1",
-            ),
-            CarouselSlide(
-                media=MediaAsset(uri="./slide2.png", mime_type="image/png"),
-                caption="Slide 2",
-            ),
-        ],
-        caption="Our new product is here!",
-        hashtags=["launch", "product"],
-    ),
-    targets=[
-        CampaignTarget(platform="instagram", modality=ContentModality.CAROUSEL),
-    ],
-)
-
-result = asyncio.run(orchestrator.run_campaign(campaign))
-```
+| `reel` / `video` | `Reel` | Instagram, YouTube |
+| `carousel` / `image` | `Carousel` | Instagram |
+| `thread` | `Thread` | Twitter/X |
+| `reply` | `Reply` | Twitter/X, Reddit |
+| `text_post` | `TextPost` | LinkedIn |
+| `direct_message` | `DirectMessage` | Email |
 
 ## Adding a Platform
 
-The hexagonal architecture makes adding a new platform adapter straightforward. No changes to `core/`, `models/`, or `ports/` are required.
+1. Create `src/adapters/yourplatform/`
+2. Implement `PlatformAdapter`, `ContentRenderer`, `Uploader` protocols
+3. Bundle into `PlatformBundle` and register with `AdapterRegistry`
+4. Optionally add CLI commands via Typer
 
-1. **Create an adapter package** under `src/adapters/yourplatform/`.
-
-2. **Implement the protocols** defined in `src/marketmenow/ports/`:
-
-   | Protocol | What it does |
-   |---|---|
-   | `PlatformAdapter` | `platform_name`, `supported_modalities()`, `authenticate()`, `publish()`, `send_dm()` |
-   | `ContentRenderer` | Transform `NormalisedContent` into platform-specific form |
-   | `Uploader` | Upload media assets and return `MediaRef` handles |
-   | `AnalyticsCollector` *(optional)* | Collect post-publish engagement metrics |
-
-3. **Bundle and register:**
-
-   ```python
-   from marketmenow.registry import PlatformBundle, AdapterRegistry
-
-   bundle = PlatformBundle(
-       adapter=YourPlatformAdapter(),
-       renderer=YourPlatformRenderer(),
-       uploader=YourPlatformUploader(),
-   )
-
-   registry = AdapterRegistry()
-   registry.register(bundle)
-   ```
-
-4. **Add CLI commands** (optional) as a Typer app and wire them into the main `mmn` CLI.
-
-For a complete example, see the [Instagram adapter](src/adapters/instagram/), [Twitter adapter](src/adapters/twitter/), [LinkedIn adapter](src/adapters/linkedin/), or [Email adapter](src/adapters/email/).
-
-## Configuration
-
-All settings are loaded from environment variables (with `.env` file support via `pydantic-settings`). Each adapter has its own settings class:
-
-| Setting | Description |
-|---|---|
-| `INSTAGRAM_ACCESS_TOKEN` | Meta Graph API access token |
-| `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Instagram Business Account ID |
-| `FIGMA_API_TOKEN` | Figma API token (for carousel export) |
-| `TWITTER_USERNAME` | Twitter/X login username |
-| `TWITTER_PASSWORD` | Twitter/X login password |
-| `LINKEDIN_CLIENT_ID` | LinkedIn OAuth 2.0 client ID |
-| `LINKEDIN_CLIENT_SECRET` | LinkedIn OAuth 2.0 client secret |
-| `LINKEDIN_ORGANIZATION_ID` | LinkedIn organization/company page ID |
-| `SMTP_HOST` | SMTP server hostname (default: `smtp.gmail.com`) |
-| `SMTP_PORT` | SMTP server port (default: `587`) |
-| `SMTP_USERNAME` | SMTP login username |
-| `SMTP_PASSWORD` | SMTP login password (use an app password for Gmail) |
-| `SMTP_FROM` | Sender email address (also used as BCC) |
-| `SMTP_USE_TLS` | Enable STARTTLS (default: `true`) |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Path to Vertex AI / Gemini service account JSON |
-| `VERTEX_AI_PROJECT` | Google Cloud project ID |
-| `VERTEX_AI_LOCATION` | Google Cloud region (default: `us-central1`) |
-| `ELEVENLABS_API_KEY` | ElevenLabs TTS API key |
-| `OPENAI_API_KEY` | OpenAI API key (for TTS or LLM calls) |
-| `TTS_PROVIDER` | TTS backend: `elevenlabs`, `openai`, `local`, or `kokoro` |
+No changes to core. See the [Instagram](src/adapters/instagram/), [Twitter](src/adapters/twitter/), [Reddit](src/adapters/reddit/), [LinkedIn](src/adapters/linkedin/), or [Email](src/adapters/email/) adapters for examples.
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
-- Development setup
-- Code style guidelines (Python 3.12+, Pydantic frozen models, Protocol interfaces, async-first)
-- Architecture rules (no platform imports in core)
-- Step-by-step guide for adding platforms and modalities
-- PR process
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style (Python 3.12+, Pydantic frozen models, Protocol interfaces, async-first), and the PR process.
 
 ## License
 
-[MIT](LICENSE) — use it however you want.
+[MIT](LICENSE)

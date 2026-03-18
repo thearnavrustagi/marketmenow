@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import re
 from pathlib import Path
 
@@ -10,10 +11,10 @@ from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
 
 from .models import SendResult
-from .sender import send_batch
+from .paraphraser import EmailParaphraser
+from .sender import send_batch, send_single
 from .settings import EmailSettings
 
 app = typer.Typer(
@@ -33,17 +34,20 @@ console = Console()
 _RANGE_RE = re.compile(r"^(\d+)-(\d+)$")
 
 
+def _ensure_vertex_credentials(settings: EmailSettings) -> None:
+    """Export GOOGLE_APPLICATION_CREDENTIALS so the genai SDK picks it up."""
+    creds = settings.google_application_credentials
+    if creds and creds.exists():
+        os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(creds.resolve()))
+
+
 def _parse_range(value: str) -> tuple[int, int]:
     m = _RANGE_RE.match(value.strip())
     if not m:
-        raise typer.BadParameter(
-            f"Range must be START-END (e.g. 100-200), got: {value}"
-        )
+        raise typer.BadParameter(f"Range must be START-END (e.g. 100-200), got: {value}")
     start, end = int(m.group(1)), int(m.group(2))
     if start >= end:
-        raise typer.BadParameter(
-            f"Start ({start}) must be less than end ({end})"
-        )
+        raise typer.BadParameter(f"Start ({start}) must be less than end ({end})")
     return start, end
 
 
@@ -134,56 +138,137 @@ def _print_summary(results: list[SendResult], dry_run: bool) -> None:
 
 @app.command("send")
 def send(
-    csv_file: Path = typer.Option(
-        ..., "-f", "--file",
-        help="CSV file with contacts (must have an 'email' column)",
-        exists=True, readable=True,
-    ),
     template: Path = typer.Option(
-        ..., "-t", "--template",
+        ...,
+        "-t",
+        "--template",
         help="HTML Jinja2 template file",
-        exists=True, readable=True,
+        exists=True,
+        readable=True,
     ),
-    subject: str = typer.Option(
-        ..., "-s", "--subject",
-        help="Email subject (supports Jinja2 placeholders from CSV columns)",
+    to: str | None = typer.Option(
+        None,
+        "--to",
+        help="Send a single test email to this address (skips CSV/range).",
     ),
-    row_range: str = typer.Option(
-        ..., "-r", "--range",
+    var: list[str] | None = typer.Option(
+        None,
+        "--var",
+        help="Template variable as key=value (repeatable). Used with --to.",
+    ),
+    csv_file: Path | None = typer.Option(
+        None,
+        "-f",
+        "--file",
+        help="CSV file with contacts (must have an 'email' column)",
+        exists=True,
+        readable=True,
+    ),
+    subject: str | None = typer.Option(
+        None,
+        "-s",
+        "--subject",
+        help="Email subject (supports Jinja2 placeholders). If omitted, read from template front-matter.",
+    ),
+    row_range: str | None = typer.Option(
+        None,
+        "-r",
+        "--range",
         help="Row range as START-END (inclusive start, exclusive end, 0-indexed data rows)",
     ),
+    paraphrase: bool = typer.Option(
+        False,
+        "--paraphrase",
+        help="Use Gemini to slightly rewrite each email so no two are identical.",
+    ),
     dry_run: bool = typer.Option(
-        False, "--dry-run",
+        False,
+        "--dry-run",
         help="Render emails and log them without actually sending",
     ),
     verbose: bool = typer.Option(
-        False, "--verbose", "-v",
+        False,
+        "--verbose",
+        "-v",
         help="Show raw log output instead of rich UI",
     ),
 ) -> None:
-    """Send templated emails to a slice of a CSV contact list.
+    """Send templated emails to a CSV contact list or a single recipient.
 
-    The CSV must have an 'email' column.  All other columns become
-    Jinja2 template variables (usable in both the HTML template and
-    the subject line).
+    Use --to for a quick single-recipient test.  Use -f/-r for batch
+    sends from a CSV (must have an 'email' column; other columns become
+    Jinja2 template variables).
+
+    The subject can be set in the template's YAML front-matter or
+    via -s on the command line (CLI flag wins if both exist).
 
     Every sent email is BCC'd to the sender address.
 
     Examples:
 
-        mmn email send -f contacts.csv -t invite.html -s "Hey {{ name }}" -r 0-50
+        mmn email send -t invite.html --to you@example.com --var first_name=Arnav
 
-        mmn email send -f contacts.csv -t invite.html -s "Hello" -r 100-200 --dry-run
+        mmn email send -f contacts.csv -t invite.html -r 0-50
+
+        mmn email send -f contacts.csv -t invite.html -r 100-200 --dry-run
     """
-    start, end = _parse_range(row_range)
     settings = EmailSettings()
 
     if not settings.smtp_username and not dry_run:
         console.print("[red]SMTP_USERNAME is not set in .env[/red]")
         raise typer.Exit(code=1)
 
+    if paraphrase and not settings.vertex_ai_project:
+        console.print("[red]VERTEX_AI_PROJECT is not set in .env (required for --paraphrase)[/red]")
+        raise typer.Exit(code=1)
+
+    rewriter: EmailParaphraser | None = None
+    if paraphrase:
+        _ensure_vertex_credentials(settings)
+        rewriter = EmailParaphraser(
+            vertex_project=settings.vertex_ai_project,
+            vertex_location=settings.vertex_ai_location,
+        )
+        console.print("[cyan]Paraphrase mode ON — each email will be uniquely rewritten[/cyan]")
+
     if dry_run:
         console.print("[yellow]DRY RUN — no emails will be sent[/yellow]")
+
+    if to:
+        template_vars: dict[str, str] = {}
+        for item in var or []:
+            if "=" not in item:
+                console.print(f"[red]--var must be key=value, got: {item}[/red]")
+                raise typer.Exit(code=1)
+            k, v = item.split("=", 1)
+            template_vars[k.strip()] = v.strip()
+
+        console.print(f"Sending to [bold]{to}[/bold]  template [bold]{template.name}[/bold]")
+
+        async def _run_single() -> list[SendResult]:
+            result = await send_single(
+                settings,
+                template,
+                subject,
+                to,
+                template_vars=template_vars,
+                paraphraser=rewriter,
+                dry_run=dry_run,
+            )
+            return [result]
+
+        results = asyncio.run(_run_single())
+        _print_summary(results, dry_run)
+        return
+
+    if not csv_file:
+        console.print("[red]Provide --to for a single email or -f/-r for batch sends.[/red]")
+        raise typer.Exit(code=1)
+    if not row_range:
+        console.print("[red]-r/--range is required for batch sends.[/red]")
+        raise typer.Exit(code=1)
+
+    start, end = _parse_range(row_range)
 
     console.print(
         f"CSV [bold]{csv_file}[/bold]  rows [bold]{start}[/bold]–[bold]{end}[/bold]  "
@@ -193,16 +278,29 @@ def send(
     async def _run() -> list[SendResult]:
         if verbose or dry_run:
             return await send_batch(
-                settings, csv_file, template, subject, start, end,
+                settings,
+                csv_file,
+                template,
+                subject,
+                start,
+                end,
+                paraphraser=rewriter,
                 dry_run=dry_run,
             )
 
         from .sender import read_contacts
+
         total = len(read_contacts(csv_file, start, end))
         with Live(console=console, refresh_per_second=8, transient=False) as live:
             progress = _EmailProgress(live, total, start)
             return await send_batch(
-                settings, csv_file, template, subject, start, end,
+                settings,
+                csv_file,
+                template,
+                subject,
+                start,
+                end,
+                paraphraser=rewriter,
                 dry_run=dry_run,
                 on_progress=progress.on_progress,
             )

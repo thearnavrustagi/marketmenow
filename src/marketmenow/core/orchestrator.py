@@ -29,10 +29,12 @@ class Orchestrator:
         executable_targets: list[CampaignTarget] = []
         for target in campaign.targets:
             if not self._registry.supports(target.platform, target.modality):
-                result.errors.append((
-                    target,
-                    UnsupportedModalityError(target.platform, target.modality.value),
-                ))
+                result.errors.append(
+                    (
+                        target,
+                        UnsupportedModalityError(target.platform, target.modality.value),
+                    )
+                )
             else:
                 executable_targets.append(target)
 
@@ -40,10 +42,7 @@ class Orchestrator:
             return result
 
         outcomes = await asyncio.gather(
-            *(
-                self._execute_target(campaign, target)
-                for target in executable_targets
-            ),
+            *(self._execute_target(campaign, target) for target in executable_targets),
             return_exceptions=True,
         )
 

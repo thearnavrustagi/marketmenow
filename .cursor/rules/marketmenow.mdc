@@ -5,6 +5,15 @@ alwaysApply: true
 
 # MarketMeNow Architecture Rules
 
+## Project Layout
+
+```
+src/marketmenow/       # Platform-agnostic core (models, ports, core logic)
+src/adapters/          # Platform-specific adapters (instagram, twitter, linkedin, reddit, email)
+tests/                 # Test suite (pytest + pytest-asyncio)
+pyproject.toml         # Single source of truth for deps and config
+```
+
 ## Ports and Adapters
 
 - All platform-specific logic MUST live in adapter packages outside `src/marketmenow/`.
@@ -39,3 +48,25 @@ alwaysApply: true
 - Full type annotations everywhere. Never use `Any`.
 - Async-first: adapter methods are `async def`.
 - Immutable data flow: never mutate models, use `model_copy(update=...)`.
+
+## Dependencies
+
+- `uv` is the package manager. Use `uv sync` / `uv add`.
+- `pyproject.toml` is the single source of truth for all dependencies.
+- Dev/test deps live under `[project.optional-dependencies] dev`.
+
+## Linting
+
+- Ruff is the linter and formatter. Config lives in `pyproject.toml`.
+- Lint: `uv run ruff check src/ tests/`
+- Format: `uv run ruff format src/ tests/`
+- Auto-fix safe issues: `uv run ruff check --fix src/ tests/`
+
+## Testing
+
+- Tests live in `tests/`, one `test_*.py` per module under test.
+- `conftest.py` provides mock adapters and content factory fixtures.
+- pytest-asyncio with `asyncio_mode = "auto"` — async tests need no decorator.
+- Tests must never call external APIs — mock all I/O.
+- `from __future__ import annotations` in every test file.
+- Run tests: `uv run --extra dev pytest`.

@@ -26,6 +26,11 @@ class ElevenLabsTTS:
 
     async def synthesize(self, text: str, voice_id: str = "") -> SynthesisResult:
         effective_voice = voice_id or self._voice_id
+        if not effective_voice:
+            raise RuntimeError(
+                "No ElevenLabs voice ID configured. "
+                "Set ELEVENLABS_VOICE_ID in your .env file."
+            )
         response = await self._client.text_to_speech.convert_with_timestamps(
             voice_id=effective_voice,
             text=text,
@@ -38,12 +43,14 @@ class ElevenLabsTTS:
 
         if hasattr(response, "audio_base64") and response.audio_base64:
             import base64
+
             audio_bytes = base64.b64decode(response.audio_base64)
         elif hasattr(response, "audio") and response.audio:
             if isinstance(response.audio, bytes):
                 audio_bytes = response.audio
             else:
                 import base64
+
                 audio_bytes = base64.b64decode(response.audio)
 
         if hasattr(response, "alignment") and response.alignment:
@@ -99,8 +106,6 @@ def _chars_to_words(
             word_end = e
 
     if current_word:
-        words.append(
-            WordTiming(text=current_word, start_seconds=word_start, end_seconds=word_end)
-        )
+        words.append(WordTiming(text=current_word, start_seconds=word_start, end_seconds=word_end))
 
     return words

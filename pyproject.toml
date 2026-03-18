@@ -28,15 +28,24 @@ dependencies = [
     "pyyaml>=6.0",
     "jinja2>=3.1",
     "Pillow>=10.0",
+    "PyMuPDF>=1.24",
     "kokoro-onnx>=0.4",
     "soundfile>=0.12",
     "playwright>=1.40",
     "playwright-stealth>=2.0",
     "aiosmtplib>=3.0",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "asyncpg>=0.30",
+    "python-multipart>=0.0.18",
+    "boto3>=1.42.70",
+    "google-api-python-client>=2.0",
+    "google-auth-oauthlib>=1.0",
 ]
 
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.3"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "pytest-cov>=5.0", "ruff>=0.9"]
 
 [project.urls]
 Homepage = "https://github.com/Wayground/marketmenow"
@@ -45,9 +54,60 @@ Issues = "https://github.com/Wayground/marketmenow/issues"
 
 [project.scripts]
 mmn = "marketmenow.cli:app"
+instagram = "adapters.instagram.cli:app"
+mmn-web = "web.app:main"
 
 [tool.uv.build-backend]
-module-name = ["marketmenow", "adapters"]
+module-name = ["marketmenow", "adapters", "web"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "RUF",    # ruff-specific
+    "ASYNC",  # flake8-async
+    "T20",    # flake8-print
+    "PIE",    # flake8-pie
+    "PT",     # flake8-pytest-style
+]
+ignore = [
+    "E501",      # line length handled by formatter
+    "RUF012",    # mutable class variables (Pydantic models use them intentionally)
+    "B008",      # typer.Option() in function defaults is idiomatic Typer
+    "ASYNC240",  # pathlib in async functions is fine for local file I/O
+    "ASYNC109",  # timeout params in async functions are fine
+    "UP042",     # str enum inheritance is needed for pre-3.11 compat patterns
+    "PT028",     # default args in test-like CLI funcs are fine
+    "B905",      # zip() strict= not needed for well-controlled loops
+    "RUF001",    # ambiguous unicode chars (en-dash) are intentional in UI strings
+    "SIM108",    # ternary not always more readable
+    "SIM103",    # return-condition-directly not always clearer
+    "PT018",     # compound asserts are fine when testing related conditions
+    "RUF005",    # list concatenation is fine for readability
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["T20"]
+"src/adapters/**/cli.py" = ["T20"]
+"src/marketmenow/cli.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["marketmenow", "adapters", "web"]
 
 [build-system]
 requires = ["uv_build>=0.10.9,<0.11.0"]

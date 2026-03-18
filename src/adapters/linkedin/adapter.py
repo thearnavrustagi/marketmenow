@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from marketmenow.models.content import ContentModality
@@ -24,14 +24,16 @@ class LinkedInAdapter:
         return "linkedin"
 
     def supported_modalities(self) -> frozenset[ContentModality]:
-        return frozenset({
-            ContentModality.TEXT_POST,
-            ContentModality.IMAGE,
-            ContentModality.VIDEO,
-            ContentModality.DOCUMENT,
-            ContentModality.ARTICLE,
-            ContentModality.POLL,
-        })
+        return frozenset(
+            {
+                ContentModality.TEXT_POST,
+                ContentModality.IMAGE,
+                ContentModality.VIDEO,
+                ContentModality.DOCUMENT,
+                ContentModality.ARTICLE,
+                ContentModality.POLL,
+            }
+        )
 
     async def authenticate(self, credentials: dict[str, str]) -> None:
         if not await self._browser.is_logged_in():
@@ -56,7 +58,8 @@ class LinkedInAdapter:
                 case ContentModality.VIDEO:
                     if not content.media_assets:
                         return PublishResult(
-                            platform="linkedin", success=False,
+                            platform="linkedin",
+                            success=False,
                             error_message="No video asset provided.",
                         )
                     video_path = Path(content.media_assets[0].uri)
@@ -64,19 +67,23 @@ class LinkedInAdapter:
                 case ContentModality.DOCUMENT:
                     if not content.media_assets:
                         return PublishResult(
-                            platform="linkedin", success=False,
+                            platform="linkedin",
+                            success=False,
                             error_message="No document asset provided.",
                         )
                     doc_path = Path(content.media_assets[0].uri)
                     doc_title = str(content.extra.get("document_title", ""))
                     success = await self._browser.create_document_post(
-                        commentary, doc_path, title=doc_title,
+                        commentary,
+                        doc_path,
+                        title=doc_title,
                     )
                 case ContentModality.ARTICLE:
                     article_url = str(content.extra.get("article_url", ""))
                     if not article_url:
                         return PublishResult(
-                            platform="linkedin", success=False,
+                            platform="linkedin",
+                            success=False,
                             error_message="No article URL provided.",
                         )
                     full_text = f"{commentary}\n\n{article_url}" if commentary else article_url
@@ -86,22 +93,26 @@ class LinkedInAdapter:
                     options: list[str] = content.extra.get("poll_options", [])  # type: ignore[assignment]
                     if not question or len(options) < 2:
                         return PublishResult(
-                            platform="linkedin", success=False,
+                            platform="linkedin",
+                            success=False,
                             error_message="Poll requires a question and at least 2 options.",
                         )
                     success = await self._browser.create_poll_post(
-                        commentary, question, options,
+                        commentary,
+                        question,
+                        options,
                     )
                 case _:
                     return PublishResult(
-                        platform="linkedin", success=False,
+                        platform="linkedin",
+                        success=False,
                         error_message=f"Unsupported modality: {content.modality}",
                     )
 
             return PublishResult(
                 platform="linkedin",
                 success=success,
-                published_at=datetime.now(timezone.utc),
+                published_at=datetime.now(UTC),
             )
         except Exception as exc:
             logger.exception("LinkedIn publish failed for modality %s", content.modality)
@@ -114,9 +125,7 @@ class LinkedInAdapter:
     async def send_dm(self, content: NormalisedContent) -> SendResult:
         return SendResult(
             platform="linkedin",
-            recipient_handle=(
-                content.recipient_handles[0] if content.recipient_handles else ""
-            ),
+            recipient_handle=(content.recipient_handles[0] if content.recipient_handles else ""),
             success=False,
             error_message="LinkedIn DMs are not supported in this adapter.",
         )

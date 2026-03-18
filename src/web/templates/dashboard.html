@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - MarketMeNow{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Content Dashboard</h1>
+  <div class="header-actions">
+    <button class="btn btn-success btn-lg"
+            hx-post="/generate/all"
+            hx-target="#content-grid"
+            hx-swap="afterbegin"
+            hx-disabled-elt="this"
+            hx-indicator="#batch-spinner">
+      Generate &amp; Publish All
+    </button>
+    <span id="batch-spinner" class="htmx-indicator spinner"></span>
+    <a href="/generate" class="btn btn-primary">+ Generate Content</a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <a href="/" class="filter-chip {% if not current_status %}active{% endif %}">All</a>
+  <a href="/?status=generating" class="filter-chip {% if current_status == 'generating' %}active{% endif %}">Generating</a>
+  <a href="/?status=pending_review" class="filter-chip {% if current_status == 'pending_review' %}active{% endif %}">Pending Review</a>
+  <a href="/?status=queued" class="filter-chip {% if current_status == 'queued' %}active{% endif %}">Queued</a>
+  <a href="/?status=posted" class="filter-chip {% if current_status == 'posted' %}active{% endif %}">Posted</a>
+  <a href="/?status=failed" class="filter-chip {% if current_status == 'failed' %}active{% endif %}">Failed</a>
+</div>
+
+<div id="content-grid" class="content-grid">
+  {% if items %}
+    {% for item in items %}
+      {% include "partials/content_card.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>No content yet.</p>
+      <a href="/generate" class="btn btn-primary">Generate your first piece</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

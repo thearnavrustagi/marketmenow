@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 
 from langchain_core.tools import tool
 
+from marketmenow.models.campaign import Campaign, CampaignTarget
 from marketmenow.models.content import (
     Article,
     BaseContent,
@@ -26,16 +27,12 @@ from marketmenow.models.content import (
     DirectMessage,
     Document,
     ImagePost,
-    MediaAsset,
     Poll,
-    Recipient,
     Reply,
     TextPost,
     Thread,
-    ThreadEntry,
     VideoPost,
 )
-from marketmenow.models.campaign import Campaign, CampaignTarget
 
 if TYPE_CHECKING:
     from langchain_core.tools import BaseTool
@@ -57,7 +54,7 @@ def _get_registry() -> AdapterRegistry:
 
 def init(registry: AdapterRegistry) -> None:
     """Bind a live AdapterRegistry so the LangChain tools can operate."""
-    global _registry  # noqa: PLW0603
+    global _registry
     _registry = registry
 
 
@@ -172,9 +169,7 @@ def mmn_run_campaign(campaign_json: str) -> str:
         {
             "campaign_id": str(result.campaign_id),
             "results": [r.model_dump(mode="json") for r in result.results],
-            "errors": [
-                {"target": str(t), "error": str(e)} for t, e in result.errors
-            ],
+            "errors": [{"target": str(t), "error": str(e)} for t, e in result.errors],
         },
         indent=2,
     )

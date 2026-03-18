@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from pathlib import Path
 from uuid import uuid4
 
 from google import genai
@@ -107,21 +106,16 @@ class CarouselOrchestrator:
         )
         return data
 
-    async def _generate_all_images(
-        self, content: dict[str, object]
-    ) -> tuple[bytes, list[bytes]]:
+    async def _generate_all_images(self, content: dict[str, object]) -> tuple[bytes, list[bytes]]:
         cover_task = self._generate_image(content["cover_image_prompt"])
-        item_tasks = [
-            self._generate_image(item["image_prompt"])
-            for item in content["items"]
-        ]
+        item_tasks = [self._generate_image(item["image_prompt"]) for item in content["items"]]
 
         results = await asyncio.gather(cover_task, *item_tasks)
         return results[0], list(results[1:])
 
     async def _generate_image(self, prompt: str) -> bytes:
         """Generate an image, retrying with a simplified prompt if the safety filter fires."""
-        for attempt, current_prompt in enumerate([prompt, self._simplify_prompt(prompt)]):
+        for _attempt, current_prompt in enumerate([prompt, self._simplify_prompt(prompt)]):
             response = await self._client.aio.models.generate_images(
                 model=self.IMAGEN_MODEL,
                 prompt=current_prompt,

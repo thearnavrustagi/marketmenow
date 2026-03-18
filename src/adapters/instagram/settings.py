@@ -49,8 +49,18 @@ class InstagramSettings(BaseSettings):
     vertex_ai_location: str = "us-central1"
 
     # Instagram Graph API
+    instagram_app_id: str = ""
+    instagram_app_secret: str = ""
     instagram_access_token: str = ""
     instagram_business_account_id: str = ""
+    instagram_webhook_verify_token: str = ""
+
+    # S3 media hosting (for Instagram Graph API which needs public URLs)
+    aws_s3_bucket: str = ""
+    aws_s3_region: str = "us-east-1"
+    aws_s3_prefix: str = "instagram/uploads"
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
 
     # Paths
     output_dir: Path = Path("output")

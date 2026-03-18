@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MarketMeNow{% endblock %}</title>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/progress.js" defer></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">MMN</a>
+      <div class="nav-links">
+        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">Dashboard</a>
+        <a href="/generate" class="nav-link {% if '/generate' in request.url.path %}active{% endif %}">Generate</a>
+        <a href="/queues" class="nav-link {% if '/queues' in request.url.path %}active{% endif %}">Queues</a>
+      </div>
+    </div>
+  </nav>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <div id="toast-container"></div>
+</body>
+</html>

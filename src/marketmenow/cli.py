@@ -10,9 +10,12 @@ from rich.table import Table
 from rich.text import Text
 
 from adapters.email.cli import app as email_app
-from adapters.instagram.cli import app as instagram_app, reel_app, carousel_app
+from adapters.instagram.cli import app as instagram_app
+from adapters.instagram.cli import carousel_app, reel_app
 from adapters.linkedin.cli import app as linkedin_app
+from adapters.reddit.cli import app as reddit_app
 from adapters.twitter.cli import app as twitter_app
+from adapters.youtube.cli import app as youtube_app
 
 VERSION = importlib.metadata.version("marketmenow")
 
@@ -39,15 +42,33 @@ app.add_typer(
     rich_help_panel="Platforms",
 )
 app.add_typer(
+    twitter_app,
+    name="x",
+    help="Twitter/X engagement and reply automation (alias for `twitter`).",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
     linkedin_app,
     name="linkedin",
     help="LinkedIn organization page posting.",
     rich_help_panel="Platforms",
 )
 app.add_typer(
+    reddit_app,
+    name="reddit",
+    help="Reddit engagement and comment automation.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
     email_app,
     name="email",
     help="Email outreach via SMTP with CSV + Jinja2 templates.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    youtube_app,
+    name="youtube",
+    help="YouTube Shorts uploading and publishing.",
     rich_help_panel="Platforms",
 )
 
@@ -117,21 +138,22 @@ def main(
     if ctx.invoked_subcommand is None:
         console.print(_banner())
         console.print()
-        console.print(
-            "  Run [bold cyan]mmn --help[/] to see available commands.\n"
-        )
+        console.print("  Run [bold cyan]mmn --help[/] to see available commands.\n")
 
 
 @app.command(rich_help_panel="Distribution")
 def distribute(
     content_json: Path = typer.Option(
-        ..., "--content-json", "-c",
+        ...,
+        "--content-json",
+        "-c",
         help="Path to a JSON file containing serialised BaseContent",
         exists=True,
         readable=True,
     ),
     only: str = typer.Option(
-        "", "--only",
+        "",
+        "--only",
         help="Comma-separated platform filter (overrides default routing)",
     ),
 ) -> None:
@@ -142,7 +164,7 @@ def distribute(
     """
     import asyncio
     import json
-    from typing import Annotated, Union
+    from typing import Annotated
 
     from pydantic import Discriminator, Tag, TypeAdapter
 
@@ -163,16 +185,14 @@ def distribute(
         return str(modality)
 
     AnyContent = Annotated[
-        Union[
-            Annotated[VideoPost, Tag(ContentModality.VIDEO.value)],
-            Annotated[ImagePost, Tag(ContentModality.IMAGE.value)],
-            Annotated[Thread, Tag(ContentModality.THREAD.value)],
-            Annotated[DirectMessage, Tag(ContentModality.DIRECT_MESSAGE.value)],
-            Annotated[Reply, Tag(ContentModality.REPLY.value)],
-            Annotated[TextPost, Tag(ContentModality.TEXT_POST.value)],
-            Annotated[Document, Tag(ContentModality.DOCUMENT.value)],
-            Annotated[Article, Tag(ContentModality.ARTICLE.value)],
-        ],
+        Annotated[VideoPost, Tag(ContentModality.VIDEO.value)]
+        | Annotated[ImagePost, Tag(ContentModality.IMAGE.value)]
+        | Annotated[Thread, Tag(ContentModality.THREAD.value)]
+        | Annotated[DirectMessage, Tag(ContentModality.DIRECT_MESSAGE.value)]
+        | Annotated[Reply, Tag(ContentModality.REPLY.value)]
+        | Annotated[TextPost, Tag(ContentModality.TEXT_POST.value)]
+        | Annotated[Document, Tag(ContentModality.DOCUMENT.value)]
+        | Annotated[Article, Tag(ContentModality.ARTICLE.value)],
         Discriminator(_discriminator),
     ]
 
@@ -227,7 +247,12 @@ def platforms() -> None:
     )
     table.add_row("Facebook", "[yellow]Planned[/]", "Reels, Carousels, DMs", "")
     table.add_row("TikTok", "[yellow]Planned[/]", "Reels", "")
-    table.add_row("YouTube Shorts", "[yellow]Planned[/]", "Reels", "")
+    table.add_row(
+        "YouTube Shorts",
+        "[green]Implemented[/]",
+        "Shorts (Videos)",
+        "mmn youtube",
+    )
     table.add_row(
         "Email / SMTP",
         "[green]Implemented[/]",
@@ -237,7 +262,12 @@ def platforms() -> None:
     table.add_row("Threads (Meta)", "[yellow]Planned[/]", "Threads", "")
     table.add_row("Pinterest", "[yellow]Planned[/]", "Carousels", "")
     table.add_row("Bluesky", "[yellow]Planned[/]", "Threads", "")
-    table.add_row("Reddit", "[yellow]Planned[/]", "Threads, Replies", "")
+    table.add_row(
+        "Reddit",
+        "[green]Implemented[/]",
+        "Comments, Replies",
+        "mmn reddit",
+    )
     table.add_row("WhatsApp Business", "[yellow]Planned[/]", "Direct Messages", "")
 
     console.print()

@@ -62,6 +62,14 @@ system: |
   Respond with ONLY valid JSON matching the schema below. No markdown fences.
 
 user: |
+  {% if winning_posts %}
+  TOP-PERFORMING POSTS (these are your past tweets that got real engagement — study the tone, structure, and energy, but do NOT repeat them):
+  {% for ex in winning_posts %}
+  Tweet ({{ ex.likes }} likes, {{ ex.retweets }} RTs): "{{ ex.text }}"
+  {% endfor %}
+  ---
+  {% endif %}
+
   Generate a viral Twitter/X thread for the Gradeasy.ai account targeting
   teachers and educators. Topic area: {{ topic_hint if topic_hint else "pick a fresh, specific topic related to grading, feedback, assessment, or teacher productivity" }}.
 

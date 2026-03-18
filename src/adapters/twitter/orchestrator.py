@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
 import random
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import yaml
@@ -19,9 +17,15 @@ from marketmenow.normaliser import ContentNormaliser
 from .adapter import TwitterAdapter
 from .browser import StealthBrowser
 from .discovery import DiscoveredPost, PostDiscoverer
+from .performance_tracker import (
+    PerformanceTracker,
+    cache_is_fresh,
+    load_examples_cache,
+)
 from .renderer import TwitterRenderer
 from .reply_generator import ReplyGenerator
 from .settings import TwitterSettings
+from .thread_generator import GeneratedThread, ThreadGenerator
 
 
 def _ensure_vertex_credentials(settings: TwitterSettings) -> None:
@@ -29,6 +33,7 @@ def _ensure_vertex_credentials(settings: TwitterSettings) -> None:
     creds = settings.google_application_credentials
     if creds and creds.exists():
         os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(creds.resolve()))
+
 
 logger = logging.getLogger(__name__)
 
@@ -158,20 +163,23 @@ class EngagementOrchestrator:
 
         async with browser:
             if not await browser.is_logged_in():
-                logger.error(
-                    "Not logged in. Run `mmn-x login` first to create a session."
-                )
+                logger.error("Not logged in. Run `mmn-x login` first to create a session.")
                 return stats
+
+            await self._maybe_collect_examples(browser)
 
             adapter = TwitterAdapter(browser)
             renderer = TwitterRenderer()
             discoverer = PostDiscoverer(
-                browser, self._settings.reply_history_path,
+                browser,
+                self._settings.reply_history_path,
             )
             generator = ReplyGenerator(
                 gemini_model=self._settings.gemini_model,
                 vertex_project=self._settings.vertex_ai_project,
                 vertex_location=self._settings.vertex_ai_location,
+                top_examples_path=self._settings.top_examples_path,
+                max_examples=self._settings.max_examples_in_prompt,
             )
 
             targets = self._load_targets()
@@ -189,10 +197,14 @@ class EngagementOrchestrator:
             prog.on_discovery_start(len(handle_subset), len(hashtag_subset))
 
             influencer_posts = await self._discover_handles(
-                discoverer, handle_subset, prog,
+                discoverer,
+                handle_subset,
+                prog,
             )
             hashtag_posts = await self._discover_hashtags(
-                discoverer, hashtag_subset, prog,
+                discoverer,
+                hashtag_subset,
+                prog,
             )
 
             all_posts = influencer_posts + hashtag_posts
@@ -228,7 +240,10 @@ class EngagementOrchestrator:
 
                 if approval_callback is not None:
                     approval = await approval_callback(
-                        post, reply_text, i, len(candidates),
+                        post,
+                        reply_text,
+                        i,
+                        len(candidates),
                     )
                     if approval.decision == ApprovalDecision.STOP:
                         logger.info("User stopped the engagement loop.")
@@ -240,14 +255,16 @@ class EngagementOrchestrator:
                         reply_text = approval.edited_text
 
                 if dry_run:
-                    self._log_audit(AuditEntry(
-                        timestamp=datetime.now(timezone.utc).isoformat(),
-                        post_url=post.post_url,
-                        author_handle=post.author_handle,
-                        reply_text=reply_text,
-                        success=True,
-                        error="dry_run",
-                    ))
+                    self._log_audit(
+                        AuditEntry(
+                            timestamp=datetime.now(UTC).isoformat(),
+                            post_url=post.post_url,
+                            author_handle=post.author_handle,
+                            reply_text=reply_text,
+                            success=True,
+                            error="dry_run",
+                        )
+                    )
                     stats.total_succeeded += 1
                     prog.on_reply_posted(i, len(candidates), post.author_handle, success=True)
                     continue
@@ -261,7 +278,7 @@ class EngagementOrchestrator:
                 result = await adapter.publish(rendered)
 
                 entry = AuditEntry(
-                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    timestamp=datetime.now(UTC).isoformat(),
                     post_url=post.post_url,
                     author_handle=post.author_handle,
                     reply_text=reply_text,
@@ -280,8 +297,7 @@ class EngagementOrchestrator:
 
                     if self._looks_like_captcha(result.error_message or ""):
                         logger.error(
-                            "CAPTCHA or unusual activity detected -- "
-                            "halting for %d hours",
+                            "CAPTCHA or unusual activity detected -- halting for %d hours",
                             self._settings.cooldown_hours,
                         )
                         break
@@ -322,13 +338,18 @@ class EngagementOrchestrator:
                 logger.error("Not logged in. Run `mmn twitter login` first.")
                 return results
 
+            await self._maybe_collect_examples(browser)
+
             discoverer = PostDiscoverer(
-                browser, self._settings.reply_history_path,
+                browser,
+                self._settings.reply_history_path,
             )
             generator = ReplyGenerator(
                 gemini_model=self._settings.gemini_model,
                 vertex_project=self._settings.vertex_ai_project,
                 vertex_location=self._settings.vertex_ai_location,
+                top_examples_path=self._settings.top_examples_path,
+                max_examples=self._settings.max_examples_in_prompt,
             )
 
             targets = self._load_targets()
@@ -346,10 +367,14 @@ class EngagementOrchestrator:
             prog.on_discovery_start(len(handle_subset), len(hashtag_subset))
 
             influencer_posts = await self._discover_handles(
-                discoverer, handle_subset, prog,
+                discoverer,
+                handle_subset,
+                prog,
             )
             hashtag_posts = await self._discover_hashtags(
-                discoverer, hashtag_subset, prog,
+                discoverer,
+                hashtag_subset,
+                prog,
             )
 
             all_posts = influencer_posts + hashtag_posts
@@ -373,13 +398,15 @@ class EngagementOrchestrator:
                     continue
 
                 prog.on_generated(i, len(candidates), post.author_handle, reply_text)
-                results.append(GeneratedReply(
-                    post_url=post.post_url,
-                    author_handle=post.author_handle,
-                    post_text=post.post_text,
-                    engagement_score=post.engagement_score,
-                    reply_text=reply_text,
-                ))
+                results.append(
+                    GeneratedReply(
+                        post_url=post.post_url,
+                        author_handle=post.author_handle,
+                        post_text=post.post_text,
+                        engagement_score=post.engagement_score,
+                        reply_text=reply_text,
+                    )
+                )
 
         stats = EngagementStats(
             total_discovered=len(all_posts),
@@ -421,7 +448,8 @@ class EngagementOrchestrator:
             adapter = TwitterAdapter(browser)
             renderer = TwitterRenderer()
             discoverer = PostDiscoverer(
-                browser, self._settings.reply_history_path,
+                browser,
+                self._settings.reply_history_path,
             )
 
             prog.on_discovery_end(len(replies), len(replies))
@@ -439,14 +467,16 @@ class EngagementOrchestrator:
                 rendered = await renderer.render(normalised)
                 result = await adapter.publish(rendered)
 
-                self._log_audit(AuditEntry(
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    post_url=row.post_url,
-                    author_handle=row.author_handle,
-                    reply_text=row.reply_text,
-                    success=result.success,
-                    error=result.error_message or "",
-                ))
+                self._log_audit(
+                    AuditEntry(
+                        timestamp=datetime.now(UTC).isoformat(),
+                        post_url=row.post_url,
+                        author_handle=row.author_handle,
+                        reply_text=row.reply_text,
+                        success=result.success,
+                        error=result.error_message or "",
+                    )
+                )
 
                 if result.success:
                     stats.total_succeeded += 1
@@ -458,8 +488,7 @@ class EngagementOrchestrator:
 
                     if self._looks_like_captcha(result.error_message or ""):
                         logger.error(
-                            "CAPTCHA or unusual activity detected -- "
-                            "halting for %d hours",
+                            "CAPTCHA or unusual activity detected -- halting for %d hours",
                             self._settings.cooldown_hours,
                         )
                         break
@@ -474,6 +503,63 @@ class EngagementOrchestrator:
 
         prog.on_complete(stats)
         return stats
+
+    # ------------------------------------------------------------------
+    # Thread generation + posting
+    # ------------------------------------------------------------------
+
+    async def generate_and_post_thread(self) -> GeneratedThread | None:
+        """Generate a Top-5 thread via Gemini and post it to X.
+
+        Returns the generated thread on success, or None on failure.
+        """
+        _ensure_vertex_credentials(self._settings)
+
+        browser = StealthBrowser(
+            session_path=self._settings.twitter_session_path,
+            user_data_dir=self._settings.twitter_user_data_dir,
+            headless=self._settings.headless,
+            slow_mo_ms=self._settings.slow_mo_ms,
+            proxy_url=self._settings.proxy_url,
+            viewport_width=self._settings.viewport_width,
+            viewport_height=self._settings.viewport_height,
+        )
+
+        async with browser:
+            if not await browser.is_logged_in():
+                logger.error("Not logged in. Run `mmn twitter login` first.")
+                return None
+
+            await self._maybe_collect_examples(browser)
+
+            generator = ThreadGenerator(
+                gemini_model=self._settings.gemini_model,
+                vertex_project=self._settings.vertex_ai_project,
+                vertex_location=self._settings.vertex_ai_location,
+                top_examples_path=self._settings.top_examples_path,
+                max_examples=self._settings.max_examples_in_prompt,
+            )
+
+            try:
+                thread = await generator.generate_thread()
+            except Exception:
+                logger.exception("Failed to generate thread")
+                return None
+
+            tweet_texts = [t.text for t in thread.tweets]
+
+            try:
+                success = await browser.post_thread(tweet_texts)
+            except Exception:
+                logger.exception("Failed to post thread")
+                return None
+
+            if not success:
+                logger.error("post_thread returned False")
+                return None
+
+            logger.info("Thread posted: %s (%d tweets)", thread.topic, len(thread.tweets))
+            return thread
 
     async def _discover_handles(
         self,
@@ -542,12 +628,45 @@ class EngagementOrchestrator:
             random.shuffle(hashtags)
 
             posts = await discoverer.discover_influencer_posts(
-                handles[:10], max_per_handle=2,
+                handles[:10],
+                max_per_handle=2,
             )
             posts += await discoverer.discover_hashtag_posts(
-                hashtags[:5], max_per_tag=2,
+                hashtags[:5],
+                max_per_tag=2,
             )
             return posts
+
+    # ------------------------------------------------------------------
+    # In-context learning: collect top-performing examples
+    # ------------------------------------------------------------------
+
+    async def _maybe_collect_examples(self, browser: StealthBrowser) -> None:
+        """Refresh the top-examples cache if stale or missing."""
+        username = self._settings.twitter_username
+        if not username:
+            logger.debug("twitter_username not set, skipping example collection")
+            return
+
+        cache = load_examples_cache(self._settings.top_examples_path)
+        if cache_is_fresh(cache, self._settings.examples_max_age_hours):
+            logger.info(
+                "Examples cache is fresh (%d replies, %d posts), skipping collection",
+                len(cache.replies),
+                len(cache.posts),
+            )
+            return
+
+        logger.info("Examples cache is stale or missing, collecting from @%s", username)
+        tracker = PerformanceTracker(
+            browser,
+            username,
+            self._settings.top_examples_path,
+        )
+        try:
+            await tracker.collect()
+        except Exception:
+            logger.exception("Failed to collect top-performing examples, continuing anyway")
 
     # ------------------------------------------------------------------
     # Helpers

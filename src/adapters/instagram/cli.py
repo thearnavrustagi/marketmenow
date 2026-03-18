@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -28,6 +27,40 @@ def _get_settings() -> InstagramSettings:
     return InstagramSettings()
 
 
+async def _publish_carousel_to_linkedin(
+    carousel: object,
+    con: Console,
+) -> None:
+    """Publish a carousel ImagePost to LinkedIn via the browser adapter."""
+    from adapters.linkedin import create_linkedin_bundle
+    from adapters.linkedin.settings import LinkedInSettings
+    from marketmenow.core.pipeline import ContentPipeline
+    from marketmenow.registry import AdapterRegistry
+
+    li_settings = LinkedInSettings()
+    li_bundle = create_linkedin_bundle(li_settings)
+    li_browser = li_bundle.adapter._browser  # type: ignore[attr-defined]
+
+    async with li_browser:
+        if not await li_browser.is_logged_in():
+            li_at = li_settings.linkedin_li_at
+            if li_at:
+                await li_browser.login_with_cookie(li_at)
+            else:
+                con.print(
+                    "[red]LinkedIn not logged in. Run `mmn linkedin login` first,[/red]\n"
+                    "[red]or set LINKEDIN_LI_AT in .env.[/red]"
+                )
+                return
+
+        registry = AdapterRegistry()
+        registry.register(li_bundle)
+        pipeline = ContentPipeline(registry)
+        with con.status("[bold blue]Publishing to LinkedIn..."):
+            result = await pipeline.execute(carousel, "linkedin")  # type: ignore[arg-type]
+        con.print(f"[green]Published to LinkedIn![/green] Result: {result}")
+
+
 # ---------------------------------------------------------------------------
 # Carousel commands
 # ---------------------------------------------------------------------------
@@ -37,34 +70,44 @@ def _get_settings() -> InstagramSettings:
 def carousel_export(
     file_key: Annotated[str, typer.Option("--file-key", help="Figma file key")],
     frame_ids: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--frame-ids", help="Comma-separated Figma node IDs"),
     ] = None,
     caption: Annotated[str, typer.Option(help="Carousel caption")] = "",
     hashtags: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(help="Comma-separated hashtags"),
     ] = None,
     output_dir: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--output-dir", help="Output directory"),
     ] = None,
     publish: Annotated[
         bool, typer.Option("--publish", help="Publish to Instagram after export")
     ] = False,
+    linkedin: Annotated[
+        bool, typer.Option("--linkedin", help="Also publish to LinkedIn after export")
+    ] = False,
     distribute: Annotated[
         bool, typer.Option("--distribute", help="Distribute to all mapped platforms")
     ] = False,
     only: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--only", help="Comma-separated platform filter for --distribute"),
     ] = None,
 ) -> None:
     """Export Figma frames as an Instagram carousel."""
     asyncio.run(
         _carousel_export_async(
-            file_key, frame_ids, caption, hashtags, output_dir, publish,
-            distribute, only,
+            file_key,
+            frame_ids,
+            caption,
+            hashtags,
+            output_dir,
+            publish,
+            linkedin,
+            distribute,
+            only,
         )
     )
 
@@ -76,6 +119,7 @@ async def _carousel_export_async(
     hashtags: str | None,
     output_dir: Path | None,
     publish: bool,
+    linkedin: bool,
     distribute: bool,
     only: str | None,
 ) -> None:
@@ -100,55 +144,62 @@ async def _carousel_export_async(
         )
     await client.close()
 
-    console.print(
-        f"[green]Carousel created with {len(carousel.slides)} slides[/green]"
-    )
-    for i, slide in enumerate(carousel.slides):
-        console.print(f"  Slide {i + 1}: {slide.media.uri}")
+    console.print(f"[green]Carousel created with {len(carousel.images)} slides[/green]")
+    for i, slide in enumerate(carousel.images):
+        console.print(f"  Slide {i + 1}: {slide.uri}")
 
     if distribute:
         from marketmenow.core.distribute_cli import distribute_content
 
         await distribute_content(carousel, console, only=only)
-    elif publish:
-        from . import create_instagram_bundle
-        from marketmenow.core.pipeline import ContentPipeline
-        from marketmenow.registry import AdapterRegistry
+    else:
+        if publish:
+            from marketmenow.core.pipeline import ContentPipeline
+            from marketmenow.registry import AdapterRegistry
 
-        registry = AdapterRegistry()
-        bundle = create_instagram_bundle(settings)
-        registry.register(bundle)
+            from . import create_instagram_bundle
 
-        pipeline = ContentPipeline(registry)
-        with console.status("[bold blue]Publishing to Instagram..."):
-            result = await pipeline.execute(carousel, "instagram")
-        console.print(f"[green]Published![/green] Result: {result}")
+            registry = AdapterRegistry()
+            bundle = create_instagram_bundle(settings)
+            registry.register(bundle)
+
+            pipeline = ContentPipeline(registry)
+            with console.status("[bold blue]Publishing to Instagram..."):
+                result = await pipeline.execute(carousel, "instagram")
+            console.print(f"[green]Published to Instagram![/green] Result: {result}")
+
+        if linkedin:
+            await _publish_carousel_to_linkedin(carousel, console)
 
 
 @carousel_app.command("generate")
 def carousel_generate(
     output_dir: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--output-dir", help="Output directory"),
     ] = None,
     publish: Annotated[
         bool, typer.Option("--publish", help="Publish to Instagram after generation")
     ] = False,
+    linkedin: Annotated[
+        bool, typer.Option("--linkedin", help="Also publish to LinkedIn after generation")
+    ] = False,
     distribute: Annotated[
         bool, typer.Option("--distribute", help="Distribute to all mapped platforms")
     ] = False,
     only: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--only", help="Comma-separated platform filter for --distribute"),
     ] = None,
 ) -> None:
     """Generate a fresh Top-5 carousel using AI (Gemini + Imagen)."""
-    asyncio.run(_carousel_generate_async(output_dir, publish, distribute, only))
+    asyncio.run(_carousel_generate_async(output_dir, publish, linkedin, distribute, only))
 
 
 async def _carousel_generate_async(
     output_dir: Path | None,
     publish: bool,
+    linkedin: bool,
     distribute: bool,
     only: str | None,
 ) -> None:
@@ -163,30 +214,33 @@ async def _carousel_generate_async(
     with console.status("[bold green]Generating carousel (Gemini + Imagen)..."):
         carousel = await orch.create_carousel()
 
-    console.print(
-        f"[green]Carousel created with {len(carousel.slides)} slides[/green]"
-    )
-    for i, slide in enumerate(carousel.slides):
-        console.print(f"  Slide {i + 1}: {slide.media.uri}")
+    console.print(f"[green]Carousel created with {len(carousel.images)} slides[/green]")
+    for i, slide in enumerate(carousel.images):
+        console.print(f"  Slide {i + 1}: {slide.uri}")
     console.print(f"\n[bold]Caption:[/bold] {carousel.caption}")
 
     if distribute:
         from marketmenow.core.distribute_cli import distribute_content
 
         await distribute_content(carousel, console, only=only)
-    elif publish:
-        from . import create_instagram_bundle
-        from marketmenow.core.pipeline import ContentPipeline
-        from marketmenow.registry import AdapterRegistry
+    else:
+        if publish:
+            from marketmenow.core.pipeline import ContentPipeline
+            from marketmenow.registry import AdapterRegistry
 
-        registry = AdapterRegistry()
-        bundle = create_instagram_bundle(settings)
-        registry.register(bundle)
+            from . import create_instagram_bundle
 
-        pipeline = ContentPipeline(registry)
-        with console.status("[bold blue]Publishing to Instagram..."):
-            result = await pipeline.execute(carousel, "instagram")
-        console.print(f"[green]Published![/green] Result: {result}")
+            registry = AdapterRegistry()
+            bundle = create_instagram_bundle(settings)
+            registry.register(bundle)
+
+            pipeline = ContentPipeline(registry)
+            with console.status("[bold blue]Publishing to Instagram..."):
+                result = await pipeline.execute(carousel, "instagram")
+            console.print(f"[green]Published to Instagram![/green] Result: {result}")
+
+        if linkedin:
+            await _publish_carousel_to_linkedin(carousel, console)
 
 
 # ---------------------------------------------------------------------------
@@ -197,28 +251,25 @@ async def _carousel_generate_async(
 @reel_app.command("create")
 def reel_create(
     assignment: Annotated[
-        Path, typer.Option("--assignment", help="Path to assignment image")
-    ],
-    template: Annotated[
-        str, typer.Option("--template", help="Template ID")
-    ] = "can_ai_grade_this",
+        Path | None,
+        typer.Option("--assignment", help="Path to assignment image (optional if template auto-generates)"),
+    ] = None,
+    template: Annotated[str, typer.Option("--template", help="Template ID")] = "can_ai_grade_this",
     rubric: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--rubric", help="Path to rubric JSON/YAML file"),
     ] = None,
     caption: Annotated[str, typer.Option(help="Reel caption")] = "",
-    hashtags: Annotated[
-        Optional[str], typer.Option(help="Comma-separated hashtags")
-    ] = None,
+    hashtags: Annotated[str | None, typer.Option(help="Comma-separated hashtags")] = None,
     output_dir: Annotated[
-        Optional[Path], typer.Option("--output-dir", help="Output directory")
+        Path | None, typer.Option("--output-dir", help="Output directory")
     ] = None,
     tts: Annotated[
         str,
         typer.Option("--tts", help="TTS provider: elevenlabs, openai, local, or kokoro"),
     ] = "",
     reaction_image: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--reaction-image", help="Path to reaction image (e.g. funny dog)"),
     ] = None,
     comment_username: Annotated[
@@ -226,7 +277,7 @@ def reel_create(
         typer.Option("--comment-username", help="Username for the TikTok-style comment hook"),
     ] = "",
     comment_avatar: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--comment-avatar", help="Path to commenter's avatar image"),
     ] = None,
     comment_text: Annotated[
@@ -244,22 +295,38 @@ def reel_create(
         bool, typer.Option("--distribute", help="Distribute to all mapped platforms")
     ] = False,
     only: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--only", help="Comma-separated platform filter for --distribute"),
     ] = None,
 ) -> None:
-    """Generate a reel from a YAML template and assignment image."""
+    """Generate a reel from a YAML template.
+
+    If --assignment is omitted and the template has worksheet auto-generation,
+    the pipeline creates the assignment image automatically.
+    """
     asyncio.run(
         _reel_create_async(
-            assignment, template, rubric, caption, hashtags, output_dir, tts,
-            reaction_image, comment_username, comment_avatar, comment_text,
-            student_name, publish, distribute, only,
+            assignment,
+            template,
+            rubric,
+            caption,
+            hashtags,
+            output_dir,
+            tts,
+            reaction_image,
+            comment_username,
+            comment_avatar,
+            comment_text,
+            student_name,
+            publish,
+            distribute,
+            only,
         )
     )
 
 
 async def _reel_create_async(
-    assignment: Path,
+    assignment: Path | None,
     template: str,
     rubric: Path | None,
     caption: str,
@@ -302,9 +369,7 @@ async def _reel_create_async(
 
     orch = ReelOrchestrator(settings)
 
-    with console.status(
-        f"[bold green]Generating reel (template={template})..."
-    ):
+    with console.status(f"[bold green]Generating reel (template={template})..."):
         reel = await orch.create_reel(
             assignment_image=assignment,
             template_id=template,
@@ -337,9 +402,10 @@ async def _reel_create_async(
 
         await distribute_content(reel, console, only=only)
     elif publish:
-        from . import create_instagram_bundle
         from marketmenow.core.pipeline import ContentPipeline
         from marketmenow.registry import AdapterRegistry
+
+        from . import create_instagram_bundle
 
         registry = AdapterRegistry()
         bundle = create_instagram_bundle(settings)
@@ -353,11 +419,9 @@ async def _reel_create_async(
 
 @reel_app.command("preview")
 def reel_preview(
-    template: Annotated[
-        str, typer.Option("--template", help="Template ID")
-    ] = "can_ai_grade_this",
+    template: Annotated[str, typer.Option("--template", help="Template ID")] = "can_ai_grade_this",
     props_file: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--props-file", help="Pre-generated props JSON file"),
     ] = None,
 ) -> None:
@@ -371,9 +435,7 @@ def reel_preview(
     if props_file:
         cmd.extend(["--props", str(props_file.resolve())])
 
-    console.print(
-        f"[bold blue]Opening Remotion Studio[/bold blue] (template={template})"
-    )
+    console.print(f"[bold blue]Opening Remotion Studio[/bold blue] (template={template})")
     console.print(f"  Working dir: {remotion_dir}")
     subprocess.run(cmd, cwd=str(remotion_dir), check=True)
 
@@ -419,6 +481,143 @@ def reel_validate(
         for issue in issues:
             console.print(f"  [yellow]- {issue}[/yellow]")
         raise typer.Exit(code=1)
+
+
+# ---------------------------------------------------------------------------
+# All-in-one command
+# ---------------------------------------------------------------------------
+
+
+@app.command("all")
+def instagram_all(
+    assignment: Annotated[
+        Path | None,
+        typer.Option("--assignment", help="Path to assignment image (optional if template auto-generates)"),
+    ] = None,
+    template: Annotated[str, typer.Option("--template", help="Reel template ID")] = "can_ai_grade_this",
+    rubric: Annotated[
+        Path | None,
+        typer.Option("--rubric", help="Path to rubric JSON/YAML file"),
+    ] = None,
+    caption: Annotated[str, typer.Option(help="Caption (applied to both reel and carousel)")] = "",
+    hashtags: Annotated[str | None, typer.Option(help="Comma-separated hashtags")] = None,
+    output_dir: Annotated[
+        Path | None,
+        typer.Option("--output-dir", help="Output directory"),
+    ] = None,
+    tts: Annotated[
+        str,
+        typer.Option("--tts", help="TTS provider: elevenlabs, openai, local, or kokoro"),
+    ] = "",
+    reaction_image: Annotated[
+        Path | None,
+        typer.Option("--reaction-image", help="Path to reaction image for the reel"),
+    ] = None,
+    comment_username: Annotated[
+        str,
+        typer.Option("--comment-username", help="Username for the TikTok-style comment hook"),
+    ] = "",
+    comment_avatar: Annotated[
+        Path | None,
+        typer.Option("--comment-avatar", help="Path to commenter's avatar image"),
+    ] = None,
+    comment_text: Annotated[
+        str,
+        typer.Option("--comment-text", help="Comment text for the TikTok hook"),
+    ] = "",
+    student_name: Annotated[
+        str,
+        typer.Option("--student-name", help="Student name shown on the grading card"),
+    ] = "",
+    publish: Annotated[
+        bool, typer.Option("--publish", help="Publish both to Instagram after generation")
+    ] = False,
+    distribute: Annotated[
+        bool, typer.Option("--distribute", help="Distribute to all mapped platforms")
+    ] = False,
+    only: Annotated[
+        str | None,
+        typer.Option("--only", help="Comma-separated platform filter for --distribute"),
+    ] = None,
+) -> None:
+    """Generate a carousel and a reel at the same time.
+
+    The carousel is generated independently via AI (Gemini + Imagen).
+    Both pipelines run concurrently.  If --assignment is omitted and the
+    template has worksheet auto-generation, the reel pipeline creates its own.
+    """
+    asyncio.run(
+        _instagram_all_async(
+            assignment,
+            template,
+            rubric,
+            caption,
+            hashtags,
+            output_dir,
+            tts,
+            reaction_image,
+            comment_username,
+            comment_avatar,
+            comment_text,
+            student_name,
+            publish,
+            distribute,
+            only,
+        )
+    )
+
+
+async def _instagram_all_async(
+    assignment: Path | None,
+    template: str,
+    rubric: Path | None,
+    caption: str,
+    hashtags: str | None,
+    output_dir: Path | None,
+    tts: str,
+    reaction_image: Path | None,
+    comment_username: str,
+    comment_avatar: Path | None,
+    comment_text: str,
+    student_name: str,
+    publish: bool,
+    distribute: bool,
+    only: str | None,
+) -> None:
+    console.print("[bold cyan]Running carousel + reel pipelines concurrently...[/bold cyan]")
+
+    carousel_task = asyncio.create_task(
+        _carousel_generate_async(output_dir, publish, False, distribute, only),
+        name="carousel",
+    )
+    reel_task = asyncio.create_task(
+        _reel_create_async(
+            assignment,
+            template,
+            rubric,
+            caption,
+            hashtags,
+            output_dir,
+            tts,
+            reaction_image,
+            comment_username,
+            comment_avatar,
+            comment_text,
+            student_name,
+            publish,
+            distribute,
+            only,
+        ),
+        name="reel",
+    )
+
+    results = await asyncio.gather(carousel_task, reel_task, return_exceptions=True)
+
+    for name, result in zip(("carousel", "reel"), results):
+        if isinstance(result, BaseException):
+            console.print(f"[red]{name} failed:[/red] {result}")
+        else:
+            console.print(f"[green]{name} done.[/green]")
 
 
 if __name__ == "__main__":

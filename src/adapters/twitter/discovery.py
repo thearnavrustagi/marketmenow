@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import random
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -19,7 +19,7 @@ class DiscoveredPost(BaseModel, frozen=True):
     post_text: str
     engagement_score: int = 0
     discovered_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
 
@@ -41,7 +41,8 @@ class PostDiscoverer:
             data = json.loads(self._history_path.read_text(encoding="utf-8"))
             self._replied_urls = set(data.get("replied_urls", []))
             logger.info(
-                "Loaded %d previously replied URLs", len(self._replied_urls),
+                "Loaded %d previously replied URLs",
+                len(self._replied_urls),
             )
 
     def save_history(self) -> None:
@@ -186,7 +187,9 @@ class PostDiscoverer:
             time_el = article.locator("time").first  # type: ignore[attr-defined]
             link_el = time_el.locator("xpath=ancestor::a")
             href = await link_el.get_attribute("href", timeout=3_000)
-            post_url = f"https://x.com{href}" if href and not href.startswith("http") else (href or "")
+            post_url = (
+                f"https://x.com{href}" if href and not href.startswith("http") else (href or "")
+            )
         except Exception:
             return None
 

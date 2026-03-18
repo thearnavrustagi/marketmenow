@@ -13,9 +13,7 @@ class AdapterNotFoundError(MarketMeNowError):
 
 class UnsupportedModalityError(MarketMeNowError):
     def __init__(self, platform: str, modality: str) -> None:
-        super().__init__(
-            f"Platform '{platform}' does not support modality '{modality}'"
-        )
+        super().__init__(f"Platform '{platform}' does not support modality '{modality}'")
         self.platform = platform
         self.modality = modality
 
