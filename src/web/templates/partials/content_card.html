@@ -125,12 +125,10 @@
     </div>
   {% endif %}
 
-  {% if item.error_message and item.status == 'failed' %}
+  {% if item.status == 'failed' %}
     <div>
-      <details class="group">
-        <summary class="cursor-pointer text-[10px] font-semibold text-red-500 uppercase tracking-wider select-none hover:text-red-400 transition-colors">Error</summary>
-        <pre class="font-mono text-[11px] bg-black p-3 rounded-lg mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-all text-red-400">{{ item.error_message }}</pre>
-      </details>
+      <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wider mb-1">Error</p>
+      <pre class="font-mono text-[11px] bg-black p-3 rounded-lg max-h-40 overflow-y-auto whitespace-pre-wrap break-all text-red-400">{{ item.error_message or "Unknown error (no details captured)" }}</pre>
     </div>
   {% endif %}
 

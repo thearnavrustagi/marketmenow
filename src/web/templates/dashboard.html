@@ -26,6 +26,50 @@
   </div>
 </div>
 
+{% if activity_stats %}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+  {% for s in activity_stats %}
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ s.platform }}</span>
+      {% set seconds_since = none %}
+      {% if s.last_at %}
+        {% set seconds_since = (now_utc - s.last_at).total_seconds() | int %}
+      {% endif %}
+      {% if seconds_since is none %}
+        <span class="inline-block w-2 h-2 rounded-full bg-zinc-600" title="No posts yet"></span>
+      {% elif seconds_since >= s.min_interval_seconds %}
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400" title="Ready to post"></span>
+      {% else %}
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Cooldown active"></span>
+      {% endif %}
+    </div>
+    <div class="text-lg font-bold text-white leading-tight">{{ s.posts_today }}<span class="text-xs font-normal text-zinc-500">/{{ s.max_per_day }}</span></div>
+    <div class="text-[11px] text-zinc-500 mt-0.5">today</div>
+    <div class="mt-2 text-xs text-zinc-400">
+      {% if s.last_at is none %}
+        No posts yet
+      {% elif seconds_since < 60 %}
+        Last: just now
+      {% elif seconds_since < 3600 %}
+        Last: {{ (seconds_since // 60) | int }}m ago
+      {% elif seconds_since < 86400 %}
+        Last: {{ (seconds_since // 3600) | int }}h ago
+      {% else %}
+        Last: {{ (seconds_since // 86400) | int }}d ago
+      {% endif %}
+    </div>
+    {% if seconds_since is not none and seconds_since < s.min_interval_seconds %}
+      {% set remaining = s.min_interval_seconds - seconds_since %}
+      <div class="text-[11px] text-amber-400 mt-1">
+        Next in {{ (remaining // 60) | int }}m {{ remaining % 60 }}s
+      </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <div class="flex flex-wrap gap-2 mb-8">
   <a href="/" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if not current_status %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">All</a>
   <a href="/?status=generating" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'generating' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Generating</a>

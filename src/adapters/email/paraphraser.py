@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from pathlib import Path
 
+import yaml
 from google import genai
 from google.genai.types import GenerateContentConfig
 
@@ -12,26 +14,17 @@ logger = logging.getLogger(__name__)
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF_S = 5.0
 
-_SYSTEM_PROMPT = """\
-You are an email copywriter. You will receive raw HTML source code of an email.
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_PROMPT_PATH = _PROJECT_ROOT / "prompts" / "email" / "paraphrase.yaml"
 
-Your task: paraphrase ONLY the human-readable text so each version reads
-slightly differently while preserving the exact same meaning, tone, and intent.
 
-CRITICAL OUTPUT RULES:
-- Your output MUST be raw HTML source code. NEVER use markdown syntax.
-- NEVER convert <strong> to **bold** or <em> to *italic*. Keep the HTML tags.
-- NEVER add markdown code fences, backticks, or any non-HTML formatting.
-- Keep EVERY HTML tag, inline style, attribute, href, and structure byte-for-byte.
-- Keep Jinja2 placeholders ({{ first_name }} etc.) exactly as-is.
-- Only change the visible text between HTML tags.
-- Keep the same casual-professional tone as the original.
-- Do NOT add or remove sections, links, CTAs, or steps.
-- Do NOT change names (Gradeasy, Arnav), URLs, or video links.
-- NEVER use em-dashes, en-dashes, or &mdash; / &ndash; entities. Use a plain
-  hyphen (-) surrounded by spaces instead.
-- Output starts with <!DOCTYPE html> and ends with </html>.
-"""
+def _load_system_prompt() -> str:
+    with _PROMPT_PATH.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return data.get("system", "")
+
+
+_SYSTEM_PROMPT = _load_system_prompt()
 
 
 _EM_DASH_RE = re.compile(r"\u2014|\u2013|&mdash;|&ndash;")

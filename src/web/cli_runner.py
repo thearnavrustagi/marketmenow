@@ -566,14 +566,16 @@ def _build_linkedin_generate(params: dict, _output_dir: str) -> list[str]:
 
 
 def _build_linkedin_publish(params: dict, _output_dir: str) -> list[str]:
-    cmd = ["mmn", "linkedin", "post"]
-    if params.get("text"):
-        cmd.extend(["--text", params["text"]])
-    if params.get("hashtags"):
-        cmd.extend(["--hashtags", params["hashtags"]])
-    if params.get("image"):
-        cmd.extend(["--image", params["image"]])
-    return cmd
+    if params.get("text") or params.get("image"):
+        cmd = ["mmn", "linkedin", "post"]
+        if params.get("text"):
+            cmd.extend(["--text", params["text"]])
+        if params.get("hashtags"):
+            cmd.extend(["--hashtags", params["hashtags"]])
+        if params.get("image"):
+            cmd.extend(["--image", params["image"]])
+        return cmd
+    return ["mmn", "linkedin", "all", "--count", "1"]
 
 
 def _build_twitter_thread_generate(params: dict, _output_dir: str) -> list[str]:
@@ -627,13 +629,41 @@ def _build_reddit_engage_publish(_params: dict, output_dir: str) -> list[str]:
     return ["mmn", "reddit", "reply", "-f", os.path.join(output_dir, "comments.csv")]
 
 
+_YT_TITLE_VARIANTS = [
+    "Can our AI grade this? #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+    "Can AI actually grade your homework? #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+    "We let AI grade this assignment #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+    "AI vs. Teacher: Who grades better? #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+    "This AI just graded a real assignment #chatgpt #artificialintelligence #education #shorts #shortvideo #viral",
+    "Watch AI grade this in seconds #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+    "POV: AI is now your teacher #chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok",
+]
+
+_YT_DEFAULT_DESCRIPTION = (
+    "Our AI looked at this assignment and said 'hold my coffee' ☕🤖\n"
+    "Watch it roast — sorry, GRADE — a real student submission with zero mercy and 100% accuracy.\n"
+    "Teachers are shaking. Students are vibing. The future is here.\n"
+    "\n"
+    "Check Gradeasy out at https://gradeasy.ai\n"
+    "\n"
+    "#chatgpt #artificialintelligence #education #shorts #shortvideo #tiktok "
+    "#ai #edtech #grading #teacher #student #school #homework #viral"
+)
+
+
+def _pick_yt_title() -> str:
+    import random
+
+    return random.choice(_YT_TITLE_VARIANTS)
+
+
 def _build_youtube_short_generate(params: dict, output_dir: str) -> list[str]:
     """Preview: just echo the params (no generation step for YouTube Shorts)."""
     cmd = ["mmn", "youtube", "upload", os.path.join(output_dir, "*.mp4")]
-    if params.get("title"):
-        cmd.extend(["--title", params["title"]])
-    if params.get("description"):
-        cmd.extend(["--description", params["description"]])
+    title = params.get("title") or _pick_yt_title()
+    cmd.extend(["--title", title])
+    description = params.get("description") or _YT_DEFAULT_DESCRIPTION
+    cmd.extend(["--description", description])
     if params.get("hashtags"):
         cmd.extend(["--hashtags", params["hashtags"]])
     if params.get("privacy"):
@@ -645,10 +675,10 @@ def _build_youtube_short_publish(params: dict, output_dir: str) -> list[str]:
     cmd = ["mmn", "youtube", "upload"]
     latest_mp4 = os.path.join(output_dir, "latest.mp4")
     cmd.append(latest_mp4)
-    if params.get("title"):
-        cmd.extend(["--title", params["title"]])
-    if params.get("description"):
-        cmd.extend(["--description", params["description"]])
+    title = params.get("title") or _pick_yt_title()
+    cmd.extend(["--title", title])
+    description = params.get("description") or _YT_DEFAULT_DESCRIPTION
+    cmd.extend(["--description", description])
     if params.get("hashtags"):
         cmd.extend(["--hashtags", params["hashtags"]])
     if params.get("privacy"):

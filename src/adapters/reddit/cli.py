@@ -402,6 +402,18 @@ def engage(
     then run `mmn reddit reply -f <csv>` to post them.
     """
     settings = _settings()
+
+    if not settings.reddit_session:
+        console.print(
+            "[red]REDDIT_SESSION is not set in .env. Cannot authenticate with Reddit.[/red]"
+        )
+        raise typer.Exit(1)
+    if not settings.vertex_ai_project:
+        console.print(
+            "[red]VERTEX_AI_PROJECT is not set in .env. Gemini is required for comment generation.[/red]"
+        )
+        raise typer.Exit(1)
+
     if max_comments > 0:
         settings = RedditSettings(
             **{**settings.model_dump(), "max_comments_per_day": max_comments},

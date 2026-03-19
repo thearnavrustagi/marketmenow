@@ -88,9 +88,7 @@ async def generate_worksheet_content(
     """
     from google.genai import types as genai_types
 
-    qtypes_desc = "\n".join(
-        f"  - {qt.type}: {qt.description}" for qt in question_types
-    )
+    qtypes_desc = "\n".join(f"  - {qt.type}: {qt.description}" for qt in question_types)
 
     has_labeling = any(qt.needs_image_prompt for qt in question_types)
     labeling_instruction = ""
@@ -224,9 +222,7 @@ def _render_with_pillow(content: dict[str, object], output_dir: Path) -> Path:
         heading_font = ImageFont.truetype("Helvetica-Bold", heading_size)
     except OSError:
         try:
-            heading_font = ImageFont.truetype(
-                "/System/Library/Fonts/Helvetica.ttc", heading_size
-            )
+            heading_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", heading_size)
         except OSError:
             heading_font = ImageFont.load_default(size=heading_size)
 
@@ -262,8 +258,11 @@ def _render_with_pillow(content: dict[str, object], output_dir: Path) -> Path:
     if subject:
         draw.text((margin_x, y), f"Subject: {subject}", fill="black", font=small_font)
     draw.text(
-        (_A4_WIDTH - margin_x, y), "Name: ________________  Date: ________",
-        fill="black", font=small_font, anchor="rt",
+        (_A4_WIDTH - margin_x, y),
+        "Name: ________________  Date: ________",
+        fill="black",
+        font=small_font,
+        anchor="rt",
     )
     y += small_size + 30
 
@@ -319,7 +318,8 @@ def _render_with_pillow(content: dict[str, object], output_dir: Path) -> Path:
                 break
             draw.line(
                 [(margin_x + 20, line_y + body_size), (_A4_WIDTH - margin_x, line_y + body_size)],
-                fill="#cccccc", width=1,
+                fill="#cccccc",
+                width=1,
             )
             line_y += body_size + 12
         y = line_y + 20
@@ -478,13 +478,23 @@ async def _fill_worksheet_step(ctx: PipelineContext, inputs: dict[str, object]) 
     vertex_project = str(ctx.services.get("vertex_project", ""))
     vertex_location = str(ctx.services.get("vertex_location", "us-central1"))
 
-    filled_path = await fill_worksheet_with_gemini(
-        client=client,
-        worksheet_image=worksheet_image,
-        fill_prompt=str(fill_prompt),
-        output_dir=output_dir,
-        vertex_project=vertex_project,
-        vertex_location=vertex_location,
-    )
+    try:
+        filled_path = await asyncio.wait_for(
+            fill_worksheet_with_gemini(
+                client=client,
+                worksheet_image=worksheet_image,
+                fill_prompt=str(fill_prompt),
+                output_dir=output_dir,
+                vertex_project=vertex_project,
+                vertex_location=vertex_location,
+            ),
+            timeout=90,
+        )
+    except Exception as exc:
+        log.warning(
+            "Gemini image fill failed, falling back to unfilled worksheet: %s",
+            exc,
+        )
+        return str(worksheet_image.resolve())
 
     return str(filled_path.resolve())

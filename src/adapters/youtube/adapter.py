@@ -188,7 +188,13 @@ class YouTubeAdapter:
 
     @staticmethod
     def _build_title(content: NormalisedContent) -> str:
-        base = content.text_segments[0] if content.text_segments else "Short"
+        explicit = content.source.metadata.get("_yt_title", "")
+        if explicit:
+            base = explicit
+        elif content.text_segments:
+            base = content.text_segments[0].split("\n")[0].strip()
+        else:
+            base = "Short"
         if len(base) > _MAX_TITLE - 9:
             base = base[: _MAX_TITLE - 9].rstrip()
         if "#shorts" not in base.lower():

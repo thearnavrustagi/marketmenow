@@ -100,7 +100,10 @@ async def _run_generation(
     output_dir: str,
 ) -> None:
     try:
-        hub.publish(item_id, ProgressEvent(event_type="phase", message="Generation started", phase="generation"))
+        hub.publish(
+            item_id,
+            ProgressEvent(event_type="phase", message="Generation started", phase="generation"),
+        )
         result = await run_cli_streaming(generate_cmd, item_id=item_id, output_dir=output_dir)
 
         if result.exit_code == 0:
@@ -116,7 +119,10 @@ async def _run_generation(
                 output_path=primary_output,
                 publish_command=publish_cmd,
             )
-            hub.publish(item_id, ProgressEvent(event_type="done", message="Generation complete — ready for review"))
+            hub.publish(
+                item_id,
+                ProgressEvent(event_type="done", message="Generation complete — ready for review"),
+            )
         else:
             await db.update_content_status(
                 item_id,
@@ -134,9 +140,19 @@ async def _run_generation(
 
 BATCH_ITEMS: list[dict[str, str]] = [
     {"platform": "instagram", "command_type": "reel", "title": "Instagram Reel", "key": "reel"},
-    {"platform": "instagram", "command_type": "carousel", "title": "Instagram Carousel", "key": "carousel"},
+    {
+        "platform": "instagram",
+        "command_type": "carousel",
+        "title": "Instagram Carousel",
+        "key": "carousel",
+    },
     {"platform": "linkedin", "command_type": "post", "title": "LinkedIn Post", "key": "linkedin"},
-    {"platform": "twitter", "command_type": "all", "title": "Twitter All (Replies + Thread)", "key": "twitter"},
+    {
+        "platform": "twitter",
+        "command_type": "all",
+        "title": "Twitter All (Replies + Thread)",
+        "key": "twitter",
+    },
     {"platform": "reddit", "command_type": "engage", "title": "Reddit Comments", "key": "reddit"},
     {"platform": "youtube", "command_type": "short", "title": "YouTube Short", "key": "youtube"},
     {"platform": "email", "command_type": "send", "title": "Email Outreach", "key": "email"},
@@ -274,7 +290,9 @@ async def _run_batch(entries: list[_BatchEntry]) -> None:
                     )
                 else:
                     await db.update_content_status(
-                        entry.item_id, "failed", error_message="No reel MP4 available for YouTube upload"
+                        entry.item_id,
+                        "failed",
+                        error_message="No reel MP4 available for YouTube upload",
                     )
                     hub.publish(
                         entry.item_id,
@@ -341,14 +359,19 @@ async def _run_single_command(entry: _BatchEntry) -> CliResult:
             ProgressEvent(event_type="done", message=f"{entry.platform} posted successfully"),
         )
     else:
-        error = result.stderr[:500] or f"Exit code {result.exit_code}"
+        error = result.stderr.strip()[:500]
+        if not error:
+            tail = "\n".join(result.stdout.strip().splitlines()[-10:])
+            error = tail[:500] if tail else f"Exit code {result.exit_code}"
         await db.update_content_status(
             entry.item_id,
             "failed",
             error_message=error,
             preview_data={"stdout": result.stdout[:3000], "stderr": result.stderr[:3000]},
         )
-        hub.publish(entry.item_id, ProgressEvent(event_type="error", message=f"Failed: {error[:200]}"))
+        hub.publish(
+            entry.item_id, ProgressEvent(event_type="error", message=f"Failed: {error[:200]}")
+        )
 
     return result
 
@@ -358,7 +381,9 @@ async def _run_reddit_two_step(entry: _BatchEntry) -> None:
     await db.update_content_status(entry.item_id, "generating")
     hub.publish(
         entry.item_id,
-        ProgressEvent(event_type="phase", message="Discovering and generating comments...", phase="discovery"),
+        ProgressEvent(
+            event_type="phase", message="Discovering and generating comments...", phase="discovery"
+        ),
     )
 
     gen_result = await run_cli_streaming(
@@ -368,14 +393,20 @@ async def _run_reddit_two_step(entry: _BatchEntry) -> None:
     )
 
     if gen_result.exit_code != 0:
-        error = gen_result.stderr[:500] or f"Exit code {gen_result.exit_code}"
+        error = gen_result.stderr.strip()[:500]
+        if not error:
+            tail = "\n".join(gen_result.stdout.strip().splitlines()[-10:])
+            error = tail[:500] if tail else f"Exit code {gen_result.exit_code}"
         await db.update_content_status(
             entry.item_id,
             "failed",
             error_message=error,
             preview_data={"stdout": gen_result.stdout[:3000], "stderr": gen_result.stderr[:3000]},
         )
-        hub.publish(entry.item_id, ProgressEvent(event_type="error", message=f"Discovery failed: {error[:200]}"))
+        hub.publish(
+            entry.item_id,
+            ProgressEvent(event_type="error", message=f"Discovery failed: {error[:200]}"),
+        )
         return
 
     csv_path = os.path.join(entry.output_dir, "comments.csv")
@@ -408,11 +439,19 @@ async def _run_reddit_two_step(entry: _BatchEntry) -> None:
             "files": gen_result.output_files + pub_result.output_files,
         }
         await db.update_content_status(entry.item_id, "posted", preview_data=preview)
-        hub.publish(entry.item_id, ProgressEvent(event_type="done", message="Reddit comments posted"))
+        hub.publish(
+            entry.item_id, ProgressEvent(event_type="done", message="Reddit comments posted")
+        )
     else:
-        error = pub_result.stderr[:500] or f"Exit code {pub_result.exit_code}"
+        error = pub_result.stderr.strip()[:500]
+        if not error:
+            tail = "\n".join(pub_result.stdout.strip().splitlines()[-10:])
+            error = tail[:500] if tail else f"Exit code {pub_result.exit_code}"
         await db.update_content_status(entry.item_id, "failed", error_message=error)
-        hub.publish(entry.item_id, ProgressEvent(event_type="error", message=f"Posting failed: {error[:200]}"))
+        hub.publish(
+            entry.item_id,
+            ProgressEvent(event_type="error", message=f"Posting failed: {error[:200]}"),
+        )
 
 
 def _patch_youtube_cmd(cmd: list[str], mp4_path: str) -> list[str]:

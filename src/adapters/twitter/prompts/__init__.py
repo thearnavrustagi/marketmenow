@@ -5,7 +5,8 @@ from pathlib import Path
 
 import yaml
 
-_PROMPTS_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = Path(__file__).resolve().parents[4]
+_PROMPTS_DIR = _PROJECT_ROOT / "prompts" / "twitter"
 
 
 @lru_cache(maxsize=32)

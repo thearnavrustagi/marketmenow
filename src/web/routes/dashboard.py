@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Request
@@ -18,6 +19,7 @@ async def dashboard(
     platform: str | None = Query(None),
 ) -> HTMLResponse:
     items = await db.list_content_items(status=status, platform=platform)
+    activity_stats = await db.get_platform_activity_stats()
     return templates.TemplateResponse(
         "dashboard.html",
         {
@@ -25,6 +27,8 @@ async def dashboard(
             "items": items,
             "current_status": status,
             "current_platform": platform,
+            "activity_stats": activity_stats,
+            "now_utc": datetime.now(UTC),
         },
     )
 
@@ -35,7 +39,7 @@ async def clear_all(request: Request) -> HTMLResponse:
     return HTMLResponse(
         '<div class="col-span-full text-center py-16 text-zinc-500">'
         "<p>All content cleared.</p>"
-        '</div>'
+        "</div>"
     )
 
 

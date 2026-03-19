@@ -5,11 +5,21 @@ from pathlib import Path
 
 import yaml
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[4]
+_PROMPTS_DIR = _PROJECT_ROOT / "prompts" / "reddit"
+
 
 @lru_cache(maxsize=32)
 def load_prompt(name: str) -> dict[str, str]:
     """Load a YAML prompt file and return ``{"system": ..., "user": ...}``."""
-    path = Path(__file__).parent / f"{name}.yaml"
+    path = _PROMPTS_DIR / f"{name}.yaml"
+    if not path.exists():
+        raise FileNotFoundError(f"Prompt '{name}' not found at {path}")
+
     with path.open("r", encoding="utf-8") as f:
         data: dict[str, str] = yaml.safe_load(f)
-    return data
+
+    return {
+        "system": data.get("system", ""),
+        "user": data.get("user", ""),
+    }

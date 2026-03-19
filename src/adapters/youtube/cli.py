@@ -99,11 +99,19 @@ async def _youtube_upload_async(
 
     tags = [t.strip() for t in hashtags.split(",")] if hashtags else []
 
+    caption_parts = [p for p in [title, description] if p]
+    caption = "\n\n".join(caption_parts) if caption_parts else ""
+
+    meta: dict[str, str] = {}
+    if title:
+        meta["_yt_title"] = title
+
     video_post = VideoPost(
         id=uuid4(),
         video=MediaAsset(uri=str(video.resolve()), mime_type="video/mp4"),
-        caption=description or title or "",
+        caption=caption,
         hashtags=tags,
+        metadata=meta,
     )
 
     from marketmenow.core.pipeline import ContentPipeline

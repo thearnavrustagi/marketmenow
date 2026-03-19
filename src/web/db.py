@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
+import ssl
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -8,6 +11,8 @@ from uuid import UUID
 import asyncpg
 
 from web.config import settings
+
+logger = logging.getLogger(__name__)
 
 _pool: asyncpg.Pool | None = None
 
@@ -74,17 +79,41 @@ ON CONFLICT (platform) DO NOTHING;
 """
 
 
-async def init_pool() -> asyncpg.Pool:
+async def init_pool(*, retries: int = 5, delay: float = 2.0) -> asyncpg.Pool:
     global _pool
-    _pool = await asyncpg.create_pool(
-        settings.database_url,
-        min_size=2,
-        max_size=10,
-        init=_set_json_codec,
-    )
-    async with _pool.acquire() as conn:
-        await conn.execute(SCHEMA_SQL)
-    return _pool
+    dsn = settings.database_url
+
+    ssl_ctx: ssl.SSLContext | str = "require"
+    if "sslmode=" in dsn:
+        dsn_base = dsn.split("?")[0]
+        params = [p for p in dsn.split("?", 1)[1].split("&") if not p.startswith("sslmode=")]
+        dsn = dsn_base + ("?" + "&".join(params) if params else "")
+
+    for attempt in range(1, retries + 1):
+        try:
+            _pool = await asyncpg.create_pool(
+                dsn,
+                min_size=2,
+                max_size=10,
+                init=_set_json_codec,
+                ssl=ssl_ctx,
+            )
+            async with _pool.acquire() as conn:
+                await conn.execute(SCHEMA_SQL)
+            return _pool
+        except (ConnectionResetError, OSError, asyncpg.PostgresError) as exc:
+            if attempt == retries:
+                raise
+            logger.warning(
+                "DB connection attempt %d/%d failed: %s — retrying in %.1fs",
+                attempt,
+                retries,
+                exc,
+                delay,
+            )
+            await asyncio.sleep(delay)
+            delay *= 2
+    raise RuntimeError("Failed to connect to database")
 
 
 async def _set_json_codec(conn: asyncpg.Connection) -> None:
@@ -320,6 +349,38 @@ async def last_post_time(platform: str) -> datetime | None:
     return row["last_at"] if row else None
 
 
+async def get_platform_activity_stats() -> list[asyncpg.Record]:
+    """Per-platform activity summary: posts today, last post, rate limits."""
+    return await pool().fetch(
+        """
+        SELECT
+            rl.platform,
+            rl.max_per_hour,
+            rl.max_per_day,
+            rl.min_interval_seconds,
+            coalesce(today.cnt, 0)  AS posts_today,
+            coalesce(hour.cnt, 0)   AS posts_this_hour,
+            latest.last_at
+        FROM rate_limits rl
+        LEFT JOIN LATERAL (
+            SELECT count(*) AS cnt FROM post_log
+            WHERE platform = rl.platform AND success = true
+              AND posted_at > date_trunc('day', now())
+        ) today ON true
+        LEFT JOIN LATERAL (
+            SELECT count(*) AS cnt FROM post_log
+            WHERE platform = rl.platform AND success = true
+              AND posted_at > now() - interval '1 hour'
+        ) hour ON true
+        LEFT JOIN LATERAL (
+            SELECT max(posted_at) AS last_at FROM post_log
+            WHERE platform = rl.platform AND success = true
+        ) latest ON true
+        ORDER BY rl.platform
+        """
+    )
+
+
 async def list_queue_items(platform: str | None = None) -> list[asyncpg.Record]:
     if platform:
         return await pool().fetch(
@@ -363,9 +424,7 @@ async def clear_all_content() -> int:
     return count
 
 
-async def list_history_items(
-    platform: str | None = None, limit: int = 100
-) -> list[asyncpg.Record]:
+async def list_history_items(platform: str | None = None, limit: int = 100) -> list[asyncpg.Record]:
     """Return completed content items (posted or failed) ordered by most recent."""
     clauses = ["status IN ('posted', 'failed')"]
     params: list[Any] = []
