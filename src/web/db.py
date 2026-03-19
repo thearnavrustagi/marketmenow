@@ -353,3 +353,30 @@ async def get_post_log(limit: int = 50) -> list[asyncpg.Record]:
         """,
         limit,
     )
+
+
+async def clear_all_content() -> int:
+    """Delete all content items (cascades to platform_queues). Returns count deleted."""
+    row = await pool().fetchrow("SELECT count(*) AS cnt FROM content_items")
+    count = row["cnt"]
+    await pool().execute("DELETE FROM content_items")
+    return count
+
+
+async def list_history_items(
+    platform: str | None = None, limit: int = 100
+) -> list[asyncpg.Record]:
+    """Return completed content items (posted or failed) ordered by most recent."""
+    clauses = ["status IN ('posted', 'failed')"]
+    params: list[Any] = []
+    idx = 1
+    if platform:
+        clauses.append(f"platform = ${idx}")
+        params.append(platform)
+        idx += 1
+    where = "WHERE " + " AND ".join(clauses)
+    params.append(limit)
+    return await pool().fetch(
+        f"SELECT * FROM content_items {where} ORDER BY updated_at DESC LIMIT ${idx}",
+        *params,
+    )

@@ -1,24 +1,24 @@
 (function () {
   "use strict";
 
-  const MAX_LOG_LINES = 150;
-  const ACTIVE_STATUSES = new Set(["generating", "queued", "posting"]);
-  const PHASE_ORDER = ["discovery", "generation", "posting"];
-  const connections = new Map();
+  var MAX_LOG_LINES = 150;
+  var ACTIVE_STATUSES = new Set(["generating", "queued", "posting"]);
+  var PHASE_ORDER = ["discovery", "generation", "posting"];
+  var connections = new Map();
 
   function getWsUrl(itemId) {
-    const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${location.host}/ws/content/${itemId}`;
+    var proto = location.protocol === "https:" ? "wss:" : "ws:";
+    return proto + "//" + location.host + "/ws/content/" + itemId;
   }
 
   function connectCard(card) {
-    const itemId = card.dataset.itemId;
-    const status = card.dataset.status;
+    var itemId = card.dataset.itemId;
+    var status = card.dataset.status;
     if (!itemId || !ACTIVE_STATUSES.has(status)) return;
     if (connections.has(itemId)) return;
 
-    const ctx = {
-      itemId,
+    var ctx = {
+      itemId: itemId,
       ws: null,
       retries: 0,
       countdownInterval: null,
@@ -29,7 +29,7 @@
   }
 
   function openSocket(ctx) {
-    const ws = new WebSocket(getWsUrl(ctx.itemId));
+    var ws = new WebSocket(getWsUrl(ctx.itemId));
     ctx.ws = ws;
 
     ws.onopen = function () {
@@ -37,19 +37,19 @@
     };
 
     ws.onmessage = function (e) {
-      let evt;
-      try { evt = JSON.parse(e.data); } catch { return; }
+      var evt;
+      try { evt = JSON.parse(e.data); } catch (ex) { return; }
       handleEvent(ctx, evt);
     };
 
     ws.onclose = function () {
-      const card = document.getElementById("card-" + ctx.itemId);
+      var card = document.getElementById("card-" + ctx.itemId);
       if (!card || !ACTIVE_STATUSES.has(card.dataset.status)) {
         cleanup(ctx);
         return;
       }
       ctx.retries++;
-      const delay = Math.min(1000 * Math.pow(2, ctx.retries), 30000);
+      var delay = Math.min(1000 * Math.pow(2, ctx.retries), 30000);
       setTimeout(function () { openSocket(ctx); }, delay);
     };
 
@@ -59,7 +59,7 @@
   }
 
   function handleEvent(ctx, evt) {
-    const id = ctx.itemId;
+    var id = ctx.itemId;
 
     switch (evt.event_type) {
       case "phase":
@@ -97,39 +97,70 @@
     }
   }
 
+  var PHASE_DOT_DONE = "bg-emerald-500 border-emerald-500";
+  var PHASE_DOT_ACTIVE = "bg-white border-white shadow-[0_0_6px_rgba(255,255,255,0.5)] animate-pulse";
+  var PHASE_DOT_IDLE = "bg-zinc-800 border-zinc-700";
+  var PHASE_LABEL_DONE = "text-emerald-500";
+  var PHASE_LABEL_ACTIVE = "text-white";
+  var PHASE_LABEL_IDLE = "text-zinc-600";
+  var CONNECTOR_DONE = "bg-emerald-500/50";
+  var CONNECTOR_IDLE = "bg-zinc-800";
+  var ALL_DOT_CLASSES = (PHASE_DOT_DONE + " " + PHASE_DOT_ACTIVE + " " + PHASE_DOT_IDLE).split(" ");
+  var ALL_LABEL_CLASSES = (PHASE_LABEL_DONE + " " + PHASE_LABEL_ACTIVE + " " + PHASE_LABEL_IDLE).split(" ");
+  var ALL_CONNECTOR_CLASSES = (CONNECTOR_DONE + " " + CONNECTOR_IDLE).split(" ");
+
   function updatePhase(id, phase) {
     if (!phase) return;
-    const panel = document.getElementById("progress-" + id);
+    var panel = document.getElementById("progress-" + id);
     if (!panel) return;
 
-    const phaseIdx = PHASE_ORDER.indexOf(phase);
-    const steps = panel.querySelectorAll(".phase-step");
-    const connectors = panel.querySelectorAll(".phase-connector");
+    var phaseIdx = PHASE_ORDER.indexOf(phase);
+    var steps = panel.querySelectorAll(".phase-step");
+    var connectors = panel.querySelectorAll(".phase-connector");
 
     steps.forEach(function (step, i) {
+      var dot = step.querySelector(".phase-dot");
+      var label = step.querySelector(".phase-label");
+      if (!dot || !label) return;
+
       step.classList.remove("active", "done");
-      if (phaseIdx >= 0) {
-        if (i < phaseIdx) step.classList.add("done");
-        else if (i === phaseIdx) step.classList.add("active");
+      ALL_DOT_CLASSES.forEach(function (c) { dot.classList.remove(c); });
+      ALL_LABEL_CLASSES.forEach(function (c) { label.classList.remove(c); });
+
+      if (phaseIdx >= 0 && i < phaseIdx) {
+        step.classList.add("done");
+        PHASE_DOT_DONE.split(" ").forEach(function (c) { dot.classList.add(c); });
+        PHASE_LABEL_DONE.split(" ").forEach(function (c) { label.classList.add(c); });
+      } else if (phaseIdx >= 0 && i === phaseIdx) {
+        step.classList.add("active");
+        PHASE_DOT_ACTIVE.split(" ").forEach(function (c) { dot.classList.add(c); });
+        PHASE_LABEL_ACTIVE.split(" ").forEach(function (c) { label.classList.add(c); });
+      } else {
+        PHASE_DOT_IDLE.split(" ").forEach(function (c) { dot.classList.add(c); });
+        PHASE_LABEL_IDLE.split(" ").forEach(function (c) { label.classList.add(c); });
       }
     });
 
     connectors.forEach(function (conn, i) {
-      conn.classList.toggle("done", phaseIdx >= 0 && i < phaseIdx);
+      ALL_CONNECTOR_CLASSES.forEach(function (c) { conn.classList.remove(c); });
+      if (phaseIdx >= 0 && i < phaseIdx) {
+        CONNECTOR_DONE.split(" ").forEach(function (c) { conn.classList.add(c); });
+      } else {
+        CONNECTOR_IDLE.split(" ").forEach(function (c) { conn.classList.add(c); });
+      }
     });
   }
 
   function updateProgressBar(id, current, total) {
-    const panel = document.getElementById("progress-" + id);
+    var panel = document.getElementById("progress-" + id);
     if (!panel) return;
 
-    const fill = panel.querySelector(".progress-bar-fill");
-    const label = panel.querySelector(".progress-label");
+    var fill = panel.querySelector(".progress-bar-fill");
+    var label = panel.querySelector(".progress-label");
 
     if (fill && total && total > 0) {
-      const pct = Math.min(100, Math.round((current / total) * 100));
+      var pct = Math.min(100, Math.round((current / total) * 100));
       fill.style.width = pct + "%";
-      fill.dataset.progress = pct;
     }
 
     if (label && current != null && total != null && total > 0) {
@@ -141,7 +172,7 @@
   function startCountdown(ctx, seconds) {
     stopCountdown(ctx);
     ctx.countdownRemaining = seconds;
-    const timer = document.getElementById("timer-" + ctx.itemId);
+    var timer = document.getElementById("timer-" + ctx.itemId);
     if (!timer) return;
     timer.style.display = "";
     renderTimer(ctx.itemId, seconds);
@@ -161,28 +192,36 @@
       clearInterval(ctx.countdownInterval);
       ctx.countdownInterval = null;
     }
-    const timer = document.getElementById("timer-" + ctx.itemId);
+    var timer = document.getElementById("timer-" + ctx.itemId);
     if (timer) timer.style.display = "none";
   }
 
   function renderTimer(id, secs) {
-    const timer = document.getElementById("timer-" + id);
+    var timer = document.getElementById("timer-" + id);
     if (!timer) return;
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    const display = m > 0 ? m + ":" + String(s).padStart(2, "0") : s + "s";
+    var m = Math.floor(secs / 60);
+    var s = secs % 60;
+    var display = m > 0 ? m + ":" + String(s).padStart(2, "0") : s + "s";
     timer.innerHTML =
-      '<span class="timer-icon">&#9202;</span>' +
-      '<span class="timer-text">Next action in <strong class="timer-value">' +
-      display + "</strong></span>";
+      '<span class="text-xs text-zinc-400">Next action in ' +
+      '<strong class="text-amber-400 font-mono text-sm">' + display + "</strong></span>";
   }
 
   function appendLog(id, message, cls) {
-    const logEl = document.getElementById("logs-" + id);
+    var logEl = document.getElementById("logs-" + id);
     if (!logEl || !message) return;
 
-    const line = document.createElement("div");
-    line.className = "log-line" + (cls ? " " + cls : "");
+    var line = document.createElement("div");
+    line.className = "py-px";
+    if (cls === "error") {
+      line.className += " text-red-400 font-semibold";
+    } else if (cls === "success") {
+      line.className += " text-emerald-400 font-semibold";
+    } else if (cls === "dim") {
+      line.className += " text-zinc-600";
+    } else {
+      line.className += " text-zinc-500";
+    }
     line.textContent = message;
     logEl.appendChild(line);
 
@@ -195,7 +234,7 @@
 
   function refreshCard(id) {
     setTimeout(function () {
-      const card = document.getElementById("card-" + id);
+      var card = document.getElementById("card-" + id);
       if (card && typeof htmx !== "undefined") {
         htmx.ajax("GET", "/content/" + id + "/status", { target: card, swap: "outerHTML" });
       }
@@ -205,15 +244,15 @@
   function cleanup(ctx) {
     stopCountdown(ctx);
     if (ctx.ws) {
-      try { ctx.ws.close(); } catch {}
+      try { ctx.ws.close(); } catch (ex) {}
     }
     connections.delete(ctx.itemId);
   }
 
   function scanCards() {
     document.querySelectorAll(".content-card").forEach(function (card) {
-      const itemId = card.dataset.itemId;
-      const status = card.dataset.status;
+      var itemId = card.dataset.itemId;
+      var status = card.dataset.status;
       if (itemId && ACTIVE_STATUSES.has(status)) {
         connectCard(card);
       } else if (itemId && connections.has(itemId)) {
@@ -222,8 +261,7 @@
     });
   }
 
-  // Observe DOM for card swaps (HTMX replaces outerHTML)
-  const observer = new MutationObserver(function () {
+  var observer = new MutationObserver(function () {
     scanCards();
   });
 
@@ -232,7 +270,6 @@
     observer.observe(document.body, { childList: true, subtree: true });
   });
 
-  // Re-scan after HTMX swaps
   document.addEventListener("htmx:afterSwap", function () {
     scanCards();
   });
