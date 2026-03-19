@@ -32,6 +32,7 @@ output/
 # ── Node.js (Remotion) ─────────────────────────────────
 node_modules/
 src/adapters/instagram/reels/remotion/dist/
+src/adapters/instagram/reels/remotion/public/assets/
 
 # ── IDE / editor ───────────────────────────────────────
 .vscode/
