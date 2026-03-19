@@ -168,7 +168,7 @@ mmn email send -f contacts.csv -t template.html -r 0-100
 
 All brand identity lives in YAML files, not code. Repurpose the entire tool for your product in under an hour.
 
-**Prompts (text content — tweets, carousels, LinkedIn, Reddit, email):**
+**Prompts (text content: tweets, carousels, LinkedIn, Reddit, email):**
 
 1. **Swap the brand (5 min):** Open `prompts/` and replace `Gradeasy` with your brand name, URL, and audience keywords.
 2. **Tweak the voice (10 min):** Each prompt has a persona section. Edit the voice for each platform in `prompts/<platform>/`.
