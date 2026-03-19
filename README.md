@@ -4,9 +4,9 @@
   <br />
   <em>The marketing intern that never sleeps.</em>
   <br /><br />
-  <a href="https://github.com/Wayground/marketmenow/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
+  <a href="https://github.com/thearnavrustagi/marketmenow/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://www.python.org/downloads/"><img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-blue.svg" /></a>
-  <a href="https://github.com/Wayground/marketmenow"><img alt="Status: Alpha" src="https://img.shields.io/badge/status-alpha-orange.svg" /></a>
+  <a href="https://github.com/thearnavrustagi/marketmenow"><img alt="Status: Alpha" src="https://img.shields.io/badge/status-alpha-orange.svg" /></a>
 </p>
 
 ---
@@ -15,9 +15,21 @@ MarketMeNow is an open-source framework that generates, schedules, and publishes
 
 One button. Seven platforms. Zero manual posting.
 
-## Results
+## Why This Exists
 
-After one week of running MarketMeNow for [Gradeasy](https://gradeasy.com):
+If you're a solo founder or a small team, you already know the problem: you're supposed to be active on Twitter, LinkedIn, Instagram, Reddit, YouTube, *and* email — every single day. The advice is always "just be consistent." But consistency across seven platforms means hours of work that has nothing to do with building your product.
+
+The alternatives aren't great either:
+
+- **Hiring a marketer** costs $3–5k/month minimum and still requires your time for onboarding, feedback loops, and brand alignment
+- **SaaS scheduling tools** (Buffer, Hootsuite, etc.) help you *schedule* posts, but you still have to *create* every piece of content yourself
+- **Pure AI tools** generate generic slop that doesn't match your brand and tanks engagement
+
+MarketMeNow takes a different approach: **you define your brand once** (templates, voice examples, visual identity), and the framework handles the rest — generating platform-native content, adapting it per channel, and publishing it on schedule. You review and approve; it does everything else.
+
+I built this because I was running [Gradeasy](https://gradeasy.com) solo and spending 2+ hours a day on marketing instead of building. After one week of using MarketMeNow, here's what happened:
+
+## Results
 
 | Metric | Result |
 |---|---|
@@ -75,51 +87,75 @@ Drop a CSV of contacts into `vault/teachers.csv` and MarketMeNow will send the n
 
 ## Quick Start
 
+### One-Line Setup
+
+```bash
+git clone https://github.com/thearnavrustagi/marketmenow.git && cd marketmenow && bash setup.sh
+```
+
+This will: check Python 3.12+, install [uv](https://docs.astral.sh/uv/) if missing, install all dependencies, set up Playwright browsers, create `.env` from the template, and optionally start PostgreSQL via Docker Compose.
+
+After setup, edit `.env` with your API keys and run:
+
+```bash
+uv run mmn-web
+```
+
+Open [http://localhost:8000](http://localhost:8000). Click **"Generate & Publish All"** to kick off the full pipeline.
+
 ### Prerequisites
 
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) package manager
-- Node.js 18+ (only for Instagram Reels — Remotion video composition)
-- PostgreSQL database (for the web dashboard)
+| Requirement | Required? | Notes |
+|---|---|---|
+| Python 3.12+ | Yes | Core runtime |
+| [uv](https://docs.astral.sh/uv/) | Yes | `setup.sh` installs it automatically |
+| Docker | Recommended | For PostgreSQL — or bring your own DB |
+| Node.js 18+ | Only for Reels | Remotion video composition |
 
-### Install
+### Manual Setup (Step by Step)
+
+<details>
+<summary>Click to expand</summary>
 
 ```bash
-git clone https://github.com/Wayground/marketmenow.git
+git clone https://github.com/thearnavrustagi/marketmenow.git
 cd marketmenow
+
+# Install Python deps
 uv sync
-```
 
-### Configure
+# Start PostgreSQL (or set your own DB URL in .env)
+docker compose up -d
 
-```bash
+# Create and edit your env file
 cp .env.example .env
-# Edit .env with your API keys and credentials
+# → Edit .env with your API keys
+
+# Install Playwright browsers (for Twitter/Reddit automation)
+uv run playwright install chromium
+
+# (Optional) Install Remotion for Instagram Reels
+cd src/adapters/instagram/reels/remotion && npm install && cd -
+
+# Start the dashboard
+uv run mmn-web
 ```
 
-Required credentials by platform:
+</details>
+
+### Platform Credentials
+
+You only need credentials for the platforms you want to use:
 
 | Platform | What you need |
 |---|---|
 | Instagram | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` |
-| Twitter/X | `TWITTER_USERNAME`, `TWITTER_PASSWORD` (or cookie auth) |
+| Twitter/X | `TWITTER_AUTH_TOKEN`, `TWITTER_CT0` (or run `mmn twitter login`) |
 | Reddit | `REDDIT_SESSION` cookie, `REDDIT_USERNAME` |
-| LinkedIn | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_ORGANIZATION_ID` |
+| LinkedIn | `LINKEDIN_ACCESS_TOKEN` (or `LINKEDIN_LI_AT` cookie) |
 | YouTube | Google OAuth 2.0 (run `mmn youtube auth`) |
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` |
-| AI (all platforms) | `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
-
-### Run the Dashboard
-
-```bash
-# Set up the database URL in .env
-# MMN_WEB_DATABASE_URL=postgresql://user:pass@host/db
-
-# Start the web server
-uv run mmn-web
-```
-
-Open `http://localhost:8000`. Click **"Generate & Publish All"** to kick off the full pipeline.
+| AI (all) | `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
 
 ### Or Use the CLI
 
@@ -157,7 +193,11 @@ mmn email send -f contacts.csv -t template.html -r 0-100
 ### Instagram Reel
 
 <p align="center">
-  <img src="docs/assets/example_reel.gif" alt="Example reel" width="270" />
+  <a href="https://www.youtube.com/shorts/e6ETkNYnAdQ">
+    <img src="https://img.youtube.com/vi/e6ETkNYnAdQ/0.jpg" alt="Example reel — click to watch" width="270" />
+  </a>
+  <br />
+  <em>▶ Click to watch on YouTube</em>
 </p>
 
 AI-generated script → ElevenLabs TTS → Remotion video composition with template-driven branding. Published via `mmn reel create --publish`.

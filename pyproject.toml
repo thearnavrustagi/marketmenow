@@ -48,9 +48,9 @@ langchain = ["langchain-core>=0.3"]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "pytest-cov>=5.0", "ruff>=0.9"]
 
 [project.urls]
-Homepage = "https://github.com/Wayground/marketmenow"
-Repository = "https://github.com/Wayground/marketmenow"
-Issues = "https://github.com/Wayground/marketmenow/issues"
+Homepage = "https://github.com/thearnavrustagi/marketmenow"
+Repository = "https://github.com/thearnavrustagi/marketmenow"
+Issues = "https://github.com/thearnavrustagi/marketmenow/issues"
 
 [project.scripts]
 mmn = "marketmenow.cli:app"
