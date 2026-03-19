@@ -29,6 +29,34 @@ async def dashboard(
     )
 
 
+@router.delete("/clear", response_class=HTMLResponse)
+async def clear_all(request: Request) -> HTMLResponse:
+    await db.clear_all_content()
+    return HTMLResponse(
+        '<div class="col-span-full text-center py-16 text-zinc-500">'
+        "<p>All content cleared.</p>"
+        '</div>'
+    )
+
+
+@router.get("/history", response_class=HTMLResponse)
+async def history(
+    request: Request,
+    platform: str | None = Query(None),
+) -> HTMLResponse:
+    items = await db.list_history_items(platform=platform)
+    platforms = sorted({r["platform"] for r in items}) if items else []
+    return templates.TemplateResponse(
+        "history.html",
+        {
+            "request": request,
+            "items": items,
+            "current_platform": platform,
+            "platforms": platforms,
+        },
+    )
+
+
 @router.get("/content/{item_id}/status", response_class=HTMLResponse)
 async def content_status(request: Request, item_id: UUID) -> HTMLResponse:
     item = await db.get_content_item(item_id)

@@ -11,46 +11,18 @@
 
 ---
 
-MarketMeNow is an open-source framework that generates, schedules, and publishes content across every major social platform — **from a single command**. It handles Instagram Reels, carousels, Twitter threads, Reddit comments, LinkedIn posts, YouTube Shorts, and email outreach so solo founders and small teams can run a real content operation without hiring a marketing team.
+Open-source framework that generates, schedules, and publishes content across 7 platforms — from a single command. Define your brand once, review and approve, it does the rest.
 
-One button. Seven platforms. Zero manual posting.
+| Platform | Content | Generate | Publish | In-Context Learning |
+|---|---|:---:|:---:|:---:|
+| **Instagram** | Reels, Carousels | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **X / Twitter** | Replies, Threads | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Reddit** | Comments | :white_check_mark: | :white_check_mark: | — |
+| **LinkedIn** | Posts, Images, Videos, Docs | :white_check_mark: | :white_check_mark: | — |
+| **YouTube** | Shorts | :white_check_mark: | :white_check_mark: | — |
+| **Email** | Bulk outreach | :white_check_mark: | :white_check_mark: | — |
 
-## Why This Exists
-
-If you're a solo founder or a small team, you already know the problem: you're supposed to be active on Twitter, LinkedIn, Instagram, Reddit, YouTube, *and* email — every single day. The advice is always "just be consistent." But consistency across seven platforms means hours of work that has nothing to do with building your product.
-
-The alternatives aren't great either:
-
-- **Hiring a marketer** costs $3–5k/month minimum and still requires your time for onboarding, feedback loops, and brand alignment
-- **SaaS scheduling tools** (Buffer, Hootsuite, etc.) help you *schedule* posts, but you still have to *create* every piece of content yourself
-- **Pure AI tools** generate generic slop that doesn't match your brand and tanks engagement
-
-MarketMeNow takes a different approach: **you define your brand once** (templates, voice examples, visual identity), and the framework handles the rest — generating platform-native content, adapting it per channel, and publishing it on schedule. You review and approve; it does everything else.
-
-I built this because I was running [Gradeasy](https://gradeasy.com) solo and spending 2+ hours a day on marketing instead of building. After one week of using MarketMeNow, here's what happened:
-
-## Results
-
-| Metric | Result |
-|---|---|
-| Reels published | 7 |
-| Total impressions | **14,000–15,000** |
-| New website visits | **700+** |
-| Platforms active simultaneously | 6 |
-| Time spent per day | ~5 minutes (review + approve) |
-
-All content was AI-generated, template-driven, and published automatically via the dashboard.
-
-## Platform & Content Support
-
-| Platform | Content Types | How It Works |
-|---|---|---|
-| **Instagram** | Reels, Carousels | AI script generation (Gemini) → TTS (ElevenLabs/OpenAI/Kokoro) → Remotion video composition → Meta Graph API upload. Carousels via Gemini + Imagen or Figma export. |
-| **X / Twitter** | Replies, Threads | Stealth Playwright browser automation. AI reply generation with in-context learning from your top-performing posts. Viral thread generation with hooks, CTAs, and hashtags. |
-| **Reddit** | Comments | Cookie-based JSON API. AI comment generation (Gemini) with a 90/10 value-first strategy. Configurable subreddit and keyword targeting. |
-| **LinkedIn** | Posts, Images, Videos, Documents | OAuth 2.0 REST API. AI-generated post text or manual input. Organization page publishing. |
-| **YouTube** | Shorts | Reuses generated Reel MP4s. OAuth 2.0 upload via YouTube Data API v3. |
-| **Email** | Bulk outreach | CSV contact lists with row-range batching (100 at a time). Jinja2 HTML templates. Gemini-powered per-recipient paraphrasing. |
+> I was spending 2+ hours/day on marketing as a solo founder. After one week with MarketMeNow: **14k+ impressions, 700+ website visits, ~5 min/day of my time.** ([results on Gradeasy](https://gradeasy.com))
 
 ## Dashboard
 

@@ -1,80 +1,96 @@
 {% extends "base.html" %}
 {% block title %}Queues - MarketMeNow{% endblock %}
 {% block content %}
-<div class="page-header">
-  <h1>Platform Queues</h1>
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <h1 class="text-2xl font-semibold text-white">Platform Queues</h1>
 </div>
 
-<section class="section">
-  <h2>Rate Limits</h2>
+<section class="mb-12">
+  <h2 class="text-base font-semibold text-zinc-300 mb-4">Rate Limits</h2>
   <div id="rate-limits-table">
     {% include "partials/rate_limits_table.html" %}
   </div>
 </section>
 
-<section class="section">
-  <h2>Queue</h2>
+<section class="mb-12">
+  <h2 class="text-base font-semibold text-zinc-300 mb-4">Queue</h2>
   {% if queue_items %}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Platform</th>
-        <th>Content</th>
-        <th>Modality</th>
-        <th>Status</th>
-        <th>Queued At</th>
-        <th>Posted At</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for q in queue_items %}
-      <tr>
-        <td><span class="platform-badge {{ q.platform }}">{{ q.platform }}</span></td>
-        <td>{{ q.title or 'Untitled' }}</td>
-        <td>{{ q.modality }}</td>
-        <td><span class="status-badge {{ q.status }}">{{ q.status }}</span></td>
-        <td>{{ q.created_at.strftime('%b %d, %H:%M') if q.created_at else '-' }}</td>
-        <td>{{ q.posted_at.strftime('%b %d, %H:%M') if q.posted_at else '-' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Platform</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Content</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Modality</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Queued At</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Posted At</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/50">
+        {% for q in queue_items %}
+        <tr class="hover:bg-zinc-800/30 transition-colors">
+          <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">{{ q.platform }}</span></td>
+          <td class="py-3 px-4 text-sm text-zinc-300">{{ q.title or 'Untitled' }}</td>
+          <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">{{ q.modality }}</span></td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border
+              {% if q.status in ['queued', 'posting'] %}text-white border-zinc-600 bg-zinc-800
+              {% elif q.status == 'posted' %}text-emerald-400 border-emerald-500/30 bg-emerald-500/10
+              {% elif q.status == 'failed' %}text-red-400 border-red-500/30 bg-red-500/10
+              {% else %}text-zinc-400 border-zinc-700 bg-zinc-800/50{% endif %}">
+              {{ q.status }}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-sm text-zinc-600">{{ q.created_at.strftime('%b %d, %H:%M') if q.created_at else '-' }}</td>
+          <td class="py-3 px-4 text-sm text-zinc-600">{{ q.posted_at.strftime('%b %d, %H:%M') if q.posted_at else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <p class="text-muted">Queue is empty.</p>
+  <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center text-zinc-600">
+    Queue is empty.
+  </div>
   {% endif %}
 </section>
 
-<section class="section">
-  <h2>Post History</h2>
+<section class="mb-12">
+  <h2 class="text-base font-semibold text-zinc-300 mb-4">Post History</h2>
   {% if post_log %}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Platform</th>
-        <th>Content</th>
-        <th>Posted At</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for log in post_log %}
-      <tr>
-        <td><span class="platform-badge {{ log.platform }}">{{ log.platform }}</span></td>
-        <td>{{ log.title or 'Untitled' }}</td>
-        <td>{{ log.posted_at.strftime('%b %d, %H:%M') if log.posted_at else '-' }}</td>
-        <td>
-          {% if log.success %}
-            <span class="status-badge posted">success</span>
-          {% else %}
-            <span class="status-badge failed">failed</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Platform</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Content</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Posted At</th>
+          <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/50">
+        {% for log in post_log %}
+        <tr class="hover:bg-zinc-800/30 transition-colors">
+          <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">{{ log.platform }}</span></td>
+          <td class="py-3 px-4 text-sm text-zinc-300">{{ log.title or 'Untitled' }}</td>
+          <td class="py-3 px-4 text-sm text-zinc-600">{{ log.posted_at.strftime('%b %d, %H:%M') if log.posted_at else '-' }}</td>
+          <td class="py-3 px-4">
+            {% if log.success %}
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border text-emerald-400 border-emerald-500/30 bg-emerald-500/10">success</span>
+            {% else %}
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border text-red-400 border-red-500/30 bg-red-500/10">failed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <p class="text-muted">No posts yet.</p>
+  <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center text-zinc-600">
+    No posts yet.
+  </div>
   {% endif %}
 </section>
 {% endblock %}

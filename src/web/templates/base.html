@@ -5,23 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MarketMeNow{% endblock %}</title>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/progress.js" defer></script>
 </head>
-<body>
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-brand">MMN</a>
-      <div class="nav-links">
-        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">Dashboard</a>
-        <a href="/generate" class="nav-link {% if '/generate' in request.url.path %}active{% endif %}">Generate</a>
-        <a href="/queues" class="nav-link {% if '/queues' in request.url.path %}active{% endif %}">Queues</a>
+<body class="bg-black text-zinc-300 font-sans antialiased min-h-screen flex flex-col">
+  <nav class="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center gap-8">
+      <a href="/" class="font-bold text-lg text-white tracking-wide hover:text-zinc-300 transition-colors">MMN</a>
+      <div class="flex gap-1">
+        <a href="/" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if request.url.path == '/' %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Dashboard</a>
+        <a href="/generate" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/generate' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Generate</a>
+        <a href="/queues" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/queues' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Queues</a>
+        <a href="/history" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/history' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">History</a>
       </div>
     </div>
   </nav>
-  <main class="main">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
     {% block content %}{% endblock %}
   </main>
-  <div id="toast-container"></div>
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2"></div>
 </body>
 </html>

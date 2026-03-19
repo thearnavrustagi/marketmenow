@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}History - MarketMeNow{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <h1 class="text-2xl font-semibold text-white">Post History</h1>
+</div>
+
+<div class="flex flex-wrap gap-2 mb-8">
+  <a href="/history" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if not current_platform %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">All</a>
+  {% for p in platforms %}
+  <a href="/history?platform={{ p }}" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_platform == p %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">{{ p | capitalize }}</a>
+  {% endfor %}
+</div>
+
+{% if items %}
+<div class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Platform</th>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Title</th>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Modality</th>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Completed</th>
+        <th class="border-b border-zinc-800 py-3 px-4 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Output</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-zinc-800/50">
+      {% for item in items %}
+      <tr class="hover:bg-zinc-800/30 transition-colors">
+        <td class="py-3 px-4">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">{{ item.platform }}</span>
+        </td>
+        <td class="py-3 px-4 text-sm text-zinc-300 max-w-xs truncate">{{ item.title or 'Untitled' }}</td>
+        <td class="py-3 px-4">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">{{ item.modality }}</span>
+        </td>
+        <td class="py-3 px-4">
+          {% if item.status == 'posted' %}
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border text-emerald-400 border-emerald-500/30 bg-emerald-500/10">posted</span>
+          {% elif item.status == 'failed' %}
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border text-red-400 border-red-500/30 bg-red-500/10">failed</span>
+          {% else %}
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border text-zinc-400 border-zinc-700">{{ item.status }}</span>
+          {% endif %}
+        </td>
+        <td class="py-3 px-4 text-sm text-zinc-600">{{ item.updated_at.strftime('%b %d, %H:%M') if item.updated_at else '-' }}</td>
+        <td class="py-3 px-4">
+          {% if item.output_path %}
+            {% if item.output_path.endswith('.mp4') %}
+              <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white hover:underline">video ↗</a>
+            {% elif item.output_path.endswith('.png') or item.output_path.endswith('.jpg') or item.output_path.endswith('.jpeg') or item.output_path.endswith('.webp') %}
+              <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white hover:underline">image ↗</a>
+            {% elif item.output_path.endswith('.csv') %}
+              <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white hover:underline">csv ↗</a>
+            {% else %}
+              <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white hover:underline">file ↗</a>
+            {% endif %}
+          {% elif item.error_message %}
+            <details class="group">
+              <summary class="cursor-pointer text-[10px] font-semibold text-red-500 uppercase tracking-wider select-none hover:text-red-400 transition-colors">error</summary>
+              <pre class="font-mono text-[10px] bg-black p-2 rounded-lg mt-1 max-h-24 overflow-y-auto whitespace-pre-wrap break-all text-red-400">{{ item.error_message[:500] }}</pre>
+            </details>
+          {% else %}
+            <span class="text-xs text-zinc-600">-</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center text-zinc-600">
+  No completed posts yet.
+</div>
+{% endif %}
+{% endblock %}

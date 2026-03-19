@@ -1,130 +1,161 @@
-<div class="content-card {{ item.status }}"
+<div class="content-card bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 hover:border-zinc-700 transition-colors relative overflow-hidden"
      id="card-{{ item.id }}"
      data-item-id="{{ item.id }}"
      data-status="{{ item.status }}"
-     {% if item.status == 'generating' %}
+     {% if item.status in ('generating', 'queued', 'posting') %}
        hx-get="/content/{{ item.id }}/status"
-       hx-trigger="every 5s"
+       hx-trigger="every 3s"
        hx-swap="outerHTML"
      {% endif %}>
 
-  <div class="card-header">
-    <span class="platform-badge {{ item.platform }}">{{ item.platform }}</span>
-    <span class="modality-tag">{{ item.modality }}</span>
-    <span class="status-badge {{ item.status }}">{{ item.status | replace('_', ' ') }}</span>
+  {% if item.status in ('generating', 'queued', 'posting') %}
+    <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-white"></div>
+  {% elif item.status == 'pending_review' %}
+    <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-amber-500"></div>
+  {% elif item.status == 'posted' %}
+    <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500"></div>
+  {% elif item.status == 'failed' %}
+    <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500"></div>
+  {% endif %}
+
+  <div class="flex items-center gap-2 flex-wrap">
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">
+      {{ item.platform }}
+    </span>
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">
+      {{ item.modality }}
+    </span>
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border
+      {% if item.status in ['generating', 'queued', 'posting'] %}text-white border-zinc-600 bg-zinc-800
+      {% elif item.status == 'pending_review' %}text-amber-400 border-amber-500/30 bg-amber-500/10
+      {% elif item.status in ['posted', 'approved'] %}text-emerald-400 border-emerald-500/30 bg-emerald-500/10
+      {% elif item.status == 'failed' %}text-red-400 border-red-500/30 bg-red-500/10
+      {% else %}text-zinc-400 border-zinc-700 bg-zinc-800/50{% endif %}">
+      {{ item.status | replace('_', ' ') }}
+    </span>
   </div>
 
-  <div class="card-title">{{ item.title or 'Untitled' }}</div>
+  <div class="font-semibold text-white text-sm">{{ item.title or 'Untitled' }}</div>
 
   {% if item.status in ('generating', 'queued', 'posting') %}
-    <div class="progress-panel" id="progress-{{ item.id }}">
-      <div class="phase-stepper">
+    <div class="flex flex-col gap-3 py-1" id="progress-{{ item.id }}">
+      <div class="flex items-center gap-0 px-1">
         {% set pd = item.progress_data or {} %}
         {% set phase = pd.get('phase', 'generation' if item.status == 'generating' else ('waiting' if item.status == 'queued' else 'posting')) %}
         {% set phase_order = ['discovery', 'generation', 'posting'] %}
         {% set phase_idx = phase_order.index(phase) if phase in phase_order else 1 %}
         {% for p in phase_order %}
-          <div class="phase-step {% if loop.index0 < phase_idx %}done{% elif loop.index0 == phase_idx %}active{% endif %}">
-            <span class="phase-dot"></span>
-            <span class="phase-label">{{ p | capitalize }}</span>
+          <div class="phase-step flex items-center gap-1.5 shrink-0 {% if loop.index0 < phase_idx %}done{% elif loop.index0 == phase_idx %}active{% endif %}">
+            <span class="phase-dot w-2 h-2 rounded-full border-2 transition-all duration-300
+              {% if loop.index0 < phase_idx %}bg-emerald-500 border-emerald-500
+              {% elif loop.index0 == phase_idx %}bg-white border-white shadow-[0_0_6px_rgba(255,255,255,0.5)] animate-pulse
+              {% else %}bg-zinc-800 border-zinc-700{% endif %}"></span>
+            <span class="phase-label text-[10px] font-semibold uppercase tracking-wider
+              {% if loop.index0 < phase_idx %}text-emerald-500
+              {% elif loop.index0 == phase_idx %}text-white
+              {% else %}text-zinc-600{% endif %}">{{ p | capitalize }}</span>
           </div>
           {% if not loop.last %}
-            <div class="phase-connector {% if loop.index0 < phase_idx %}done{% endif %}"></div>
+            <div class="phase-connector flex-1 h-px mx-2 min-w-[16px] transition-colors duration-300
+              {% if loop.index0 < phase_idx %}bg-emerald-500/50{% else %}bg-zinc-800{% endif %}"></div>
           {% endif %}
         {% endfor %}
       </div>
 
-      <div class="progress-bar-track">
+      <div class="h-1 bg-zinc-800 rounded-full overflow-hidden relative">
         {% set pct = ((pd.get('current', 0) / pd.get('total', 1)) * 100) | int if pd.get('total') else 0 %}
-        <div class="progress-bar-fill" style="width: {{ pct }}%" data-progress="{{ pct }}"></div>
+        <div class="progress-bar-fill h-full bg-white rounded-full transition-all duration-500 relative" style="width: {{ pct }}%"></div>
       </div>
       {% if pd.get('current') and pd.get('total') %}
-        <div class="progress-label">{{ pd.get('current') }} / {{ pd.get('total') }}</div>
+        <div class="progress-label text-[11px] font-mono font-medium text-zinc-500 text-right">{{ pd.get('current') }} / {{ pd.get('total') }}</div>
       {% endif %}
 
-      <div class="countdown-timer" id="timer-{{ item.id }}" {% if not pd.get('wait_seconds') %}style="display:none"{% endif %}>
+      <div class="flex items-center gap-2 px-3 py-2 bg-zinc-950 rounded-lg border-l-2 border-amber-500" id="timer-{{ item.id }}" {% if not pd.get('wait_seconds') %}style="display:none"{% endif %}>
         {% if pd.get('wait_seconds') %}
-          <span class="timer-icon">&#9202;</span>
-          <span class="timer-text">Next action in <strong class="timer-value">{{ pd.get('wait_seconds') }}s</strong></span>
+          <span class="text-xs text-zinc-400">Next action in <strong class="text-amber-400 font-mono text-sm">{{ pd.get('wait_seconds') }}s</strong></span>
         {% endif %}
       </div>
 
-      <div class="log-stream-wrap">
-        <details class="log-details" open>
-          <summary>Live Output</summary>
-          <pre class="log-stream" id="logs-{{ item.id }}">{% if pd.get('last_message') %}{{ pd.get('last_message') }}
+      <div class="mt-1">
+        <details class="group" open>
+          <summary class="cursor-pointer text-[10px] font-semibold text-zinc-600 uppercase tracking-wider select-none hover:text-zinc-400 transition-colors">Live Output</summary>
+          <pre class="font-mono text-[11px] leading-relaxed bg-black p-3 rounded-lg mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-all text-zinc-500" id="logs-{{ item.id }}">{% if pd.get('last_message') %}{{ pd.get('last_message') }}
 {% endif %}</pre>
         </details>
       </div>
     </div>
 
   {% elif item.preview_data %}
-    <div class="card-body">
+    <div class="text-sm text-zinc-400">
       {% if item.preview_data.files %}
-        <div class="preview-gallery">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
         {% for f in item.preview_data.files[:6] %}
           {% if f.endswith('.mp4') %}
-            <video controls class="preview-media" preload="metadata">
-              <source src="{{ f | output_url }}" type="video/mp4">
-            </video>
-            <a href="{{ f | output_url }}" target="_blank" rel="noopener" class="open-link">Open video &#x2197;</a>
+            <div class="flex flex-col gap-1">
+              <video controls class="w-full h-24 object-cover rounded-lg border border-zinc-800 bg-black" preload="metadata">
+                <source src="{{ f | output_url }}" type="video/mp4">
+              </video>
+              <a href="{{ f | output_url }}" target="_blank" rel="noopener" class="text-[10px] text-zinc-400 hover:text-white hover:underline">Open video ↗</a>
+            </div>
           {% elif f.endswith('.png') or f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.webp') %}
-            <img src="{{ f | output_url }}" class="preview-media" alt="Preview">
+            <img src="{{ f | output_url }}" class="w-full h-24 object-cover rounded-lg border border-zinc-800" alt="Preview">
           {% elif f.endswith('.csv') %}
-            <a href="{{ f | output_url }}" class="file-link">{{ f.split('/')[-1] }}</a>
+            <a href="{{ f | output_url }}" class="inline-block px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 text-xs hover:border-zinc-500 transition-colors truncate">{{ f.split('/')[-1] }}</a>
           {% endif %}
         {% endfor %}
         </div>
       {% elif item.output_path %}
         {% if item.output_path.endswith('.mp4') %}
-          <video controls class="preview-media" preload="metadata">
-            <source src="{{ item.output_path | output_url }}" type="video/mp4">
-          </video>
-          <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="open-link">Open video &#x2197;</a>
+          <div class="flex flex-col gap-1 mt-1">
+            <video controls class="w-full max-h-48 object-cover rounded-lg border border-zinc-800 bg-black" preload="metadata">
+              <source src="{{ item.output_path | output_url }}" type="video/mp4">
+            </video>
+            <a href="{{ item.output_path | output_url }}" target="_blank" rel="noopener" class="text-[10px] text-zinc-400 hover:text-white hover:underline">Open video ↗</a>
+          </div>
         {% elif item.output_path.endswith('.png') or item.output_path.endswith('.jpg') or item.output_path.endswith('.jpeg') or item.output_path.endswith('.webp') %}
-            <img src="{{ item.output_path | output_url }}" class="preview-media" alt="Preview">
+          <img src="{{ item.output_path | output_url }}" class="w-full max-h-48 object-cover rounded-lg border border-zinc-800 mt-1" alt="Preview">
         {% endif %}
       {% endif %}
       {% if item.preview_data.stdout %}
-        <details class="preview-text">
-          <summary>CLI Output</summary>
-          <pre>{{ item.preview_data.stdout[:1500] }}</pre>
+        <details class="mt-3 group">
+          <summary class="cursor-pointer text-[10px] font-semibold text-zinc-600 uppercase tracking-wider select-none hover:text-zinc-400 transition-colors">CLI Output</summary>
+          <pre class="font-mono text-[11px] bg-black p-3 rounded-lg mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-all text-zinc-500">{{ item.preview_data.stdout[:1500] }}</pre>
         </details>
       {% endif %}
     </div>
   {% endif %}
 
   {% if item.error_message and item.status == 'failed' %}
-    <div class="card-error">
-      <details>
-        <summary>Error</summary>
-        <pre>{{ item.error_message }}</pre>
+    <div>
+      <details class="group">
+        <summary class="cursor-pointer text-[10px] font-semibold text-red-500 uppercase tracking-wider select-none hover:text-red-400 transition-colors">Error</summary>
+        <pre class="font-mono text-[11px] bg-black p-3 rounded-lg mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-all text-red-400">{{ item.error_message }}</pre>
       </details>
     </div>
   {% endif %}
 
-  <div class="card-actions">
+  <div class="flex flex-wrap gap-2 mt-auto pt-1">
     {% if item.status == 'pending_review' %}
-      <button class="btn btn-success"
+      <button class="px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-black hover:bg-zinc-200 transition-colors"
               hx-post="/content/{{ item.id }}/approve"
               hx-target="#card-{{ item.id }}"
               hx-swap="outerHTML">
         Approve
       </button>
-      <button class="btn btn-warning"
+      <button class="px-3 py-1.5 rounded-md text-xs font-semibold border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors"
               hx-post="/content/{{ item.id }}/regenerate"
               hx-target="#card-{{ item.id }}"
               hx-swap="outerHTML">
         Regenerate
       </button>
-      <button class="btn btn-danger"
+      <button class="px-3 py-1.5 rounded-md text-xs font-semibold border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
               hx-post="/content/{{ item.id }}/reject"
               hx-target="#card-{{ item.id }}"
               hx-swap="outerHTML">
         Reject
       </button>
     {% elif item.status == 'failed' %}
-      <button class="btn btn-warning"
+      <button class="px-3 py-1.5 rounded-md text-xs font-semibold border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors"
               hx-post="/content/{{ item.id }}/regenerate"
               hx-target="#card-{{ item.id }}"
               hx-swap="outerHTML">
@@ -133,7 +164,7 @@
     {% endif %}
   </div>
 
-  <div class="card-footer">
+  <div class="text-[10px] text-zinc-600">
     <time>{{ item.created_at.strftime('%b %d, %H:%M') if item.created_at else '' }}</time>
   </div>
 </div>

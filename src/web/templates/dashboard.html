@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - MarketMeNow{% endblock %}
 {% block content %}
-<div class="page-header">
-  <h1>Content Dashboard</h1>
-  <div class="header-actions">
-    <button class="btn btn-success btn-lg"
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <h1 class="text-2xl font-semibold text-white">Content Dashboard</h1>
+  <div class="flex flex-wrap items-center gap-3">
+    <button class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
             hx-post="/generate/all"
             hx-target="#content-grid"
             hx-swap="afterbegin"
@@ -12,29 +12,38 @@
             hx-indicator="#batch-spinner">
       Generate &amp; Publish All
     </button>
-    <span id="batch-spinner" class="htmx-indicator spinner"></span>
-    <a href="/generate" class="btn btn-primary">+ Generate Content</a>
+    <span id="batch-spinner" class="htmx-indicator w-5 h-5 border-2 border-zinc-700 border-t-white rounded-full animate-spin hidden"></span>
+    <a href="/generate" class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
+      + Generate Content
+    </a>
+    <button class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+            hx-delete="/clear"
+            hx-target="#content-grid"
+            hx-swap="innerHTML"
+            hx-confirm="Clear all content items? This cannot be undone.">
+      Clear All
+    </button>
   </div>
 </div>
 
-<div class="filter-bar">
-  <a href="/" class="filter-chip {% if not current_status %}active{% endif %}">All</a>
-  <a href="/?status=generating" class="filter-chip {% if current_status == 'generating' %}active{% endif %}">Generating</a>
-  <a href="/?status=pending_review" class="filter-chip {% if current_status == 'pending_review' %}active{% endif %}">Pending Review</a>
-  <a href="/?status=queued" class="filter-chip {% if current_status == 'queued' %}active{% endif %}">Queued</a>
-  <a href="/?status=posted" class="filter-chip {% if current_status == 'posted' %}active{% endif %}">Posted</a>
-  <a href="/?status=failed" class="filter-chip {% if current_status == 'failed' %}active{% endif %}">Failed</a>
+<div class="flex flex-wrap gap-2 mb-8">
+  <a href="/" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if not current_status %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">All</a>
+  <a href="/?status=generating" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'generating' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Generating</a>
+  <a href="/?status=pending_review" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'pending_review' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Pending Review</a>
+  <a href="/?status=queued" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'queued' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Queued</a>
+  <a href="/?status=posted" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'posted' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Posted</a>
+  <a href="/?status=failed" class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'failed' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}">Failed</a>
 </div>
 
-<div id="content-grid" class="content-grid">
+<div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
   {% if items %}
     {% for item in items %}
       {% include "partials/content_card.html" %}
     {% endfor %}
   {% else %}
-    <div class="empty-state">
-      <p>No content yet.</p>
-      <a href="/generate" class="btn btn-primary">Generate your first piece</a>
+    <div class="col-span-full text-center py-16 text-zinc-500">
+      <p class="mb-4">No content yet.</p>
+      <a href="/generate" class="inline-flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors">Generate your first piece</a>
     </div>
   {% endif %}
 </div>

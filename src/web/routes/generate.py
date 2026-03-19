@@ -286,9 +286,13 @@ async def _run_batch(entries: list[_BatchEntry]) -> None:
                 await _run_reddit_two_step(entry)
                 return
 
-            await _run_single_command(entry)
+            result = await _run_single_command(entry)
 
             if entry.key == "reel":
+                for f in result.output_files:
+                    if f.endswith(".mp4"):
+                        reel_output_path = f
+                        break
                 reel_done.set()
 
             if entry.key == "email":
@@ -372,6 +376,18 @@ async def _run_reddit_two_step(entry: _BatchEntry) -> None:
             preview_data={"stdout": gen_result.stdout[:3000], "stderr": gen_result.stderr[:3000]},
         )
         hub.publish(entry.item_id, ProgressEvent(event_type="error", message=f"Discovery failed: {error[:200]}"))
+        return
+
+    csv_path = os.path.join(entry.output_dir, "comments.csv")
+    if not os.path.isfile(csv_path):
+        error = f"Generate step completed but {csv_path} was not created"
+        await db.update_content_status(
+            entry.item_id,
+            "failed",
+            error_message=error,
+            preview_data={"stdout": gen_result.stdout[:3000], "files": gen_result.output_files},
+        )
+        hub.publish(entry.item_id, ProgressEvent(event_type="error", message=error[:200]))
         return
 
     await db.update_content_status(entry.item_id, "posting")
