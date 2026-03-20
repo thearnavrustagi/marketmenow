@@ -772,7 +772,7 @@ def _build_youtube_short_publish(params: dict, output_dir: str) -> list[str]:
 
 
 def _build_email_generate(params: dict, _output_dir: str) -> list[str]:
-    cmd = ["mmn", "email", "send", "--dry-run"]
+    cmd = ["mmn", "email", "send", "--dry-run", "--paraphrase"]
     if params.get("template"):
         cmd.extend(["-t", params["template"]])
     if params.get("file"):
@@ -783,7 +783,7 @@ def _build_email_generate(params: dict, _output_dir: str) -> list[str]:
 
 
 def _build_email_publish(params: dict, _output_dir: str) -> list[str]:
-    cmd = ["mmn", "email", "send"]
+    cmd = ["mmn", "email", "send", "--paraphrase"]
     if params.get("template"):
         cmd.extend(["-t", params["template"]])
     if params.get("file"):
