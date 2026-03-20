@@ -262,15 +262,6 @@ Checked items are shipped. Unchecked items are planned or in progress.
 - [ ] **Twitter discovery & cold DM** — find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
 - [ ] **Pipelines & modularisation** — composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
 
-## Star History
-
-<a href="https://star-history.com/#thearnavrustagi/marketmenow&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=thearnavrustagi/marketmenow&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=thearnavrustagi/marketmenow&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=thearnavrustagi/marketmenow&type=Date" width="600" />
- </picture>
-</a>
 
 ## Contributing
 
