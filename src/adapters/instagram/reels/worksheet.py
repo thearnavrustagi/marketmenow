@@ -10,6 +10,8 @@ import tempfile
 import textwrap
 from pathlib import Path
 
+from marketmenow.integrations.genai import create_genai_client
+
 from .models import QuestionTypeDef, WorksheetConfig
 from .pipeline_steps import PipelineContext
 
@@ -369,14 +371,14 @@ async def fill_worksheet_with_gemini(
     vertex_location: str = "us-central1",
 ) -> Path:
     """Use Gemini 2.5 Flash Image to fill the worksheet with funny wrong answers."""
-    from google import genai
     from google.genai import types as genai_types
 
-    img_client = genai.Client(
-        vertexai=True,
-        project=vertex_project,
-        location=vertex_location,
-    )
+    img_client = client
+    if not hasattr(img_client, "aio"):
+        img_client = create_genai_client(
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
+        )
 
     image_bytes = worksheet_image.read_bytes()
 

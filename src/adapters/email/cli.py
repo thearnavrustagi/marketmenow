@@ -12,6 +12,8 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 
+from marketmenow.integrations.genai import has_genai_credentials
+
 from .models import SendResult
 from .paraphraser import EmailParaphraser
 from .sender import send_batch, send_single
@@ -218,8 +220,11 @@ def send(
         console.print("[red]SMTP_USERNAME is not set in .env[/red]")
         raise typer.Exit(code=1)
 
-    if paraphrase and not settings.vertex_ai_project:
-        console.print("[red]VERTEX_AI_PROJECT is not set in .env (required for --paraphrase)[/red]")
+    if paraphrase and not has_genai_credentials(settings.vertex_ai_project):
+        console.print(
+            "[red]Gemini credentials are not configured for --paraphrase. "
+            "Set VERTEX_AI_PROJECT or GEMINI_API_KEY/GOOGLE_API_KEY.[/red]"
+        )
         raise typer.Exit(code=1)
 
     rewriter: EmailParaphraser | None = None

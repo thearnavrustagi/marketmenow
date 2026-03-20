@@ -23,7 +23,7 @@ class TwitterSettings(BaseSettings):
     google_application_credentials: Path = Path("vertex.json")
     vertex_ai_project: str = ""
     vertex_ai_location: str = "us-central1"
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.1-flash-preview"
 
     # Rate limiting
     max_replies_per_day: int = 20

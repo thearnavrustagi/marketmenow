@@ -16,6 +16,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from marketmenow.integrations.genai import has_genai_credentials
 from marketmenow.models.content import (
     Article,
     Document,
@@ -698,10 +699,10 @@ def batch_post(
     if headless:
         settings = settings.model_copy(update={"headless": True})
 
-    if not settings.vertex_ai_project:
+    if not has_genai_credentials(settings.vertex_ai_project):
         console.print(
-            "[red]VERTEX_AI_PROJECT is not set in .env. "
-            "Gemini is required for content generation.[/red]"
+            "[red]Gemini credentials are not configured. "
+            "Set VERTEX_AI_PROJECT or GEMINI_API_KEY/GOOGLE_API_KEY.[/red]"
         )
         raise typer.Exit(1)
 

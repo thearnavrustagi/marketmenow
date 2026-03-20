@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from jinja2 import Environment
+from marketmenow.integrations.genai import create_genai_client
 
 from ..grading.models import GradingResult, RubricItem
 from ..grading.service import SimpleGradingService
@@ -30,21 +31,16 @@ class ReelScriptGenerator:
     def __init__(
         self,
         grading_service: SimpleGradingService,
-        vertex_project: str,
+        vertex_project: str | None,
         vertex_location: str = "us-central1",
         step_registry: StepRegistry | None = None,
     ) -> None:
         self._grader = grading_service
-        self._vertex_project = vertex_project
-        self._vertex_location = vertex_location
         self._registry = step_registry or default_registry
 
-        from google import genai
-
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
+        self._client = create_genai_client(
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
         self._model = "gemini-2.5-flash"
 

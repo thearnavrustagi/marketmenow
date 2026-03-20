@@ -121,12 +121,13 @@ You only need credentials for the platforms you use:
 | Platform | What you need |
 |---|---|
 | Instagram | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` |
+| Facebook | `FACEBOOK_C_USER`, `FACEBOOK_XS` (optionally `FACEBOOK_PAGE_IDS`) |
 | Twitter/X | `TWITTER_AUTH_TOKEN`, `TWITTER_CT0` (or `mmn twitter login`) |
 | Reddit | `REDDIT_SESSION` cookie, `REDDIT_USERNAME` |
 | LinkedIn | `LINKEDIN_ACCESS_TOKEN` (or `LINKEDIN_LI_AT` cookie) |
 | YouTube | Google OAuth 2.0 (`mmn youtube auth`) |
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` |
-| AI (all) | `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
+| AI (all) | AI Studio: `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) **or** Vertex: `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
 
 </details>
 
@@ -137,6 +138,10 @@ You only need credentials for the platforms you use:
 # Instagram
 mmn reel create --publish
 mmn carousel generate --publish
+
+# Facebook
+mmn facebook login --cookies
+mmn facebook page-post --page your-page-slug --text "Hello!"
 
 # Twitter/X
 mmn twitter login

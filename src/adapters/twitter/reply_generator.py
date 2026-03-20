@@ -5,10 +5,11 @@ import logging
 import random
 from pathlib import Path
 
-from google import genai
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel
+
+from marketmenow.integrations.genai import create_genai_client
 
 from .discovery import DiscoveredPost
 from .performance_tracker import WinningReply, load_examples_cache
@@ -45,10 +46,9 @@ class ReplyGenerator:
         top_examples_path: Path | None = None,
         max_examples: int = 5,
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
+        self._client = create_genai_client(
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
         self._model = gemini_model
         self._mention_rate = mention_rate

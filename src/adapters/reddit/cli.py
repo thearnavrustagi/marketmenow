@@ -15,6 +15,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from marketmenow.integrations.genai import has_genai_credentials
+
 from .discovery import DiscoveredPost
 from .orchestrator import (
     EngagementOrchestrator,
@@ -408,9 +410,10 @@ def engage(
             "[red]REDDIT_SESSION is not set in .env. Cannot authenticate with Reddit.[/red]"
         )
         raise typer.Exit(1)
-    if not settings.vertex_ai_project:
+    if not has_genai_credentials(settings.vertex_ai_project):
         console.print(
-            "[red]VERTEX_AI_PROJECT is not set in .env. Gemini is required for comment generation.[/red]"
+            "[red]Gemini credentials are not configured. "
+            "Set VERTEX_AI_PROJECT or GEMINI_API_KEY/GOOGLE_API_KEY.[/red]"
         )
         raise typer.Exit(1)
 

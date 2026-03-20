@@ -6,10 +6,11 @@ import logging
 import random
 from pathlib import Path
 
-from google import genai
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel, Field
+
+from marketmenow.integrations.genai import create_genai_client
 
 from .performance_tracker import WinningPost, load_examples_cache
 from .prompts import load_prompt
@@ -66,10 +67,9 @@ class ThreadGenerator:
         top_examples_path: Path | None = None,
         max_examples: int = 5,
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
+        self._client = create_genai_client(
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
         self._model = gemini_model
         self._top_examples_path = top_examples_path

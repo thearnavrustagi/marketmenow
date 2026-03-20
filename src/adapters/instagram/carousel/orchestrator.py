@@ -5,9 +5,9 @@ import json
 import os
 from uuid import uuid4
 
-from google import genai
 from google.genai import types as genai_types
 
+from marketmenow.integrations.genai import create_genai_client
 from marketmenow.models.content import ImagePost, MediaAsset
 
 from ..prompts import load_prompt
@@ -34,10 +34,9 @@ class CarouselOrchestrator:
 
         _ensure_vertex_credentials(settings)
 
-        self._client = genai.Client(
-            vertexai=True,
-            project=settings.vertex_ai_project,
-            location=settings.vertex_ai_location,
+        self._client = create_genai_client(
+            vertex_project=settings.vertex_ai_project,
+            vertex_location=settings.vertex_ai_location,
         )
         self._renderer = SlideRenderer(self._output_dir)
 
