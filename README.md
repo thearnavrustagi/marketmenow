@@ -252,13 +252,15 @@ Checked items are shipped. Unchecked items are planned or in progress.
 - [x] **6-platform content engine** — Instagram Reels & Carousels, Twitter replies & threads, Reddit comments, LinkedIn posts, YouTube Shorts, bulk email — generate and publish from one CLI or web dashboard
 - [x] **In-context learning & brand templates** — learns from top-performing posts to match your voice; YAML-driven brand identity (prompts, visuals, mention strategy) with Figma MCP integration
 - [x] **Ports-and-adapters core** — modular pipeline (normalise → render → upload → publish), campaign orchestrator, scheduler, and `AdapterRegistry` — add a platform with zero changes to core
-
+- [x] **Personas** — bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
+- [x] **Twitter discovery & cold DM** — find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
+- [x] **Pipelines & modularisation** — composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
 ### Up Next
 
 - [ ] **Reddit & LinkedIn publish** — finish WIP uploaders for both platforms, full end-to-end tests
-- [ ] **Personas** — bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
-- [ ] **Twitter discovery & cold DM** — find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
-- [ ] **Pipelines & modularisation** — composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
+- [ ] **Exploration/Exploitation** - Worried that personas might over-index on certain type of profile and want to keep encouraging it to explore, want to build a smarter RL inspired system for better exploration/exploitation for in-context learning
+- [ ] **An evolving system** - I want the system to evolve with my code repositories, need to figure out how to do this
+
 
 ## Contributing
 
