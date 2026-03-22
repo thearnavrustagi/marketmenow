@@ -148,6 +148,7 @@ BATCH_ITEMS: list[dict[str, str]] = [
         "key": "carousel",
     },
     {"platform": "linkedin", "command_type": "post", "title": "LinkedIn Post", "key": "linkedin"},
+    {"platform": "facebook", "command_type": "post", "title": "Facebook Post", "key": "facebook"},
     {
         "platform": "twitter",
         "command_type": "all",

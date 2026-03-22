@@ -1,26 +1,31 @@
-{% extends "base.html" %}
-{% block title %}Dashboard - MarketMeNow{% endblock %}
+{% extends "base.html" %} {% block title %}Dashboard - MarketMeNow{% endblock %}
 {% block content %}
 <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
   <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400 tracking-tight">Content Dashboard</h1>
   <div class="flex flex-wrap items-center gap-3">
-    <button class="flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-200 hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100"
-            hx-post="/generate/all"
-            hx-target="#content-grid"
-            hx-swap="afterbegin"
-            hx-disabled-elt="this"
-            hx-indicator="#batch-spinner">
+    <button
+      class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+      hx-post="/generate/all"
+      hx-target="#content-grid"
+      hx-swap="afterbegin"
+      hx-disabled-elt="this"
+      hx-indicator="#batch-spinner">
       Generate &amp; Publish All
     </button>
-    <span id="batch-spinner" class="htmx-indicator w-5 h-5 border-2 border-zinc-700 border-t-white rounded-full animate-spin hidden"></span>
-    <a href="/generate" class="flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-zinc-700/50 bg-zinc-800/30 backdrop-blur-sm text-zinc-300 hover:text-white hover:border-zinc-500 hover:bg-zinc-800/50 transition-all">
+    <span
+      id="batch-spinner"
+      class="htmx-indicator w-5 h-5 border-2 border-zinc-700 border-t-white rounded-full animate-spin hidden"></span>
+    <a
+      href="/generate"
+      class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
       + Generate Content
     </a>
-    <button class="flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all"
-            hx-delete="/clear"
-            hx-target="#content-grid"
-            hx-swap="innerHTML"
-            hx-confirm="Clear all content items? This cannot be undone.">
+    <button
+      class="flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+      hx-delete="/clear"
+      hx-target="#content-grid"
+      hx-swap="innerHTML"
+      hx-confirm="Clear all content items? This cannot be undone.">
       Clear All
     </button>
   </div>
@@ -29,67 +34,114 @@
 {% if activity_stats %}
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
   {% for s in activity_stats %}
-  <div class="rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-zinc-900/80 to-zinc-900/40 backdrop-blur-md p-5 shadow-lg relative overflow-hidden group">
-    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-    <div class="flex items-center justify-between mb-3 relative z-10">
-      <span class="text-xs font-bold uppercase tracking-widest text-zinc-400">{{ s.platform }}</span>
-      {% set seconds_since = none %}
-      {% if s.last_at %}
-        {% set seconds_since = (now_utc - s.last_at).total_seconds() | int %}
-      {% endif %}
-      {% if seconds_since is none %}
-        <span class="inline-block w-2 h-2 rounded-full bg-zinc-600" title="No posts yet"></span>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+        >{{ s.platform }}</span
+      >
+      {% set seconds_since = none %} {% if s.last_at %} {% set seconds_since =
+      (now_utc - s.last_at).total_seconds() | int %} {% endif %} {% if
+      seconds_since is none %}
+      <span
+        class="inline-block w-2 h-2 rounded-full bg-zinc-600"
+        title="No posts yet"></span>
       {% elif seconds_since >= s.min_interval_seconds %}
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400" title="Ready to post"></span>
+      <span
+        class="inline-block w-2 h-2 rounded-full bg-emerald-400"
+        title="Ready to post"></span>
       {% else %}
-        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Cooldown active"></span>
+      <span
+        class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"
+        title="Cooldown active"></span>
       {% endif %}
     </div>
-    <div class="text-2xl font-black text-white leading-tight tracking-tight relative z-10">{{ s.posts_today }}<span class="text-sm font-medium text-zinc-500">/{{ s.max_per_day }}</span></div>
-    <div class="text-[11px] font-medium text-zinc-500 mt-0.5 uppercase tracking-wider relative z-10">today</div>
-    <div class="mt-3 text-xs font-medium text-zinc-400 relative z-10">
-      {% if s.last_at is none %}
-        No posts yet
-      {% elif seconds_since < 60 %}
-        Last: just now
-      {% elif seconds_since < 3600 %}
-        Last: {{ (seconds_since // 60) | int }}m ago
-      {% elif seconds_since < 86400 %}
-        Last: {{ (seconds_since // 3600) | int }}h ago
-      {% else %}
-        Last: {{ (seconds_since // 86400) | int }}d ago
-      {% endif %}
+    <div class="text-lg font-bold text-white leading-tight">
+      {{ s.posts_today }}<span class="text-xs font-normal text-zinc-500"
+        >/{{ s.max_per_day }}</span
+      >
     </div>
-    {% if seconds_since is not none and seconds_since < s.min_interval_seconds %}
-      {% set remaining = s.min_interval_seconds - seconds_since %}
-      <div class="text-[11px] font-semibold text-amber-400 mt-1.5 relative z-10">
-        Next in {{ (remaining // 60) | int }}m {{ remaining % 60 }}s
-      </div>
+    <div class="text-[11px] text-zinc-500 mt-0.5">today</div>
+    <div class="mt-2 text-xs text-zinc-400">
+      {% if s.last_at is none %} No posts yet {% elif seconds_since < 60 %}
+      Last: just now {% elif seconds_since < 3600 %} Last: {{ (seconds_since //
+      60) | int }}m ago {% elif seconds_since < 86400 %} Last: {{ (seconds_since
+      // 3600) | int }}h ago {% else %} Last: {{ (seconds_since // 86400) | int
+      }}d ago {% endif %}
+    </div>
+    {% if seconds_since is not none and seconds_since < s.min_interval_seconds
+    %} {% set remaining = s.min_interval_seconds - seconds_since %}
+    <div class="text-[11px] text-amber-400 mt-1">
+      Next in {{ (remaining // 60) | int }}m {{ remaining % 60 }}s
+    </div>
     {% endif %}
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-<div class="flex flex-wrap gap-2.5 mb-8 p-1.5 bg-zinc-900/50 backdrop-blur-sm rounded-2xl border border-zinc-800/50 inline-flex">
-  <a href="/" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if not current_status %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">All</a>
-  <a href="/?status=generating" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if current_status == 'generating' %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">Generating</a>
-  <a href="/?status=pending_review" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if current_status == 'pending_review' %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">Pending Review</a>
-  <a href="/?status=queued" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if current_status == 'queued' %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">Queued</a>
-  <a href="/?status=posted" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if current_status == 'posted' %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">Posted</a>
-  <a href="/?status=failed" class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {% if current_status == 'failed' %}bg-white text-black shadow-md{% else %}text-zinc-400 hover:text-white hover:bg-zinc-800/80{% endif %}">Failed</a>
+<div class="flex flex-wrap gap-2 mb-8">
+  <a
+    href="/"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if not current_status %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >All</a
+  >
+  <a
+    href="/?status=generating"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'generating' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >Generating</a
+  >
+  <a
+    href="/?status=pending_review"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'pending_review' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >Pending Review</a
+  >
+  <a
+    href="/?status=queued"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'queued' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >Queued</a
+  >
+  <a
+    href="/?status=posted"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'posted' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >Posted</a
+  >
+  <a
+    href="/?status=failed"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_status == 'failed' %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >Failed</a
+  >
 </div>
 
-<div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-  {% if items %}
-    {% for item in items %}
-      {% include "partials/content_card.html" %}
-    {% endfor %}
-  {% else %}
-    <div class="col-span-full text-center py-16 text-zinc-500">
-      <p class="mb-4">No content yet.</p>
-      <a href="/generate" class="inline-flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors">Generate your first piece</a>
-    </div>
+{% if platforms %}
+<div class="flex flex-wrap gap-2 mb-8">
+  <a
+    href="{% if current_status %}/?status={{ current_status }}{% else %}/{% endif %}"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if not current_platform %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >All Platforms</a
+  >
+  {% for p in platforms %}
+  <a
+    href="/?platform={{ p }}{% if current_status %}&status={{ current_status }}{% endif %}"
+    class="px-4 py-1.5 rounded-full border text-sm font-medium transition-colors {% if current_platform == p %}bg-white border-white text-black{% else %}border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600{% endif %}"
+    >{{ p | capitalize }}</a
+  >
+  {% endfor %}
+</div>
+{% endif %}
+
+<div
+  id="content-grid"
+  class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+  {% if items %} {% for item in items %} {% include "partials/content_card.html"
+  %} {% endfor %} {% else %}
+  <div class="col-span-full text-center py-16 text-zinc-500">
+    <p class="mb-4">No content yet.</p>
+    <a
+      href="/generate"
+      class="inline-flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors"
+      >Generate your first piece</a
+    >
+  </div>
   {% endif %}
 </div>
 {% endblock %}

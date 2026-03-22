@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from google import genai
 from google.genai import types as genai_types
+from marketmenow.integrations.genai import create_genai_client
 
 from ..prompts import load_prompt
 from .models import GradingResult, RubricEvaluation, RubricItem
@@ -15,13 +15,12 @@ class SimpleGradingService:
 
     def __init__(
         self,
-        project: str,
+        project: str | None,
         location: str = "us-central1",
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=project,
-            location=location,
+        self._client = create_genai_client(
+            vertex_project=project,
+            vertex_location=location,
         )
         self._model = "gemini-2.5-flash"
 

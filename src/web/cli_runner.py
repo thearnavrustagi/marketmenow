@@ -438,6 +438,68 @@ PLATFORM_META: dict[str, dict[str, dict]] = {
             ],
         },
     },
+    "facebook": {
+        "post": {
+            "label": "Facebook Post",
+            "modality": "text_post",
+            "params": [
+                {
+                    "name": "text",
+                    "type": "textarea",
+                    "required": False,
+                    "help": "Post text",
+                },
+                {
+                    "name": "hashtags",
+                    "type": "text",
+                    "required": False,
+                    "help": "Comma-separated hashtags",
+                },
+                {
+                    "name": "image",
+                    "type": "text",
+                    "required": False,
+                    "help": "Image path(s), comma-separated",
+                },
+                {
+                    "name": "video",
+                    "type": "text",
+                    "required": False,
+                    "help": "Path to video file",
+                },
+            ],
+        },
+        "page_post": {
+            "label": "Facebook Page Post",
+            "modality": "text_post",
+            "params": [
+                {
+                    "name": "page",
+                    "type": "text",
+                    "required": False,
+                    "help": "Page URL, slug, or numeric ID (uses FACEBOOK_PAGE_IDS if empty)",
+                },
+                {
+                    "name": "text",
+                    "type": "textarea",
+                    "required": False,
+                    "help": "Post text",
+                },
+                {
+                    "name": "hashtags",
+                    "type": "text",
+                    "required": False,
+                    "help": "Comma-separated hashtags",
+                },
+                {
+                    "name": "image",
+                    "type": "text",
+                    "required": False,
+                    "help": "Image path(s), comma-separated",
+                },
+            ],
+        },
+    },
     "twitter": {
         "all": {
             "label": "Twitter All (Replies + Thread)",
@@ -644,6 +706,70 @@ def _build_linkedin_publish(params: dict, _output_dir: str) -> list[str]:
     return ["mmn", "linkedin", "all", "--count", "1"]
 
 
+def _build_facebook_generate(_params: dict, _output_dir: str) -> list[str]:
+    # Use a read-only command for the generation phase; posting happens at publish phase.
+    return ["mmn", "facebook", "status"]
+
+
+def _build_facebook_publish(params: dict, _output_dir: str) -> list[str]:
+    cmd = ["mmn", "facebook", "post"]
+
+    text = str(params.get("text", "")).strip()
+    image_value = str(params.get("image", "")).strip()
+    video_value = str(params.get("video", "")).strip()
+
+    if text:
+        cmd.extend(["--text", text])
+
+    if image_value:
+        image_paths = [p.strip() for p in image_value.split(",") if p.strip()]
+        for image_path in image_paths:
+            cmd.extend(["--image", image_path])
+
+    if video_value:
+        cmd.extend(["--video", video_value])
+
+    if params.get("hashtags"):
+        cmd.extend(["--hashtags", params["hashtags"]])
+
+    if not text and not image_value and not video_value:
+        cmd.extend(["--text", "Automated Facebook post from MarketMeNow."])
+
+    return cmd
+
+
+def _build_facebook_page_post_generate(_params: dict, _output_dir: str) -> list[str]:
+    # Keep generate phase read-only for dashboard previews.
+    return ["mmn", "facebook", "status"]
+
+
+def _build_facebook_page_post_publish(params: dict, _output_dir: str) -> list[str]:
+    cmd = ["mmn", "facebook", "page-post"]
+
+    page = str(params.get("page", "")).strip()
+    text = str(params.get("text", "")).strip()
+    image_value = str(params.get("image", "")).strip()
+
+    if page:
+        cmd.extend(["--page", page])
+
+    if text:
+        cmd.extend(["--text", text])
+
+    if image_value:
+        image_paths = [p.strip() for p in image_value.split(",") if p.strip()]
+        for image_path in image_paths:
+            cmd.extend(["--image", image_path])
+
+    if params.get("hashtags"):
+        cmd.extend(["--hashtags", params["hashtags"]])
+
+    if not text:
+        cmd.extend(["--text", "Automated Facebook page post from MarketMeNow."])
+
+    return cmd
+
+
 def _build_twitter_thread_generate(params: dict, _output_dir: str) -> list[str]:
     cmd = ["mmn", "twitter", "thread"]
     if params.get("topic"):
@@ -815,6 +941,10 @@ BUILDERS: dict[str, dict[str, tuple[CommandBuilder, CommandBuilder]]] = {
     },
     "linkedin": {
         "post": (_build_linkedin_generate, _build_linkedin_publish),
+    },
+    "facebook": {
+        "post": (_build_facebook_generate, _build_facebook_publish),
+        "page_post": (_build_facebook_page_post_generate, _build_facebook_page_post_publish),
     },
     "twitter": {
         "all": (_build_twitter_all_generate, _build_twitter_all_publish),

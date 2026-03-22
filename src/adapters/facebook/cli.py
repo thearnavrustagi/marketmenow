@@ -57,6 +57,26 @@ def _make_browser(settings: FacebookSettings) -> FacebookBrowser:
     )
 
 
+def _split_targets(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def _normalise_group_url(group: str) -> str:
+    value = group.strip()
+    if value.startswith("http://") or value.startswith("https://"):
+        return value
+    return f"https://www.facebook.com/groups/{value}"
+
+
+def _normalise_page_url(page: str) -> str:
+    value = page.strip().lstrip("/")
+    if value.startswith("http://") or value.startswith("https://"):
+        return value
+    if value.isdigit():
+        return f"https://www.facebook.com/profile.php?id={value}"
+    return f"https://www.facebook.com/{value}"
+
+
 # ── Commands ─────────────────────────────────────────────────────────
 
 
@@ -143,6 +163,10 @@ def status() -> None:
     table.add_row(
         "Group IDs",
         settings.facebook_group_ids if settings.facebook_group_ids else "[dim]none[/dim]",
+    )
+    table.add_row(
+        "Page IDs",
+        settings.facebook_page_ids if settings.facebook_page_ids else "[dim]none[/dim]",
     )
 
     console.print()
@@ -303,7 +327,7 @@ def group_post(
     if headless:
         settings = settings.model_copy(update={"headless": True})
 
-    group_url = group if group.startswith("http") else f"https://www.facebook.com/groups/{group}"
+    group_url = _normalise_group_url(group)
     tag_list = [t.strip() for t in (hashtags or "").split(",") if t.strip()]
 
     full_text = text
@@ -344,6 +368,109 @@ def group_post(
                     Panel(
                         "[bold red]Group post failed[/bold red]",
                         title="Facebook Group",
+                        border_style="red",
+                    )
+                )
+                raise typer.Exit(1)
+
+    asyncio.run(_run())
+
+
+@app.command("page-post")
+def page_post(
+    page: str | None = typer.Option(
+        None,
+        "--page",
+        "-p",
+        help="Facebook Page URL, slug, or numeric ID",
+    ),
+    text: str = typer.Option(
+        ...,
+        "--text",
+        "-t",
+        help="Post body text",
+    ),
+    image: list[Path] | None = typer.Option(
+        None,
+        "--image",
+        "-i",
+        help="Image file(s) to attach",
+        exists=True,
+        readable=True,
+    ),
+    hashtags: str | None = typer.Option(
+        None,
+        "--hashtags",
+        help="Comma-separated hashtags",
+    ),
+    headless: bool = typer.Option(
+        False,
+        "--headless",
+        help="Run the browser in headless mode",
+    ),
+) -> None:
+    """Post to a Facebook Page.
+
+    Provide a page URL, slug (e.g. ``mybrand``), or numeric page ID.
+    If omitted, the first entry in ``FACEBOOK_PAGE_IDS`` is used.
+    """
+    settings = _settings()
+    if headless:
+        settings = settings.model_copy(update={"headless": True})
+
+    page_value = (page or "").strip()
+    if not page_value:
+        configured_pages = _split_targets(settings.facebook_page_ids)
+        if configured_pages:
+            page_value = configured_pages[0]
+
+    if not page_value:
+        console.print(
+            "[red]Missing page target. Use --page or set FACEBOOK_PAGE_IDS in .env.[/red]"
+        )
+        raise typer.Exit(1)
+
+    page_url = _normalise_page_url(page_value)
+    tag_list = [t.strip() for t in (hashtags or "").split(",") if t.strip()]
+
+    full_text = text
+    if tag_list:
+        tag_line = " ".join(f"#{t.lstrip('#')}" for t in tag_list)
+        full_text = f"{text}\n\n{tag_line}"
+
+    async def _run() -> None:
+        browser = _make_browser(settings)
+        async with browser:
+            if not await browser.is_logged_in():
+                c_user = settings.facebook_c_user
+                xs = settings.facebook_xs
+                if c_user and xs:
+                    await browser.login_with_cookies(c_user, xs)
+                else:
+                    console.print(
+                        "[red]Not logged in. Run `mmn facebook login` first,[/red]\n"
+                        "[red]or set FACEBOOK_C_USER and FACEBOOK_XS in .env.[/red]"
+                    )
+                    raise typer.Exit(1)
+
+            image_paths = [p.resolve() for p in image] if image else None
+            success = await browser.create_page_post(page_url, full_text, image_paths=image_paths)
+
+            if success:
+                console.print()
+                console.print(
+                    Panel(
+                        "[bold green]Posted to page![/bold green]",
+                        title="Facebook Page",
+                        border_style="green",
+                    )
+                )
+            else:
+                console.print()
+                console.print(
+                    Panel(
+                        "[bold red]Page post failed[/bold red]",
+                        title="Facebook Page",
                         border_style="red",
                     )
                 )

@@ -3,12 +3,15 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 
-from google import genai
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel, Field
+
+from marketmenow.integrations.genai import (
+    configure_google_application_credentials,
+    create_genai_client,
+)
 
 from .prompts import load_prompt
 from .settings import LinkedInSettings
@@ -31,9 +34,7 @@ class GeneratedPost(BaseModel, frozen=True):
 
 
 def _ensure_vertex_credentials(settings: LinkedInSettings) -> None:
-    creds = settings.google_application_credentials
-    if creds and creds.exists():
-        os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(creds.resolve()))
+    configure_google_application_credentials(settings.google_application_credentials)
 
 
 class LinkedInContentGenerator:
@@ -45,10 +46,9 @@ class LinkedInContentGenerator:
         gemini_model: str = "gemini-2.5-flash",
     ) -> None:
         _ensure_vertex_credentials(settings)
-        self._client = genai.Client(
-            vertexai=True,
-            project=settings.vertex_ai_project,
-            location=settings.vertex_ai_location,
+        self._client = create_genai_client(
+            vertex_project=settings.vertex_ai_project,
+            vertex_location=settings.vertex_ai_location,
         )
         self._model = gemini_model
 

@@ -19,6 +19,9 @@ class FacebookSettings(BaseSettings):
     # Comma-separated group IDs or URLs for teacher group posting
     facebook_group_ids: str = ""
 
+    # Comma-separated page IDs, URLs, or slugs for page posting
+    facebook_page_ids: str = ""
+
     # Session / browser paths
     facebook_session_path: Path = Path(".facebook_session.json")
     facebook_user_data_dir: Path = Path(".facebook_browser_profile")

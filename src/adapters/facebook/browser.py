@@ -369,6 +369,56 @@ class FacebookBrowser:
         return True
 
     # ------------------------------------------------------------------
+    # Page posting
+    # ------------------------------------------------------------------
+
+    async def _open_page_composer(self, page_url: str) -> None:
+        """Navigate to a page and open its post composer."""
+        page = self.page
+        await self.navigate(page_url)
+        await self._random_delay(1.5, 2.5)
+
+        composer_trigger = page.locator(
+            'div[role="button"]:has-text("Write something"),'
+            'div[role="button"]:has-text("Create post"),'
+            'div[role="button"]:has-text("What\'s on your mind"),'
+            'span:has-text("Write something")'
+        ).first
+        await composer_trigger.wait_for(state="visible", timeout=15_000)
+        await composer_trigger.click()
+        await self._random_delay(1.5, 2.5)
+
+    async def create_page_post(
+        self, page_url: str, text: str, image_paths: list[Path] | None = None
+    ) -> bool:
+        """Create a post on a Facebook Page, optionally with images."""
+        page = self.page
+        await self._open_page_composer(page_url)
+
+        if image_paths:
+            photo_btn = page.locator(
+                'div[aria-label="Photo/video"][role="button"],'
+                'div[role="button"]:has-text("Photo/video"),'
+                'div[aria-label="Photo/Video"]'
+            ).first
+            try:
+                await photo_btn.wait_for(state="visible", timeout=8_000)
+                await photo_btn.click()
+                await self._random_delay(1.0, 2.0)
+            except Exception:
+                logger.debug("Photo button not found in page composer")
+
+            file_input = page.locator('input[type="file"]').first
+            await file_input.set_input_files([str(p.resolve()) for p in image_paths])
+            await self._random_delay(2.0, 4.0)
+
+        await self._type_in_composer(text)
+        await self._click_post_button()
+
+        logger.info("Page post created in %s", page_url)
+        return True
+
+    # ------------------------------------------------------------------
     # Group posting
     # ------------------------------------------------------------------
 

@@ -26,6 +26,8 @@ credentials.yaml
 
 # ── ML model weights ───────────────────────────────────
 models/
+!src/marketmenow/models/
+!src/marketmenow/models/*.py
 
 # ── Generated output (reels, carousels, TTS, uploads) ──
 output/

@@ -22,6 +22,7 @@ async def dashboard(
 ) -> HTMLResponse:
     items = await db.list_content_items(status=status, platform=platform)
     activity_stats = await db.get_platform_activity_stats()
+    platforms = [row["platform"] for row in activity_stats]
     return templates.TemplateResponse(
         "dashboard.html",
         {
@@ -30,6 +31,7 @@ async def dashboard(
             "current_status": status,
             "current_platform": platform,
             "activity_stats": activity_stats,
+            "platforms": platforms,
             "now_utc": datetime.now(UTC),
         },
     )

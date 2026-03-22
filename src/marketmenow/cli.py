@@ -11,6 +11,7 @@ from rich.table import Table
 from rich.text import Text
 
 from adapters.email.cli import app as email_app
+from adapters.facebook.cli import app as facebook_app
 from adapters.instagram.cli import app as instagram_app
 from adapters.instagram.cli import carousel_app, reel_app
 from adapters.linkedin.cli import app as linkedin_app
@@ -30,6 +31,54 @@ app = typer.Typer(
     help="Open-source agentic marketing framework.",
 )
 
+app.add_typer(
+    instagram_app,
+    name="instagram",
+    help="Instagram content generation and publishing.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    twitter_app,
+    name="twitter",
+    help="Twitter/X engagement and reply automation.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    twitter_app,
+    name="x",
+    help="Twitter/X engagement and reply automation (alias for `twitter`).",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    linkedin_app,
+    name="linkedin",
+    help="LinkedIn organization page posting.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    facebook_app,
+    name="facebook",
+    help="Facebook posting and group engagement.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    reddit_app,
+    name="reddit",
+    help="Reddit engagement and comment automation.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    email_app,
+    name="email",
+    help="Email outreach via SMTP with CSV + Jinja2 templates.",
+    rich_help_panel="Platforms",
+)
+app.add_typer(
+    youtube_app,
+    name="youtube",
+    help="YouTube Shorts uploading and publishing.",
+    rich_help_panel="Platforms",
+)
 
 # ── Banner ────────────────────────────────────────────────────────────
 
@@ -540,7 +589,50 @@ def platforms() -> None:
     table.add_row("Instagram", "[green]Active[/]", "Videos, Images")
     table.add_row("X / Twitter", "[green]Active[/]", "Replies, Threads")
     table.add_row(
-        "LinkedIn", "[green]Active[/]", "Text, Images, Videos, Documents, Articles, Polls"
+        "Instagram",
+        "[green]Implemented[/]",
+        "Videos, Images",
+        "mmn instagram",
+    )
+    table.add_row(
+        "X / Twitter",
+        "[green]Implemented[/]",
+        "Replies, Threads",
+        "mmn twitter",
+    )
+    table.add_row(
+        "LinkedIn",
+        "[green]Implemented[/]",
+        "Text, Images, Videos, Documents, Articles, Polls",
+        "mmn linkedin",
+    )
+    table.add_row(
+        "Facebook",
+        "[green]Implemented[/]",
+        "Text, Images, Videos, Group Posts",
+        "mmn facebook",
+    )
+    table.add_row("TikTok", "[yellow]Planned[/]", "Reels", "")
+    table.add_row(
+        "YouTube Shorts",
+        "[green]Implemented[/]",
+        "Shorts (Videos)",
+        "mmn youtube",
+    )
+    table.add_row(
+        "Email / SMTP",
+        "[green]Implemented[/]",
+        "Bulk outreach (CSV + templates)",
+        "mmn email",
+    )
+    table.add_row("Threads (Meta)", "[yellow]Planned[/]", "Threads", "")
+    table.add_row("Pinterest", "[yellow]Planned[/]", "Carousels", "")
+    table.add_row("Bluesky", "[yellow]Planned[/]", "Threads", "")
+    table.add_row(
+        "Reddit",
+        "[green]Implemented[/]",
+        "Comments, Replies",
+        "mmn reddit",
     )
     table.add_row("Reddit", "[green]Active[/]", "Comments, Replies")
     table.add_row("YouTube Shorts", "[green]Active[/]", "Shorts (Videos)")

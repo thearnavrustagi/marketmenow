@@ -6,8 +6,9 @@ import re
 from pathlib import Path
 
 import yaml
-from google import genai
 from google.genai.types import GenerateContentConfig
+
+from marketmenow.integrations.genai import create_genai_client
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,9 @@ class EmailParaphraser:
         vertex_location: str = "us-central1",
         model: str = "gemini-2.5-flash",
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
+        self._client = create_genai_client(
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
         self._model = model
 

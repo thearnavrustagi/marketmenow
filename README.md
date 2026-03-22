@@ -121,12 +121,13 @@ You only need credentials for the platforms you use:
 | Platform | What you need |
 |---|---|
 | Instagram | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` |
-| Twitter/X | `TWITTER_AUTH_TOKEN`, `TWITTER_CT0` (or `mmn auth twitter`) |
+| Facebook | `FACEBOOK_C_USER`, `FACEBOOK_XS` (optionally `FACEBOOK_PAGE_IDS`) |
+| Twitter/X | `TWITTER_AUTH_TOKEN`, `TWITTER_CT0` (or `mmn twitter login`) |
 | Reddit | `REDDIT_SESSION` cookie, `REDDIT_USERNAME` |
 | LinkedIn | `LINKEDIN_ACCESS_TOKEN` (or `LINKEDIN_LI_AT` cookie) |
 | YouTube | Google OAuth 2.0 (`mmn auth youtube`) |
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` |
-| AI (all) | `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
+| AI (all) | AI Studio: `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) **or** Vertex: `GOOGLE_APPLICATION_CREDENTIALS`, `VERTEX_AI_PROJECT` |
 
 </details>
 
@@ -134,31 +135,36 @@ You only need credentials for the platforms you use:
 <summary><strong>CLI reference</strong></summary>
 
 ```bash
-# Workflows (primary interface)
-mmn workflows                                    # List all workflows
-mmn run instagram-reel --template can_ai_grade_this --tts kokoro
-mmn run instagram-carousel
-mmn run twitter-thread --topic "AI in marketing"
-mmn run twitter-engage --headless --max-replies 10
-mmn run reddit-engage --max-comments 5
-mmn run reddit-launch -c campaigns/my-campaign.yaml -b blog-draft.md --dry-run
-mmn run linkedin-post --count 3 --dry-run
-mmn run email-outreach -t template.html --to you@example.com
-mmn run youtube-short --video video.mp4 --title "My Short"
+# Instagram
+mmn reel create --publish
+mmn carousel generate --publish
 
-# Authentication
-mmn auth twitter --cookies
-mmn auth linkedin --oauth
-mmn auth youtube
+# Facebook
+mmn facebook login --cookies
+mmn facebook page-post --page your-page-slug --text "Hello!"
 
-# Info
-mmn workflows                          # List available workflows
-mmn run <workflow> --info              # Detailed help for a workflow
-mmn platforms                          # List supported platforms
-mmn version                            # Show version
+# Twitter/X
+mmn twitter login
+mmn twitter all
+mmn twitter engage
+mmn twitter reply -f replies.csv
+mmn twitter thread --post
 
-# Distribute pre-built content
-mmn distribute -c content.json --only instagram,linkedin
+# Reddit
+mmn reddit engage
+mmn reddit reply -f comments.csv
+
+# LinkedIn
+mmn linkedin auth
+mmn linkedin post --text "Hello!"
+
+# YouTube
+mmn youtube auth
+mmn youtube upload video.mp4
+
+# Email
+mmn email send -f contacts.csv -t template.html -r 0-100
+
 ```
 
 </details>
@@ -252,16 +258,6 @@ Checked items are shipped. Unchecked items are planned or in progress.
 - [ ] **Personas** — bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
 - [ ] **Twitter discovery & cold DM** — find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
 - [ ] **Pipelines & modularisation** — composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=thearnavrustagi%2Fmarketmenow&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=thearnavrustagi/marketmenow&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=thearnavrustagi/marketmenow&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=thearnavrustagi/marketmenow&type=date&legend=top-left" />
- </picture>
-</a>
 
 ## Contributing
 
