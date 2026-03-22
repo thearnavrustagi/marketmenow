@@ -73,7 +73,7 @@ Add a platform with zero changes to core. Ports-and-adapters architecture.
 <tr>
 <td align="center">
 <h3>Auto-Heal</h3>
-One command runs lint, format, and tests — then hands failures to the Cursor agent to fix automatically.
+One command runs lint, format, and tests - then hands failures to the Cursor agent to fix automatically.
 </td>
 <td align="center" colspan="2">
 </td>
@@ -185,25 +185,34 @@ mmn heal --verbose    # show full lint/test output
 <details>
 <summary><strong>Customizing for your brand</strong></summary>
 
-All brand identity lives in YAML files, not code. Repurpose the entire tool for your product in under an hour.
+All brand identity lives in YAML files, not code. Each product gets its own directory under `projects/` with prompts, targets, personas, and templates that every workflow picks up automatically.
 
-**Prompts (text content: tweets, carousels, LinkedIn, Reddit, email):**
+#### The easy way - interactive onboarding
 
-1. **Swap the brand (5 min):** Open `prompts/` and replace `Gradeasy` with your brand name, URL, and audience keywords.
-2. **Tweak the voice (10 min):** Each prompt has a persona section. Edit the voice for each platform in `prompts/<platform>/`.
-3. **Adjust topics (5 min):** Search for topic constraints and replace with your domain.
-4. **Set mention rate:** Each prompt has a `MENTION STRATEGY` section controlling how often your brand appears.
+```bash
+mmn project add my-product
+```
 
-Or use the **meta-prompt** in `prompts/prompt.md` to generate entire prompt YAML files with any AI chat.
+A 10-phase wizard walks you through everything:
 
-**Reels (video content):**
+1. **Brand identity** - name, URL, tagline, colors
+2. **Product features** - one per line
+3. **Target customer** - ICP, pain points, keywords, platforms
+4. **Social persona** - voice, tone, example phrases
+5. **Twitter targets** - accounts and hashtags to engage
+6. **Reddit targets** - subreddits and keywords
+7. **Outreach profile** - rubric, message style, rate limits
+8. **Platform prompts** - auto-generated from your brand + persona via AI
+9. **Reel templates** - auto-generated video structure + companion prompt
+10. **Summary** - review, activate, done
 
-The existing reels are purpose-built for Gradeasy's concept. For your product you'll want a completely different reel — different narrative, different scenes, different voice. The **reel template meta-prompt** in [`src/adapters/instagram/reels/templates/prompt.md`](src/adapters/instagram/reels/templates/prompt.md) lets you paste your brand details and reel concept into ChatGPT / Claude and get back both files you need:
+Switch between products any time with `mmn project use <slug>`. Workflows, prompts, and templates resolve from the active project first, falling back to globals.
 
-1. A **template YAML** — the video structure (scenes, beats, transitions, pipeline)
-2. A **companion prompt YAML** — the AI persona that writes the script
+#### The hard way - manual YAML editing
 
-Drop them into `src/adapters/instagram/reels/templates/` and `prompts/instagram/`, then run `mmn reel create --template your_id`. Full schema reference, available scenes, transitions, and pipeline steps are all in that file.
+**Prompts (text content):** Open `prompts/` (or `projects/<slug>/prompts/`) and edit directly. Each file has a persona section for voice, topic constraints for domain, and a `MENTION STRATEGY` section for brand frequency. Or use the meta-prompt in `prompts/prompt.md` to generate entire prompt YAMLs with any AI chat.
+
+**Reels (video content):** Use the reel template meta-prompt in [`src/adapters/instagram/reels/templates/prompt.md`](src/adapters/instagram/reels/templates/prompt.md) to generate a **template YAML** (scenes, beats, transitions) and a **companion prompt YAML** (the AI persona). Drop them into `src/adapters/instagram/reels/templates/` and `prompts/instagram/`, then `mmn reel create --template your_id`.
 
 </details>
 
@@ -253,7 +262,7 @@ graph LR
 
 **Pipeline:** Normalise → Render → Sanitise → Upload → Publish
 
-The **Sanitise** step strips em-dashes, en-dashes, and other AI-telltale formatting from all text fields before upload — a simple anti-AI-detection layer that runs automatically on every piece of content.
+The **Sanitise** step strips em-dashes, en-dashes, and other AI-telltale formatting from all text fields before upload - a simple anti-AI-detection layer that runs automatically on every piece of content.
 
 **Adding a platform:** Create `src/adapters/yourplatform/`, implement the protocols, register with `AdapterRegistry`. Zero changes to core.
 
@@ -265,16 +274,16 @@ Checked items are shipped. Unchecked items are planned or in progress.
 
 ### Done
 
-- [x] **6-platform content engine** — Instagram Reels & Carousels, Twitter replies & threads, Reddit comments, LinkedIn posts, YouTube Shorts, bulk email — generate and publish from one CLI or web dashboard
-- [x] **In-context learning & brand templates** — learns from top-performing posts to match your voice; YAML-driven brand identity (prompts, visuals, mention strategy) with Figma MCP integration
-- [x] **Ports-and-adapters core** — modular pipeline (normalise → render → upload → publish), campaign orchestrator, scheduler, and `AdapterRegistry` — add a platform with zero changes to core
-- [x] **Personas** — bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
-- [x] **Twitter discovery & cold DM** — find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
-- [x] **Pipelines & modularisation** — composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
-- [x] **Auto-heal** — `mmn heal` runs lint, format, and the full test suite in one shot; remaining failures are handed off to the Cursor agent for automatic source-code fixes (never weakens tests)
+- [x] **6-platform content engine** - Instagram Reels & Carousels, Twitter replies & threads, Reddit comments, LinkedIn posts, YouTube Shorts, bulk email - generate and publish from one CLI or web dashboard
+- [x] **In-context learning & brand templates** - learns from top-performing posts to match your voice; YAML-driven brand identity (prompts, visuals, mention strategy) with Figma MCP integration
+- [x] **Ports-and-adapters core** - modular pipeline (normalise → render → upload → publish), campaign orchestrator, scheduler, and `AdapterRegistry` - add a platform with zero changes to core
+- [x] **Personas** - bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
+- [x] **Twitter discovery & cold DM** - find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
+- [x] **Pipelines & modularisation** - composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
+- [x] **Auto-heal** - `mmn heal` runs lint, format, and the full test suite in one shot; remaining failures are handed off to the Cursor agent for automatic source-code fixes (never weakens tests)
 ### Up Next
 
-- [ ] **Reddit & LinkedIn publish** — finish WIP uploaders for both platforms, full end-to-end tests
+- [ ] **Reddit & LinkedIn publish** - finish WIP uploaders for both platforms, full end-to-end tests
 - [ ] **Exploration/Exploitation** - Worried that personas might over-index on certain type of profile and want to keep encouraging it to explore, want to build a smarter RL inspired system for better exploration/exploitation for in-context learning
 - [ ] **An evolving system** - I want the system to evolve with my code repositories, need to figure out how to do this
 
