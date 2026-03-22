@@ -1,0 +1,36 @@
+slug: gradeasy
+brand:
+  name: Gradeasy
+  url: gradeasy.ai
+  tagline: "AI-powered grading assistant for K-12 teachers"
+  value_prop: "Saves teachers 8-15 hours/week on grading"
+  color: "#4A8DF8"
+  logo_letter: G
+  logo_suffix: ".ai"
+  features:
+    - "Grades assignments against rubrics in seconds"
+    - "Supports images, PDFs, and handwritten work"
+    - "Saves teachers 8-15 hours per week"
+    - "Teachers keep full control over final grades"
+    - "Free to try"
+target_customer:
+  description: "K-12 teachers who are overwhelmed by grading workload"
+  pain_points:
+    - "Spends evenings and weekends grading"
+    - "Inconsistent feedback across students"
+    - "Burnout from repetitive assessment tasks"
+  keywords:
+    - "grading"
+    - "rubric"
+    - "AI grading"
+    - "grading workload"
+    - "teacher burnout"
+  platforms:
+    - twitter
+    - reddit
+    - instagram
+default_persona: default
+env_overrides:
+  TWITTER_USERNAME: gradeasyai
+  SMTP_FROM: "arnav@gradeasy.ai"
+  SMTP_FROM_NAME: "Arnav Rustagi"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ class SendResult(BaseModel, frozen=True):
 
 class AnalyticsSnapshot(BaseModel, frozen=True):
     publish_result_id: UUID
-    collected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    collected_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     impressions: int = 0
     engagements: int = 0
     clicks: int = 0

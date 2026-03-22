@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Outreach - MarketMeNow{% endblock %}
+{% block content %}
+
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <h1 class="text-2xl font-semibold text-white">Cold Outreach</h1>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Total Sent</span>
+    <div class="text-2xl font-bold text-white mt-1">{{ stats.total }}</div>
+  </div>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Delivered</span>
+    <div class="text-2xl font-bold text-emerald-400 mt-1">{{ stats.success }}</div>
+  </div>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Failed</span>
+    <div class="text-2xl font-bold text-red-400 mt-1">{{ stats.fail }}</div>
+  </div>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Success Rate</span>
+    <div class="text-2xl font-bold text-white mt-1">{{ stats.success_rate }}%</div>
+  </div>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Avg Score</span>
+    <div class="text-2xl font-bold text-white mt-1">{{ stats.avg_score }}</div>
+  </div>
+  <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Platforms</span>
+    <div class="flex flex-wrap gap-1 mt-2">
+      {% for plat, count in stats.by_platform.items() %}
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider
+        {% if plat == 'twitter' %}bg-sky-500/20 text-sky-400
+        {% elif plat == 'email' %}bg-violet-500/20 text-violet-400
+        {% elif plat == 'linkedin' %}bg-blue-500/20 text-blue-400
+        {% else %}bg-zinc-800 text-zinc-400{% endif %}">
+        {{ plat }} ({{ count }})
+      </span>
+      {% endfor %}
+      {% if not stats.by_platform %}
+      <span class="text-xs text-zinc-500">None yet</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Run Outreach + Campaigns side-by-side -->
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 mb-10">
+
+  <!-- Outreach Workflows -->
+  {% for wf in workflows %}
+  <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors">
+    <div class="p-5">
+      <div class="flex items-center gap-3 mb-2">
+        {% if 'twitter' in wf.name %}
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </div>
+        {% elif 'email' in wf.name %}
+        <div class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        </div>
+        {% else %}
+        <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+        </div>
+        {% endif %}
+        <div>
+          <span class="text-base font-semibold text-white">{{ wf.name }}</span>
+          <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-400">
+            {{ wf.steps | length }} step{{ 's' if wf.steps | length != 1 else '' }}
+          </span>
+        </div>
+      </div>
+      <p class="text-sm text-zinc-400 mb-3">{{ wf.description }}</p>
+
+      <div class="flex items-center gap-1 flex-wrap mb-4">
+        {% for step in wf.steps %}
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800/80 text-zinc-300">{{ step.name }}</span>
+          {% if not loop.last %}<span class="text-zinc-600 text-xs">&rarr;</span>{% endif %}
+        {% endfor %}
+      </div>
+
+      <details class="group" {% if workflows | length == 1 %}open{% endif %}>
+        <summary class="cursor-pointer text-xs font-semibold text-zinc-500 uppercase tracking-wider select-none hover:text-zinc-300 transition-colors">
+          Run outreach
+        </summary>
+
+        <form class="mt-4 flex flex-col gap-4"
+              hx-post="/outreach/run"
+              hx-target="#outreach-results"
+              hx-swap="afterbegin">
+          <input type="hidden" name="workflow_name" value="{{ wf.name }}">
+
+          {% for param in wf.params %}
+          <div class="flex flex-col gap-1.5">
+            <label for="{{ wf.name }}-{{ param.name }}" class="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              {{ param.name | replace('_', ' ') }}
+              {% if param.required %}<span class="text-red-400">*</span>{% endif %}
+            </label>
+            {% if param.type == 'bool' %}
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="{{ param.name }}" value="true"
+                       {% if param.default %}checked{% endif %}
+                       class="w-4 h-4 rounded bg-black border-zinc-700 text-white focus:ring-white/20">
+                <span class="text-xs text-zinc-400">{{ param.help }}</span>
+              </label>
+            {% elif param.type == 'int' or param.type == 'float' %}
+              <input type="number" name="{{ param.name }}" id="{{ wf.name }}-{{ param.name }}"
+                     {% if param.default is not none %}value="{{ param.default }}"{% endif %}
+                     placeholder="{{ param.help }}"
+                     {% if param.required %}required{% endif %}
+                     class="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:border-white focus:ring-1 focus:ring-white/20 transition-colors outline-none">
+            {% else %}
+              <input type="text" name="{{ param.name }}" id="{{ wf.name }}-{{ param.name }}"
+                     {% if param.default is not none and param.default != '' %}value="{{ param.default }}"{% endif %}
+                     placeholder="{{ param.help }}"
+                     {% if param.required %}required{% endif %}
+                     class="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:border-white focus:ring-1 focus:ring-white/20 transition-colors outline-none">
+            {% endif %}
+          </div>
+          {% endfor %}
+
+          {% if cred_sets_by_platform %}
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Credential Set</label>
+            <select name="credential_set"
+                    class="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:border-white focus:ring-1 focus:ring-white/20 transition-colors outline-none">
+              <option value="">Default (.env)</option>
+              {% for platform, names in cred_sets_by_platform.items() %}
+                {% for cname in names %}
+                  <option value="{{ cname }}">{{ cname }} ({{ platform }})</option>
+                {% endfor %}
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <button type="submit"
+                  class="w-full flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-white text-black hover:bg-zinc-200 transition-colors">
+            Launch Outreach
+          </button>
+        </form>
+      </details>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if not workflows %}
+  <div class="lg:col-span-2 text-center py-12 text-zinc-500 bg-zinc-900 border border-zinc-800 rounded-xl">
+    <p>No outreach workflows found.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Campaign Profiles -->
+{% if campaigns %}
+<div class="mb-10">
+  <h2 class="text-lg font-semibold text-white mb-4">Campaign Profiles</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for c in campaigns %}
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider
+          {% if c.platform == 'twitter' %}bg-sky-500/20 text-sky-400
+          {% elif c.platform == 'email' %}bg-violet-500/20 text-violet-400
+          {% elif c.platform == 'linkedin' %}bg-blue-500/20 text-blue-400
+          {% else %}bg-zinc-800 text-zinc-400{% endif %}">
+          {{ c.platform }}
+        </span>
+        <span class="text-sm font-semibold text-white">{{ c.product_name }}</span>
+      </div>
+      <p class="text-xs text-zinc-400 mb-3 line-clamp-2">{{ c.product_tagline }}</p>
+      <div class="flex items-center gap-4 text-xs text-zinc-500">
+        <span title="Min score">Score &ge; {{ c.min_score }}</span>
+        <span title="Max messages">Max {{ c.max_messages }} msgs</span>
+        <span title="Discovery vectors">{{ c.vectors }} vector{{ 's' if c.vectors != 1 else '' }}</span>
+      </div>
+      <div class="mt-3 pt-3 border-t border-zinc-800">
+        <code class="text-[11px] text-zinc-500 font-mono">{{ c.filename }}</code>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Active Runs -->
+<div id="outreach-results" class="flex flex-col gap-4 mb-10"></div>
+
+<!-- Outreach History -->
+<div>
+  <h2 class="text-lg font-semibold text-white mb-4">
+    Outreach History
+    {% if entries %}
+    <span class="text-sm font-normal text-zinc-500 ml-2">({{ entries | length }} message{{ 's' if entries | length != 1 else '' }})</span>
+    {% endif %}
+  </h2>
+
+  {% if entries %}
+  <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-zinc-800 text-left">
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Platform</th>
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Handle</th>
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Score</th>
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Message Preview</th>
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Sent</th>
+            <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+          <tr class="border-b border-zinc-800/60 hover:bg-zinc-800/30 transition-colors">
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider
+                {% if e.platform == 'twitter' %}bg-sky-500/20 text-sky-400
+                {% elif e.platform == 'email' %}bg-violet-500/20 text-violet-400
+                {% elif e.platform == 'linkedin' %}bg-blue-500/20 text-blue-400
+                {% else %}bg-zinc-800 text-zinc-400{% endif %}">
+                {{ e.platform }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-zinc-200 font-mono text-xs">
+              {% if e.platform == 'twitter' %}
+              <a href="https://x.com/{{ e.handle }}" target="_blank" class="hover:text-white transition-colors">@{{ e.handle }}</a>
+              {% else %}
+              @{{ e.handle }}
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
+                {% if e.score >= 8 %}bg-emerald-500/20 text-emerald-400
+                {% elif e.score >= 5 %}bg-amber-500/20 text-amber-400
+                {% else %}bg-zinc-800 text-zinc-400{% endif %}">
+                {{ e.score }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-zinc-400 text-xs max-w-xs truncate" title="{{ e.message_preview }}">
+              {{ e.message_preview or '—' }}
+            </td>
+            <td class="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">
+              {{ e.sent_at[:16] | replace('T', ' ') if e.sent_at else '—' }}
+            </td>
+            <td class="px-4 py-3">
+              {% if e.success %}
+              <span class="inline-flex items-center gap-1 text-xs text-emerald-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Sent
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 text-xs text-red-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                Failed
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-12 text-zinc-500 bg-zinc-900 border border-zinc-800 rounded-xl">
+    <svg class="w-10 h-10 mx-auto mb-3 text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+    </svg>
+    <p class="mb-1 text-zinc-400">No outreach messages sent yet.</p>
+    <p class="text-xs">Run an outreach workflow above to get started.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

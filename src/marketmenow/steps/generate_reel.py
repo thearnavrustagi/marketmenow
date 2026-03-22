@@ -32,6 +32,16 @@ class GenerateReelStep:
         if updates:
             settings = settings.model_copy(update=updates)
 
+        template_dir: Path | None = None
+        project_slug = ctx.get_param("project")
+        if project_slug:
+            from marketmenow.core.project_manager import ProjectManager
+
+            pm = ProjectManager()
+            project_templates = pm.project_dir(str(project_slug)) / "templates" / "reels"
+            if project_templates.is_dir():
+                template_dir = project_templates
+
         template_id = str(ctx.get_param("template", "can_ai_grade_this"))
 
         rubric_items = None
@@ -54,7 +64,7 @@ class GenerateReelStep:
         hashtags_raw = str(ctx.get_param("hashtags", "") or "")
         hashtags = [t.strip() for t in hashtags_raw.split(",") if t.strip()] or None
 
-        orch = ReelOrchestrator(settings)
+        orch = ReelOrchestrator(settings, templates_dir=template_dir)
 
         with ctx.console.status(f"[bold green]Generating reel (template={template_id})..."):
             reel = await orch.create_reel(

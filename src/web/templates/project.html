@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Projects - MarketMeNow{% endblock %}
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold text-white">Projects</h1>
+  <p class="text-zinc-500 text-sm mt-2">Active: {{ active or "—" }}</p>
+</div>
+{% if projects %}
+<ul class="space-y-2">
+  {% for p in projects %}
+  <li class="text-zinc-300">{{ p.brand.name }} <span class="text-zinc-500">({{ p.slug }})</span></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="text-zinc-500">No projects yet.</p>
+{% endif %}
+{% endblock %}

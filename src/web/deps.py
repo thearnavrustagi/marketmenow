@@ -23,3 +23,15 @@ def _to_output_url(abs_path: str) -> str:
 
 
 templates.env.filters["output_url"] = _to_output_url
+
+
+def _get_projects_context():
+    try:
+        from marketmenow.core.project_manager import ProjectManager
+        pm = ProjectManager()
+        return pm.list_projects(), pm.get_active_project()
+    except Exception:
+        return [], None
+
+
+templates.env.globals["get_projects"] = _get_projects_context

@@ -1,0 +1,34 @@
+subreddits:
+  # Primary US teacher communities
+  - "Teachers"
+  - "teaching"
+  - "education"
+  - "edtech"
+  - "Professors"
+  - "highereducation"
+  - "ECEProfessionals"
+
+  # Subject-specific (grading-heavy)
+  - "ScienceTeachers"
+  - "mathteachers"
+  - "ELATeachers"
+  - "historyteachers"
+  - "csed"
+
+  # Adjacent / monitor
+  - "AskAcademia"
+  - "GradSchool"
+
+search_queries:
+  - "grading"
+  - "grading papers"
+  - "rubric"
+  - "AI grading"
+  - "grading workload"
+  - "grading time"
+  - "grading essays"
+  - "grading burnout"
+  - "feedback on papers"
+  - "standardized grading"
+  - "grading consistency"
+  - "late work grading"

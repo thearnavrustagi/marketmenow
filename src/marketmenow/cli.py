@@ -80,6 +80,159 @@ app.add_typer(
     rich_help_panel="Platforms",
 )
 
+project_app = typer.Typer(name="project", help="Manage marketing projects.")
+app.add_typer(project_app, name="project", rich_help_panel="Projects")
+
+persona_app = typer.Typer(name="persona", help="Manage project personas.")
+project_app.add_typer(persona_app, name="persona")
+
+
+@project_app.command("add")
+def project_add(
+    slug: str = typer.Argument(help="Project slug (e.g. 'cookbot')"),
+) -> None:
+    """Create a new project with an interactive onboarding wizard."""
+    from marketmenow.core.onboarding import run_onboarding
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    result = run_onboarding(pm=pm, console=console, slug_override=slug)
+    if not result:
+        raise typer.Exit(1)
+
+
+@project_app.command("list")
+def project_list() -> None:
+    """List all marketing projects."""
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    projects = pm.list_projects()
+    active = pm.get_active_project()
+
+    if not projects:
+        console.print("[dim]No projects found. Run [bold]mmn project add <slug>[/bold] to create one.[/dim]")
+        return
+
+    table = Table(title="Projects", show_header=True, border_style="dim")
+    table.add_column("", width=2)
+    table.add_column("Slug", style="bold cyan")
+    table.add_column("Brand", style="white")
+    table.add_column("URL", style="dim")
+
+    for p in projects:
+        marker = "►" if p.slug == active else ""
+        table.add_row(marker, p.slug, p.brand.name, p.brand.url)
+
+    console.print(table)
+
+
+@project_app.command("use")
+def project_use(
+    slug: str = typer.Argument(help="Project slug to activate"),
+) -> None:
+    """Set the active project."""
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    try:
+        pm.set_active_project(slug)
+    except FileNotFoundError as exc:
+        console.print(f"[red]Project '{slug}' not found.[/red]")
+        raise typer.Exit(1) from exc
+    console.print(f"[green]✓[/green] Active project set to: [bold]{slug}[/bold]")
+
+
+@project_app.command("info")
+def project_info(
+    slug: str = typer.Argument("", help="Project slug (default: active project)"),
+) -> None:
+    """Show project details."""
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    slug = slug or pm.get_active_project() or ""
+    if not slug:
+        console.print("[red]No active project. Run [bold]mmn project use <slug>[/bold] first.[/red]")
+        raise typer.Exit(1)
+
+    try:
+        cfg = pm.load_project(slug)
+    except FileNotFoundError as exc:
+        console.print(f"[red]Project '{slug}' not found.[/red]")
+        raise typer.Exit(1) from exc
+
+    b = cfg.brand
+    console.print(Panel(
+        f"[bold]{b.name}[/bold]{b.logo_suffix}  •  {b.url}\n"
+        f"{b.tagline}\n"
+        f"Color: {b.color}  •  Logo: {b.logo_letter}{b.logo_suffix}\n\n"
+        + (f"Target: {cfg.target_customer.description}\n" if cfg.target_customer else "")
+        + f"Default persona: {cfg.default_persona}",
+        title=f"Project: {slug}",
+        border_style="cyan",
+    ))
+
+    personas = pm.list_personas(slug)
+    if personas:
+        console.print(f"\n[bold]Personas:[/bold] {', '.join(personas)}")
+
+    proj_dir = pm.project_dir(slug)
+    for sub in ("prompts", "targets", "templates/reels", "campaigns"):
+        sub_path = proj_dir / sub
+        if sub_path.is_dir():
+            files = [f.name for f in sub_path.rglob("*.yaml") if f.is_file()]
+            files.extend(f.name for f in sub_path.rglob("*.html") if f.is_file())
+            if files:
+                console.print(f"  [dim]{sub}/[/dim] {', '.join(sorted(files))}")
+
+
+@persona_app.command("add")
+def persona_add(
+    name: str = typer.Argument(help="Persona name"),
+) -> None:
+    """Add a new persona to the active project."""
+    from marketmenow.core.project_manager import ProjectManager
+    from marketmenow.models.project import PersonaConfig
+
+    pm = ProjectManager()
+    slug = pm.get_active_project()
+    if not slug:
+        console.print("[red]No active project. Run [bold]mmn project use <slug>[/bold] first.[/red]")
+        raise typer.Exit(1)
+
+    description = typer.prompt("Description")
+    voice = typer.prompt("Voice style")
+    tone = typer.prompt("Tone")
+
+    persona = PersonaConfig(name=name, description=description, voice=voice, tone=tone)
+    path = pm.save_persona(slug, persona)
+    console.print(f"[green]✓[/green] Persona saved to {path}")
+
+
+@persona_app.command("list")
+def persona_list() -> None:
+    """List personas for the active project."""
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    slug = pm.get_active_project()
+    if not slug:
+        console.print("[red]No active project.[/red]")
+        raise typer.Exit(1)
+
+    names = pm.list_personas(slug)
+    if not names:
+        console.print("[dim]No personas found.[/dim]")
+        return
+
+    table = Table(title=f"Personas — {slug}", show_header=True, border_style="dim")
+    table.add_column("Name", style="bold cyan")
+    for n in names:
+        table.add_row(n)
+    console.print(table)
+
+
 # ── Banner ────────────────────────────────────────────────────────────
 
 
@@ -238,6 +391,8 @@ def run_workflow(
         "--info",
         help="Show detailed help for this workflow",
     ),
+    project: str = typer.Option("", "--project", "-p", help="Project slug (default: active project)"),
+    persona: str = typer.Option("", "--persona", help="Persona name (default: project default)"),
 ) -> None:
     """Run a marketing workflow by name.
 
@@ -296,6 +451,21 @@ def run_workflow(
             console.print(f"[dim]Run `mmn run {name} --info` for details.[/dim]")
             raise typer.Exit(1)
 
+    proj_config = None
+    persona_config = None
+    try:
+        from marketmenow.core.project_manager import ProjectManager
+        pm = ProjectManager()
+        proj_slug = project or pm.get_active_project()
+        if proj_slug:
+            proj_config = pm.load_project(proj_slug)
+            persona_name = persona or proj_config.default_persona
+            persona_config = pm.load_persona(proj_slug, persona_name)
+            params["project"] = proj_slug
+            params["persona"] = persona_name
+    except Exception:
+        pass
+
     console.print()
     console.print(
         Panel(
@@ -304,7 +474,7 @@ def run_workflow(
         )
     )
 
-    result = asyncio.run(wf.run(params, console=console))
+    result = asyncio.run(wf.run(params, console=console, project=proj_config, persona=persona_config))
 
     console.print()
     if result.success:

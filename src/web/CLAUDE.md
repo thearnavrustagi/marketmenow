@@ -25,6 +25,7 @@ Browser → FastAPI routes → cli_runner.run_cli_streaming() → subprocess (uv
 | `deps.py`            | Shared constants (STATIC_DIR, TEMPLATES_DIR, etc.)             |
 | `routes/dashboard.py`| Dashboard page                                                 |
 | `routes/generate.py` | Content generation forms, `generate_content`, `generate_all` (batch) |
+| `routes/outreach.py` | Cold DM outreach page — stats, history, campaign profiles, run workflows |
 | `routes/review.py`   | Content review UI (approve/reject per item)                    |
 | `routes/queue.py`    | Queue management (view, requeue, cancel)                       |
 | `routes/webhooks.py` | Webhook endpoints                                              |

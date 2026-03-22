@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from functools import lru_cache
 from pathlib import Path
 
 import yaml
@@ -9,10 +8,25 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[4]
 _PROMPTS_DIR = _PROJECT_ROOT / "prompts" / "instagram"
 
 
-@lru_cache(maxsize=32)
-def load_prompt(name: str) -> dict[str, str]:
+def load_prompt(name: str, project_slug: str | None = None) -> dict[str, str]:
     """Load a prompt YAML file and return ``{"system": ..., "user": ...}``."""
-    path = _PROMPTS_DIR / f"{name}.yaml"
+    if project_slug:
+        from marketmenow.core.project_manager import ProjectManager
+
+        pm = ProjectManager()
+        try:
+            path = pm.resolve_path(
+                project_slug,
+                "prompts",
+                "instagram",
+                f"{name}.yaml",
+                fallback=_PROMPTS_DIR.parent,
+            )
+        except FileNotFoundError:
+            path = _PROMPTS_DIR / f"{name}.yaml"
+    else:
+        path = _PROMPTS_DIR / f"{name}.yaml"
+
     if not path.exists():
         raise FileNotFoundError(f"Prompt '{name}' not found at {path}")
 

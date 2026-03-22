@@ -19,7 +19,7 @@ _MAX_RETRIES = 3
 _INITIAL_BACKOFF_S = 5.0
 
 
-class GradeasyContext(BaseModel, frozen=True):
+class ProductContext(BaseModel, frozen=True):
     name: str = "Gradeasy"
     url: str = "gradeasy.ai"
     tagline: str = "AI-powered grading assistant for K-12 teachers"
@@ -41,6 +41,7 @@ class CommentGenerator:
         mention_rate: int = 10,
         vertex_project: str = "",
         vertex_location: str = "us-central1",
+        product: ProductContext | None = None,
     ) -> None:
         self._client = create_genai_client(
             vertex_project=vertex_project,
@@ -48,7 +49,7 @@ class CommentGenerator:
         )
         self._model = gemini_model
         self._mention_rate = mention_rate
-        self._context = GradeasyContext()
+        self._context = product or ProductContext()
 
     async def generate_comment(
         self,

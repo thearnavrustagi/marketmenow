@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -31,5 +31,5 @@ class Campaign(BaseModel):
     content: BaseContent
     targets: list[CampaignTarget] = Field(..., min_length=1)
     audience: Audience | None = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     status: str = "draft"

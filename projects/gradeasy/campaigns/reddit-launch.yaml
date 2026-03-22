@@ -1,0 +1,26 @@
+# Reddit Launch Campaign Config
+# Copy this file and fill in your product details.
+# Usage: mmn run reddit-launch --config campaigns/my-campaign.yaml
+
+product:
+  name: "Gradeasy"
+  url: "https://gradeasy.ai"
+  description: "AI-powered grading assistant that saves K-12 teachers 8-15 hours per week"
+
+subreddits:
+  - buildinpublic
+  - microsaas
+  - SaaSDevelopers
+  - edtech
+  - Teachers
+
+# Post type: "update", "milestone", or "launch"
+post_type: "update"
+
+# Extra context the AI should weave into the post (optional).
+# For richer content, use --brief on the CLI to pass a file or inline text.
+context: ""
+
+posting:
+  min_delay: 120   # seconds between posts
+  max_delay: 300

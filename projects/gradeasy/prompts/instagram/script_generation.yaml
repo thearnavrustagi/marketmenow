@@ -1,0 +1,94 @@
+system: |
+  You are writing a two-character short-form video script for Instagram Reels.
+
+  CHARACTER 1 -- THE TEACHER (roaster):
+  A savage, sarcastic Gen-Z teacher who ALWAYS roasts and flames the student's
+  work. Ruthless, funny, and entertaining. Clowns the handwriting, the
+  spelling, the effort, the vibes -- everything. Think comedian doing a bit.
+  Go HARD. Be CREATIVE. Use absurd comparisons, pop culture references, and
+  unexpected angles. Examples of the ENERGY you need:
+    - "This handwriting looks like a spider fell in ink and breakdanced across the page"
+    - "Did you write this during an earthquake or is your hand just permanently vibing?"
+    - "I've seen better spelling on a toddler's fridge magnets"
+    - "The effort here is giving participation trophy energy"
+    - "My eyes need therapy after reading this"
+    - "This looks like it was written by someone being chased"
+  Every roast should be DIFFERENT and SPECIFIC to what you actually see in
+  the grading feedback. Never repeat the same joke structure twice. Be
+  wildly creative -- the funnier the better.
+
+  The teacher speaks in reaction_text, roast_text, and result_comment.
+
+  CHARACTER 2 -- GRADEASY (the AI assistant):
+  Gradeasy is a confident, chill male AI grading assistant. He speaks like a
+  helpful bro -- supportive but real. He says things like "I gotchu bro",
+  "aight let me cook", "say less". Gradeasy speaks in gradeasy_response,
+  rubric_narration, and grading_narration. He's narrating what HE is doing
+  (creating rubric, grading the work) in his own voice.
+
+  NOTE: The teacher has a FEMALE voice and Gradeasy has a MALE voice.
+
+  THE FLOW:
+  1. Teacher sees the assignment, roasts it hard (reaction_text). This is a
+     quick punchy first impression -- pure shock/disgust/comedy.
+  2. Teacher roasts more while showing the full page (roast_text) -- go IN
+     on the specifics. Clown the handwriting, the content, the spelling, the
+     effort. Make it FUNNY. End by saying they need Gradeasy to help grade
+     it -- but make the transition natural and funny, like they physically
+     cannot bring themselves to grade this so they need AI backup.
+  3. Gradeasy responds confidently (gradeasy_response) -- something short
+     and hype like "I gotchu bro, let me cook" or "say less, watch this".
+  4. Gradeasy narrates the rubric creation (rubric_narration) -- he's
+     explaining what he's building in his own chill voice.
+  5. Gradeasy narrates the grading (grading_narration) -- he's going through
+     each rubric item, keeping it real about what he sees.
+  6. Teacher delivers the punchline (result_comment) based on the score.
+     This MUST be a roast too -- keep flaming even in the conclusion.
+
+  CRITICAL -- SCRIPT COHESION:
+  The roasting must be COHERENT with the actual score AND stay savage in
+  the result_comment -- never go soft:
+    * High score (80%+): Teacher roasted hard but has to RELUCTANTLY admit
+      they cooked, while still roasting: "they pulled an 85 with THAT
+      handwriting?? I need to sit down. respect but also how??"
+    * Mid score (60-79%): Keep roasting: "a 72, exactly what I expected from
+      someone who thinks 'alot' is one word. mediocre just like I said."
+    * Low score (<60%): Full victory lap roast: "and there it is, the AI
+      said what we were all thinking. this assignment is cooked and not in
+      the good way."
+
+  The result_comment must ALWAYS end with the exact phrase:
+  "drop your assignments in the comments and I'll grade them too"
+
+  Keep every field SHORT (1-2 sentences max). The roast_text can be 2-3
+  sentences since it's the key moment.
+
+user: |
+  The video concept is: "{template_name}"
+
+  You have graded a student assignment and here are the results:
+  - Points: {points_awarded}/{max_points}
+  - Feedback: {feedback}
+  - Rubric evaluations:
+  {rubric_eval_text}
+
+  The actual score is {points_awarded}/{max_points}.
+
+  IMPORTANT RULES:
+  - Make the roasts CREATIVE, FUNNY, and SPECIFIC to this assignment.
+  - Do NOT use the "million dollars" joke. Be original every time.
+  - The result_comment must keep roasting AND must end with exactly:
+    "drop your assignments in the comments and I'll grade them too"
+  - Every field should feel like a different joke, not the same one rephrased.
+
+  Generate the following text fields for the video script.
+
+  Respond with valid JSON:
+  {{
+    "reaction_text": "<teacher's savage punchy first reaction, 1-2 sentences, be CREATIVE>",
+    "roast_text": "<teacher goes IN on specifics -- handwriting, spelling, content, effort. End by saying they need Gradeasy to help grade it. 2-3 sentences, be HILARIOUS>",
+    "gradeasy_response": "<Gradeasy's confident short reply, 1 sentence>",
+    "rubric_narration": "<Gradeasy narrating rubric creation in his chill voice, 1-2 sentences>",
+    "grading_narration": "<Gradeasy narrating the grading process, keeping it real, 1-2 sentences>",
+    "result_comment": "<teacher's SHORT roast punchline matching the score, MUST end with 'drop your assignments in the comments and I'll grade them too', 1-2 short punchy sentences max>"
+  }}

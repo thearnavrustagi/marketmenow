@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from rich.console import Console
 
@@ -288,3 +290,90 @@ class TestWorkflowDataclass:
         assert len(wf.params) == 2
         assert wf.params[0].name == "a"
         assert wf.params[1].required is True
+
+
+# ---------------------------------------------------------------------------
+# Project integration
+# ---------------------------------------------------------------------------
+
+
+class TestWorkflowContextProject:
+    def test_context_with_project(self) -> None:
+        from marketmenow.models.project import BrandConfig, PersonaConfig, ProjectConfig
+
+        proj = ProjectConfig(
+            slug="test",
+            brand=BrandConfig(name="T", url="t.io", tagline="t"),
+        )
+        persona = PersonaConfig(name="default")
+        ctx = WorkflowContext({"key": "val"}, project=proj, persona=persona)
+        assert ctx.project is not None
+        assert ctx.project.slug == "test"
+        assert ctx.persona is not None
+
+    def test_context_without_project(self) -> None:
+        ctx = WorkflowContext({"key": "val"})
+        assert ctx.project is None
+        assert ctx.persona is None
+
+    def test_resolve_project_path_with_fallback_no_project(self, tmp_path: Path) -> None:
+        fallback = tmp_path / "global"
+        fallback.mkdir()
+        (fallback / "file.txt").write_text("global")
+        ctx = WorkflowContext({})
+        resolved = ctx.resolve_project_path("prompts", "file.txt", fallback=fallback)
+        assert resolved == fallback / "file.txt"
+
+    def test_resolve_project_path_no_project_no_fallback_raises(self) -> None:
+        ctx = WorkflowContext({})
+        with pytest.raises(WorkflowError):
+            ctx.resolve_project_path("prompts", "file.txt")
+
+
+class TestWorkflowRunWithProject:
+    async def test_run_passes_project_to_context(self) -> None:
+        from marketmenow.models.project import BrandConfig, PersonaConfig, ProjectConfig
+
+        proj = ProjectConfig(
+            slug="test",
+            brand=BrandConfig(name="T", url="t.io", tagline="t"),
+        )
+        persona = PersonaConfig(name="default")
+
+        captured: list[WorkflowContext] = []
+
+        class CaptureStep:
+            @property
+            def name(self) -> str:
+                return "capture"
+
+            @property
+            def description(self) -> str:
+                return "capture ctx"
+
+            async def execute(self, ctx: WorkflowContext) -> None:
+                captured.append(ctx)
+
+        wf = Workflow(name="test", description="test", steps=(CaptureStep(),))
+        await wf.run({}, project=proj, persona=persona)
+        assert len(captured) == 1
+        assert captured[0].project is not None
+        assert captured[0].project.slug == "test"
+        assert captured[0].persona is not None
+
+    async def test_run_without_project(self) -> None:
+        class NoopStep:
+            @property
+            def name(self) -> str:
+                return "noop"
+
+            @property
+            def description(self) -> str:
+                return "noop"
+
+            async def execute(self, ctx: WorkflowContext) -> None:
+                pass
+
+        wf = Workflow(name="test", description="test", steps=(NoopStep(),))
+        result = await wf.run({})
+        assert result.success

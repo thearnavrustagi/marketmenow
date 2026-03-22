@@ -1,0 +1,86 @@
+# Twitter Cold Outreach Campaign Config
+# Copy this file, customise it for your ICP, and run:
+#   mmn run twitter-outreach --profile campaigns/your-campaign.yaml --dry-run
+
+platform: twitter
+
+product:
+  name: "Gradeasy"
+  url: "https://gradeasy.ai"
+  tagline: "AI-powered grading assistant for K-12 teachers"
+  value_prop: "Saves teachers 8-15 hours/week on grading"
+
+ideal_customer:
+  description: >
+    K-12 teachers who are overwhelmed by grading workload,
+    spend evenings/weekends grading, and are open to using
+    technology to save time.
+
+  rubric:
+    - name: "Role Fit"
+      description: >
+        Is this person a K-12 teacher, professor, TA, or education professional?
+        Bio says "teacher", "educator", etc. or posts clearly indicate teaching role.
+      max_points: 3
+
+    - name: "Pain Signal"
+      description: >
+        Have they expressed frustration about grading specifically?
+        Mentions of late nights grading, piles of papers, grading burnout.
+      max_points: 3
+
+    - name: "Tech Openness"
+      description: >
+        Do they use or discuss edtech tools? Mention AI, apps, digital tools?
+        Are they curious about technology rather than resistant?
+      max_points: 3
+
+    - name: "Engagement Level"
+      description: >
+        Are they actively posting (not a dormant account)?
+        Do they reply to others, participate in conversations?
+      max_points: 2
+
+    - name: "DM Receptiveness"
+      description: >
+        Follower count sweet spot (100-10K). Do they seem approachable in tone?
+      max_points: 2
+
+  min_score: 8
+  max_prospects_to_enrich: 50
+
+# Discovery vectors — presence = enabled, remove an entry to disable that vector.
+discovery:
+  - type: pain_search
+    entries:
+      - '"grading takes forever" -is:retweet'
+      - '"up late grading" OR "grading all weekend" -is:retweet'
+      - '"so many papers to grade" -is:retweet lang:en'
+      - '(grading OR marking) (exhausted OR overwhelmed) -is:retweet'
+      - '"AI grading" OR "automate grading" lang:en'
+    max_per_entry: 5
+
+  - type: conversation_mining
+    entries:
+      - "@coolcatteacher"
+      - "@cultofpedagogy"
+      - "@TeachBetter"
+    max_per_entry: 5
+
+  - type: hashtag_scan
+    entries:
+      - "#teacherlife"
+      - "#teacherproblems"
+      - "#gradingseason"
+      - "#edtech"
+    max_per_entry: 5
+
+messaging:
+  max_messages: 10
+  min_delay_seconds: 120
+  max_delay_seconds: 300
+  tone: "casual, helpful, peer-to-peer — like a fellow teacher sharing a find, not a salesperson"
+  reference_post: true
+  pause_every_n: 5
+  long_pause_seconds: 600
+  max_message_length: 280

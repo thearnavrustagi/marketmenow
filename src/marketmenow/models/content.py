@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import enum
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ class BaseContent(BaseModel, frozen=True):
 
     id: UUID = Field(default_factory=uuid4)
     modality: ContentModality
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, str] = Field(default_factory=dict)
 
 

@@ -12,6 +12,9 @@ uv run ruff format src/ tests/       # Format
 uv run mmn --help                    # CLI
 uv run mmn workflows                 # List marketing workflows
 uv run mmn run <workflow> [OPTIONS]  # Run a workflow
+uv run mmn project add <slug>      # Create project (onboarding wizard)
+uv run mmn project list             # List projects
+uv run mmn project use <slug>       # Switch active project
 uv run mmn auth <platform>           # Authenticate
 uv run mmn-web                       # Web dashboard (localhost:8000)
 ```
@@ -43,6 +46,11 @@ uv run mmn-web                       # Web dashboard (localhost:8000)
 | `src/marketmenow/steps/*.py`            | Reusable workflow steps (generate, post, discover, etc.) |
 | `src/marketmenow/workflows/*.py`        | Built-in workflow definitions              |
 | `src/marketmenow/models/content.py`     | Content modalities and data models         |
+| `src/marketmenow/models/project.py`       | `ProjectConfig`, `BrandConfig`, `TargetCustomer`, `PersonaConfig` |
+| `src/marketmenow/core/project_manager.py` | `ProjectManager` — CRUD, path resolution, scaffolding |
+| `src/marketmenow/core/onboarding.py`      | 10-phase interactive project onboarding wizard |
+| `src/marketmenow/core/project_templates.py`| Generate starter prompts, targets, campaigns |
+| `projects/`                                | Per-product marketing material directories |
 | `src/marketmenow/normaliser.py`         | `NormalisedContent` + `ContentNormaliser`  |
 | `src/marketmenow/cli.py`               | Main CLI entry point (+ hidden adapter CLI aliases for web frontend) |
 | `campaigns/*.yaml`                     | YAML campaign config files (e.g. reddit-launch) |

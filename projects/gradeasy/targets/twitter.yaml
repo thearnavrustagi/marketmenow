@@ -1,0 +1,96 @@
+influencers:
+  # High-profile education influencers
+  - "@gcouros"           # George Couros – innovation in education
+  - "@coolcatteacher"    # Vicki Davis – ed tech blogger
+  - "@web20classroom"    # Steven W. Anderson – ed tech
+  - "@ClassTechTips"     # Monica Burns – ed tech tips
+  - "@thenerdyteacher"   # Nicholas Provenzano
+  - "@TechNinjaTodd"     # Todd Nesloney
+  - "@brewerhm"          # Hamish Brewer – principal
+  - "@burgessdave"       # Dave Burgess – Teach Like a Pirate
+  - "@ShellTerrell"      # Shelly Sanchez Terrell
+  - "@ErinKlein"         # Erin Klein – classroom design
+  - "@thomascmurray"     # Thomas C. Murray – ed leadership
+  - "@RichardByrne"      # Richard Byrne – Free Tech 4 Teachers
+  - "@alabordeducator"   # Anthony Laborde
+  - "@cultofpedagogy"    # Jennifer Gonzalez – Cult of Pedagogy
+  - "@MrBettsClass"      # Andrew Betts
+  - "@AliceKeeler"       # Alice Keeler – Google edu
+  - "@jabornestein"      # Jon Corippo
+  - "@mabornestein"      # Matt Vaudrey
+  - "@MrsMeganMorgan"    # Megan Morgan
+  - "@Abornestein"       # Jon Corippo
+  - "@TechWithJen"       # Jen Giffen
+  - "@mattmiller"        # Matt Miller – Ditch That Textbook
+  - "@KarlyMoura"        # Karly Moura – ed tech
+  - "@WeVideo"           # WeVideo education
+  - "@jakemillered"      # Jake Miller – ed tech
+  - "@mabornestein"      # Matt Vaudrey
+  - "@HollyClarkEdu"     # Holly Clark – Infused Classroom
+  - "@TaraMartinEDU"     # Tara Martin
+  - "@JMattMiller"       # Matt Miller
+  - "@MrsPietersEDU"     # Kayla Pieters
+  - "@EdTechJeff"        # Jeff Bradbury
+  - "@AJBianco"          # A.J. Bianco
+  - "@CSHearnEDU"        # Claudio Hearns
+  - "@mraspinall"        # Michael Aspinall
+  - "@TeachBetter"       # Teach Better Team
+  - "@EdTechBridge"      # EdTech Bridge
+  - "@teachwithtech"     # Teach With Tech
+  - "@MicrosoftEDU"      # Microsoft Education
+  - "@GoogleForEdu"      # Google for Education
+  - "@AppleEDU"          # Apple Education
+  - "@canabornesteinfo"  # Canva for Education
+  - "@quabordsofficial"  # Quizlet
+  - "@Kahoot"            # Kahoot
+  - "@ClassDojo"         # ClassDojo
+  - "@Seesaw"            # Seesaw Learning
+  - "@DuolingoUS"        # Duolingo
+  - "@Nearpod"           # Nearpod
+  - "@Flipgrid"          # Flipgrid (now Flip)
+  - "@BookCreatorApp"    # Book Creator
+  - "@PearDeck"          # Pear Deck
+
+hashtags:
+  - "#edtech"
+  - "#edchat"
+  - "#education"
+  - "#k12"
+  - "#teaching"
+  - "#AIinEducation"
+  - "#TeacherLife"
+  - "#EduTech"
+  - "#EdLeadership"
+  - "#STEM"
+  - "#mathchat"
+  - "#scichat"
+  - "#elearning"
+  - "#digitallearning"
+  - "#blendedlearning"
+  - "#teachertwitter"
+  - "#edtechchat"
+  - "#googleedu"
+  - "#tlap"
+  - "#ditchbook"
+  - "#classroomtech"
+  - "#AIgrading"
+  - "#teachertools"
+  - "#eduinnovation"
+  - "#futureoflearning"
+
+company_accounts:
+  - "@DuolingoUS"
+  - "@Kahoot"
+  - "@ClassDojo"
+  - "@GoogleForEdu"
+  - "@MicrosoftEDU"
+  - "@Canva"
+  - "@Nearpod"
+  - "@Seesaw"
+  - "@PearDeck"
+  - "@BookCreatorApp"
+  - "@Flipgrid"
+  - "@quabordsofficial"
+  - "@BrainPOP"
+  - "@EdPuzzle"
+  - "@IXLLearning"

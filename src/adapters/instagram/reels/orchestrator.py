@@ -43,14 +43,18 @@ def _merge_default_visual(
 class ReelOrchestrator:
     """End-to-end pipeline: template + assignment image -> rendered .mp4 VideoPost."""
 
-    def __init__(self, settings: InstagramSettings) -> None:
+    def __init__(
+        self,
+        settings: InstagramSettings,
+        templates_dir: Path | None = None,
+    ) -> None:
         self._settings = settings
         self._output_dir = settings.output_dir / "reels"
         self._output_dir.mkdir(parents=True, exist_ok=True)
 
         _ensure_vertex_credentials(settings)
 
-        self._loader = ReelTemplateLoader()
+        self._loader = ReelTemplateLoader(templates_dir)
         self._grader = SimpleGradingService(
             project=settings.vertex_ai_project,
             location=settings.vertex_ai_location,

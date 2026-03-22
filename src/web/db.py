@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS content_items (
 
 ALTER TABLE content_items ADD COLUMN IF NOT EXISTS progress_data JSONB;
 
+ALTER TABLE content_items ADD COLUMN IF NOT EXISTS project_slug TEXT;
+CREATE INDEX IF NOT EXISTS idx_content_items_project ON content_items(project_slug);
+
 CREATE TABLE IF NOT EXISTS platform_queues (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     content_item_id UUID NOT NULL REFERENCES content_items(id) ON DELETE CASCADE,
@@ -147,18 +150,20 @@ async def insert_content_item(
     title: str,
     generate_command: list[str],
     publish_command: list[str] | None = None,
+    project_slug: str | None = None,
 ) -> UUID:
     row = await pool().fetchrow(
         """
-        INSERT INTO content_items (platform, modality, title, generate_command, publish_command)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id
+        INSERT INTO content_items (platform, modality, title, generate_command, publish_command, project_slug)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, project_slug
         """,
         platform,
         modality,
         title,
         generate_command,
         publish_command,
+        project_slug,
     )
     return row["id"]
 
@@ -210,7 +215,10 @@ async def get_content_item(item_id: UUID) -> asyncpg.Record | None:
 
 
 async def list_content_items(
-    status: str | None = None, platform: str | None = None, limit: int = 50
+    status: str | None = None,
+    platform: str | None = None,
+    limit: int = 50,
+    project_slug: str | None = None,
 ) -> list[asyncpg.Record]:
     clauses: list[str] = []
     params: list[Any] = []
@@ -222,6 +230,10 @@ async def list_content_items(
     if platform:
         clauses.append(f"platform = ${idx}")
         params.append(platform)
+        idx += 1
+    if project_slug:
+        clauses.append(f"project_slug = ${idx}")
+        params.append(project_slug)
         idx += 1
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     params.append(limit)

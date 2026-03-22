@@ -38,9 +38,25 @@
       <div class="flex gap-1">
         <a href="/" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if request.url.path == '/' %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Dashboard</a>
         <a href="/flows" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/flows' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Flows</a>
+        <a href="/outreach" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/outreach' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Outreach</a>
         <a href="/credentials" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/credentials' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Credentials</a>
         <a href="/queues" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/queues' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">Queues</a>
         <a href="/history" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {% if '/history' in request.url.path %}bg-white text-black{% else %}text-zinc-400 hover:text-white hover:bg-zinc-900{% endif %}">History</a>
+      </div>
+      {% set projects_data = get_projects() %}
+      {% set projects = projects_data[0] %}
+      {% set active_project = projects_data[1] %}
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-xs text-zinc-500">Project:</span>
+        <form hx-post="/project/select" hx-swap="none" class="flex items-center">
+          <select name="slug" onchange="this.form.requestSubmit()"
+                  class="bg-zinc-900 border border-zinc-700 text-zinc-300 text-sm rounded px-2 py-1 focus:outline-none focus:border-zinc-500">
+            <option value="">All projects</option>
+            {% for p in projects %}
+            <option value="{{ p.slug }}" {% if p.slug == active_project %}selected{% endif %}>{{ p.brand.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
       </div>
     </div>
   </nav>

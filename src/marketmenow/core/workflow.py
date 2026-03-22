@@ -3,9 +3,13 @@ from __future__ import annotations
 import enum
 import logging
 from dataclasses import dataclass, field
-from typing import Protocol, runtime_checkable
+from pathlib import Path
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from rich.console import Console
+
+if TYPE_CHECKING:
+    from marketmenow.models.project import PersonaConfig, ProjectConfig
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +47,14 @@ class WorkflowContext:
         params: dict[str, str | int | float | bool],
         *,
         console: Console | None = None,
+        project: ProjectConfig | None = None,
+        persona: PersonaConfig | None = None,
     ) -> None:
         self.params: dict[str, str | int | float | bool] = dict(params)
         self.artifacts: dict[str, object] = {}
         self.console: Console = console or Console()
+        self.project: ProjectConfig | None = project
+        self.persona: PersonaConfig | None = persona
 
     def get_param(
         self, key: str, default: str | int | float | bool | None = None
@@ -65,6 +73,21 @@ class WorkflowContext:
         if key not in self.artifacts:
             raise WorkflowError(f"Expected artifact missing: {key}")
         return self.artifacts[key]
+
+    def resolve_project_path(
+        self, category: str, *parts: str, fallback: Path | None = None
+    ) -> Path:
+        """Resolve a path within the active project, with optional global fallback."""
+        if self.project is None:
+            if fallback is not None:
+                candidate = fallback / Path(*parts)
+                if candidate.exists():
+                    return candidate
+            raise WorkflowError("No active project and no fallback path")
+        from marketmenow.core.project_manager import ProjectManager
+
+        pm = ProjectManager()
+        return pm.resolve_path(self.project.slug, category, *parts, fallback=fallback)
 
 
 @runtime_checkable
@@ -117,8 +140,10 @@ class Workflow:
         raw_params: dict[str, str | int | float | bool],
         *,
         console: Console | None = None,
+        project: ProjectConfig | None = None,
+        persona: PersonaConfig | None = None,
     ) -> WorkflowResult:
-        ctx = WorkflowContext(raw_params, console=console)
+        ctx = WorkflowContext(raw_params, console=console, project=project, persona=persona)
         result = WorkflowResult(workflow_name=self.name)
 
         for step in self.steps:

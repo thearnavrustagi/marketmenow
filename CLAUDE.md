@@ -13,6 +13,7 @@ src/web/                  # FastAPI web dashboard
 tests/                    # pytest + pytest-asyncio test suite
 prompts/                  # YAML prompt templates per platform
 campaigns/                # YAML campaign config files (e.g. reddit-launch)
+projects/                 # Per-product marketing material directories
 pyproject.toml            # Single source of truth for deps, scripts, ruff, pytest config
 ```
 
@@ -28,6 +29,10 @@ uv run ruff check --fix src/ tests/  # Auto-fix safe lint issues
 uv run mmn --help                    # CLI help
 uv run mmn workflows                 # List available marketing workflows
 uv run mmn run <workflow> [OPTIONS]  # Run a workflow (e.g. instagram-reel, twitter-engage)
+uv run mmn project add <slug>      # Create a new project (interactive onboarding)
+uv run mmn project list             # List all projects
+uv run mmn project use <slug>       # Set active project
+uv run mmn project info             # Show project details
 uv run mmn auth <platform>           # Authenticate with a platform
 uv run mmn heal                      # Run tests and auto-fix failures via Cursor agent
 uv run mmn-web                       # Start web dashboard (http://localhost:8000)
@@ -58,6 +63,19 @@ Higher-level composable marketing workflows. A `Workflow` is a named sequence of
 - `WorkflowRegistry` (`core/workflow_registry.py`) — holds registered workflows, `build_workflow_registry()` auto-discovers all built-in workflows
 
 Built-in workflows: `instagram-reel`, `instagram-carousel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`
+
+### Projects (models/project.py, core/project_manager.py, core/onboarding.py)
+
+Per-product packaging of all marketing material. A project directory under `projects/` contains everything needed to market a specific product: brand config, target customer, personas, platform prompts, engagement targets, campaign profiles, reel templates, and generated output.
+
+- `ProjectConfig` — slug, brand, target customer, default persona, env overrides
+- `BrandConfig` — name, url, tagline, color, logo, features
+- `TargetCustomer` — ICP description, pain points, keywords, target platforms
+- `PersonaConfig` — voice, tone, example phrases, platform overrides
+- `ProjectManager` — CRUD, path resolution with global fallback, active project tracking
+- `run_onboarding()` — 10-phase interactive wizard for creating new projects
+
+Path resolution: `ProjectManager.resolve_path()` checks `projects/{slug}/{category}/` first, falls back to global paths. This means workflows, prompt loaders, and template loaders automatically use project-specific content when available.
 
 ### Outreach Engine (outreach/)
 
@@ -105,6 +123,7 @@ All defined as `typing.Protocol` with `@runtime_checkable`:
 3. **Immutable data.** All Pydantic models use `frozen=True`. Mutate via `model_copy(update={...})`.
 4. **Adapters are independent.** Adapter packages must not import from each other.
 5. **`PlatformBundle` registration.** Each adapter exposes a `create_*_bundle(settings)` factory. Registration happens in `core/registry_builder.py` — missing env vars cause graceful skip.
+6. **Project-scoped content.** Prompts, targets, templates, and campaigns resolve from the active project directory first, falling back to global paths.
 
 ## Python Style
 
@@ -149,7 +168,7 @@ All defined as `typing.Protocol` with `@runtime_checkable`:
 
 ## Web Dashboard (src/web/)
 
-FastAPI app with Jinja2 templates. Runs `mmn` CLI commands as subprocesses via `cli_runner.py`. The queue worker (`queue_worker.py`) drains a per-platform posting queue with rate limiting. Real-time progress via WebSocket (`/ws/content/{item_id}`) and `EventHub`.
+FastAPI app with Jinja2 templates. Runs `mmn` CLI commands as subprocesses via `cli_runner.py`. The queue worker (`queue_worker.py`) drains a per-platform posting queue with rate limiting. Real-time progress via WebSocket (`/ws/content/{item_id}`) and `EventHub`. Dedicated **Outreach** page (`/outreach`) shows cold DM stats, outreach history from `.outreach_history.json`, campaign profiles, and quick-run forms for outreach workflows.
 
 The web frontend calls per-platform CLI commands (`mmn reel create`, `mmn twitter engage`, etc.) as subprocesses. These adapter CLIs are mounted as **hidden groups** in `cli.py` (`hidden=True`) — they don't appear in `mmn --help` but remain callable by the web frontend.
 
