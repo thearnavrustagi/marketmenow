@@ -224,6 +224,7 @@ graph LR
     subgraph ports [Protocols]
         direction TB
         Renderer["ContentRenderer"]
+        Sanitiser["TextSanitiser"]
         Uploader["Uploader"]
         Adapter["PlatformAdapter"]
     end
@@ -239,8 +240,9 @@ graph LR
     end
 
     Pipeline --> Renderer
-    Pipeline --> Uploader
-    Pipeline --> Adapter
+    Renderer --> Sanitiser
+    Sanitiser --> Uploader
+    Uploader --> Adapter
     IG -.-> Adapter
     TW -.-> Adapter
     RD -.-> Adapter
@@ -249,7 +251,9 @@ graph LR
     EM -.-> Adapter
 ```
 
-**Pipeline:** Normalise -> Render -> Upload -> Publish
+**Pipeline:** Normalise → Render → Sanitise → Upload → Publish
+
+The **Sanitise** step strips em-dashes, en-dashes, and other AI-telltale formatting from all text fields before upload — a simple anti-AI-detection layer that runs automatically on every piece of content.
 
 **Adding a platform:** Create `src/adapters/yourplatform/`, implement the protocols, register with `AdapterRegistry`. Zero changes to core.
 
