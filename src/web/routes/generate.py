@@ -349,7 +349,6 @@ def _extract_error(stderr: str, stdout: str, exit_code: int) -> str:
     return f"Process exited with code {exit_code}"
 
 
-
 async def _run_single_command(entry: _BatchEntry) -> CliResult:
     """Run a single publish command that does generate+publish in one shot."""
     await db.update_content_status(entry.item_id, "posting")

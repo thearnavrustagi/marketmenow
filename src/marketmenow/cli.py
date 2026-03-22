@@ -168,7 +168,11 @@ def _print_workflow_help(workflow: object) -> None:
 
 @app.command(
     "run",
-    context_settings={"allow_extra_args": True, "allow_interspersed_args": True},
+    context_settings={
+        "allow_extra_args": True,
+        "allow_interspersed_args": True,
+        "ignore_unknown_options": True,
+    },
     rich_help_panel="Workflows",
 )
 def run_workflow(

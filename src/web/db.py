@@ -283,6 +283,14 @@ async def update_queue_status(
         )
 
 
+async def cancel_queue_job_for_content(content_item_id: UUID) -> None:
+    """Remove any waiting queue jobs for the given content item."""
+    await pool().execute(
+        "DELETE FROM platform_queues WHERE content_item_id = $1 AND status = 'waiting'",
+        content_item_id,
+    )
+
+
 async def log_post(
     platform: str,
     content_item_id: UUID,

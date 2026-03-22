@@ -56,7 +56,19 @@ Higher-level composable marketing workflows. A `Workflow` is a named sequence of
 - `Workflow` — frozen dataclass with `name`, `description`, `steps`, `params` (ParamDef schema)
 - `WorkflowRegistry` (`core/workflow_registry.py`) — holds registered workflows, `build_workflow_registry()` auto-discovers all built-in workflows
 
-Built-in workflows: `instagram-reel`, `instagram-carousel`, `twitter-thread`, `twitter-engage`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`
+Built-in workflows: `instagram-reel`, `instagram-carousel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`
+
+### Outreach Engine (outreach/)
+
+Modular, platform-agnostic cold outreach system. Discovers people on a platform, scores them against a rubric, generates personalised messages, and sends them.
+
+- `outreach/models.py` — `CustomerProfile`, `UserProfile`, `ScoredProspect`, `OutreachMessage`, `RubricCriterion`, `DiscoveryVectorConfig`
+- `outreach/ports.py` — `DiscoveryVector`, `ProfileEnricher`, `MessageSender` protocols
+- `outreach/scorer.py` — `ProspectScorer` (Gemini rubric evaluation, platform-agnostic)
+- `outreach/message_generator.py` — `OutreachMessageGenerator` (Gemini message generation, platform-agnostic)
+- `outreach/history.py` — `OutreachHistory` (JSON-based tracking of contacted handles)
+
+Platform-specific implementations live in adapter packages (e.g. `adapters/twitter/outreach/`). The core engine never imports adapters.
 
 ### Protocols (ports/)
 
@@ -78,7 +90,7 @@ All defined as `typing.Protocol` with `@runtime_checkable`:
 | Adapter    | Modalities                                    | Key subsystems                                    |
 |------------|-----------------------------------------------|---------------------------------------------------|
 | instagram  | VIDEO, IMAGE                                  | Reels (TTS + Remotion), Carousels, Figma export   |
-| twitter    | THREAD, REPLY                                 | Discovery, reply generation, engagement orchestrator |
+| twitter    | THREAD, REPLY, DIRECT_MESSAGE                 | Discovery, reply generation, engagement orchestrator, cold outreach (DM) |
 | linkedin   | TEXT_POST, IMAGE, VIDEO, DOCUMENT, ARTICLE, POLL | API + browser posting                            |
 | reddit     | REPLY, TEXT_POST                              | Two-phase engagement + subreddit post submission  |
 | youtube    | VIDEO                                         | Shorts upload via Data API v3                     |

@@ -23,7 +23,7 @@ class TwitterAdapter:
         return "twitter"
 
     def supported_modalities(self) -> frozenset[ContentModality]:
-        return frozenset({ContentModality.REPLY, ContentModality.THREAD})
+        return frozenset({ContentModality.REPLY, ContentModality.THREAD, ContentModality.DIRECT_MESSAGE})
 
     async def authenticate(self, credentials: dict[str, str]) -> None:
         if not await self._browser.is_logged_in():
@@ -101,9 +101,24 @@ class TwitterAdapter:
             )
 
     async def send_dm(self, content: NormalisedContent) -> SendResult:
+        from .outreach.dm_sender import TwitterDMSender
+
+        handle = content.recipient_handles[0] if content.recipient_handles else ""
+        if not handle:
+            return SendResult(
+                platform="twitter",
+                recipient_handle="",
+                success=False,
+                error_message="No recipient handle provided",
+            )
+
+        sender = TwitterDMSender(self._browser)
+        message = content.text_segments[0] if content.text_segments else ""
+        result = await sender.send(handle, message)
+
         return SendResult(
             platform="twitter",
-            recipient_handle=(content.recipient_handles[0] if content.recipient_handles else ""),
-            success=False,
-            error_message="Twitter DMs are not supported in this adapter",
+            recipient_handle=handle,
+            success=result.success,
+            error_message=result.error_message,
         )

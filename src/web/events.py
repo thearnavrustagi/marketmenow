@@ -106,6 +106,7 @@ class EventHub:
                     continue
                 try:
                     from web import db
+
                     await db.update_progress_data(item_id, snap)
                 except Exception:
                     logger.debug("Failed to flush progress for %s", item_id, exc_info=True)

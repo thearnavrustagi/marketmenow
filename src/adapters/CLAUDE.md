@@ -7,7 +7,7 @@ Platform-specific implementations. Each adapter package is independent and must 
 | Package      | Modalities                                     | Bundle factory                   |
 |--------------|------------------------------------------------|----------------------------------|
 | `instagram/` | VIDEO, IMAGE                                   | `create_instagram_bundle()`      |
-| `twitter/`   | THREAD, REPLY                                  | `create_twitter_bundle()`        |
+| `twitter/`   | THREAD, REPLY, DIRECT_MESSAGE                  | `create_twitter_bundle()`        |
 | `linkedin/`  | TEXT_POST, IMAGE, VIDEO, DOCUMENT, ARTICLE, POLL | `create_linkedin_bundle()`     |
 | `reddit/`    | REPLY, TEXT_POST                               | `create_reddit_bundle()`         |
 | `youtube/`   | VIDEO                                          | `create_youtube_bundle()`        |

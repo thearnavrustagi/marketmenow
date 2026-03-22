@@ -45,6 +45,7 @@ def build_workflow_registry() -> WorkflowRegistry:
     _try_register(registry, "marketmenow.workflows.email_outreach", "workflow")
     _try_register(registry, "marketmenow.workflows.youtube_short", "workflow")
     _try_register(registry, "marketmenow.workflows.reddit_launch", "workflow")
+    _try_register(registry, "marketmenow.workflows.twitter_outreach", "workflow")
 
     _load_custom_workflows(registry)
 

@@ -20,8 +20,13 @@ This package is **platform-agnostic**. It must never import from `src/adapters/`
 | `cli.py`                  | Top-level Typer app (`mmn`) — `run`, `workflows`, `auth`, `distribute`, `platforms`, `version` + hidden adapter CLI groups for web frontend |
 | `core/workflow.py`        | `WorkflowStep` protocol, `WorkflowContext`, `Workflow` runner, `ParamDef` |
 | `core/workflow_registry.py`| `WorkflowRegistry` + `build_workflow_registry()` — auto-discovers workflows |
-| `steps/*.py`              | Reusable workflow steps (generate_reel, post_to_platform, discover_posts, etc.) |
-| `workflows/*.py`          | Built-in workflow definitions (instagram_reel, twitter_engage, etc.) |
+| `steps/*.py`              | Reusable workflow steps (generate_reel, post_to_platform, discover_posts, discover_prospects, enrich_profiles, score_prospects, generate_messages, send_messages, etc.) |
+| `workflows/*.py`          | Built-in workflow definitions (instagram_reel, twitter_engage, twitter_outreach, etc.) |
+| `outreach/models.py`      | `CustomerProfile`, `UserProfile`, `ScoredProspect`, `OutreachMessage`, rubric models |
+| `outreach/ports.py`       | `DiscoveryVector`, `ProfileEnricher`, `MessageSender` protocols |
+| `outreach/scorer.py`      | `ProspectScorer` — Gemini rubric evaluation (platform-agnostic) |
+| `outreach/message_generator.py` | `OutreachMessageGenerator` — Gemini message generation (platform-agnostic) |
+| `outreach/history.py`     | `OutreachHistory` — JSON tracking of contacted handles |
 | `core/pipeline.py`        | `ContentPipeline` — normalise → render → upload → publish    |
 | `core/orchestrator.py`    | `Orchestrator` + `CampaignResult` — runs campaigns across targets in parallel |
 | `core/distributor.py`     | `ContentDistributor` — resolves platforms from `DistributionMap`, delegates to `Orchestrator` |
@@ -85,6 +90,21 @@ class AnalyticsCollector(Protocol):
 A `Workflow` is a named sequence of `WorkflowStep` instances sharing a `WorkflowContext`. The context carries `params` (user CLI args) and `artifacts` (data produced by steps). Steps implement the `WorkflowStep` protocol: `name`, `description`, `async execute(ctx)`.
 
 Steps live in `steps/` and can import from adapters (they are glue code). Workflows live in `workflows/` and compose steps with `ParamDef` declarations that drive CLI auto-generation. `build_workflow_registry()` auto-discovers all built-in workflows.
+
+## Outreach Engine (outreach/)
+
+Modular, platform-agnostic cold outreach system. The core defines models, protocols, and LLM-powered scoring/generation. Platform-specific discovery, enrichment, and sending live in adapter packages.
+
+**Core (platform-agnostic):**
+- `outreach/models.py` — `CustomerProfile` (loaded from YAML), `UserProfile`, `ScoredProspect`, `OutreachMessage`, `RubricCriterion`, `DiscoveryVectorConfig`, `MessagingConfig`
+- `outreach/ports.py` — `DiscoveryVector` (finds posts), `ProfileEnricher` (scrapes profiles), `MessageSender` (sends messages) — all `typing.Protocol`
+- `outreach/scorer.py` — `ProspectScorer` uses Gemini to evaluate each user against rubric criteria. Returns structured JSON with per-criterion scores and a `dm_angle`.
+- `outreach/message_generator.py` — `OutreachMessageGenerator` uses Gemini to craft personalised messages based on the scorer's `dm_angle` and product info.
+- `outreach/history.py` — `OutreachHistory` tracks contacted handles in `.outreach_history.json`, keyed by `{platform}:{handle}`.
+
+**YAML-driven config:** Changing the `CustomerProfile` YAML fully reconfigures discovery queries, rubric criteria, tone, message length, and rate limits. Zero code changes.
+
+**Platform adapters** implement the three protocols. Adding a new platform = new discovery vectors + profile enricher + message sender. The scorer and message generator are reused.
 
 ## Key Rules
 

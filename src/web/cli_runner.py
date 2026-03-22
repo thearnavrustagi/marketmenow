@@ -269,6 +269,9 @@ async def _read_stream(
         )
 
 
+_RUNNING_PROCS: dict[UUID, asyncio.subprocess.Process] = {}
+
+
 async def run_cli_streaming(
     command_parts: list[str],
     *,
@@ -299,6 +302,8 @@ async def run_cli_streaming(
         env=full_env,
     )
 
+    _RUNNING_PROCS[item_id] = proc
+
     assert proc.stdout is not None
     assert proc.stderr is not None
 
@@ -322,6 +327,16 @@ async def run_cli_streaming(
             ProgressEvent(event_type="error", message=f"Command timed out after {timeout}s"),
         )
         return CliResult(exit_code=-1, stdout="", stderr=f"Command timed out after {timeout}s")
+    except asyncio.CancelledError:
+        proc.kill()
+        await proc.communicate()
+        hub.publish(
+            item_id,
+            ProgressEvent(event_type="error", message="Command was cancelled"),
+        )
+        return CliResult(exit_code=-1, stdout="", stderr="Command was cancelled")
+    finally:
+        _RUNNING_PROCS.pop(item_id, None)
 
     stdout = "\n".join(stdout_lines)
     stderr = "\n".join(stderr_lines)
@@ -825,3 +840,13 @@ def get_builders(platform: str, command_type: str) -> tuple[CommandBuilder, Comm
 
 def get_meta(platform: str, command_type: str) -> dict | None:
     return PLATFORM_META.get(platform, {}).get(command_type)
+
+
+async def cancel_cli_process(item_id: UUID) -> bool:
+    """Attempt to cancel a running CLI process for the given item_id."""
+    proc = _RUNNING_PROCS.get(item_id)
+    if proc and proc.returncode is None:
+        logger.info("Cancelling process for item_id %s", item_id)
+        proc.kill()
+        return True
+    return False

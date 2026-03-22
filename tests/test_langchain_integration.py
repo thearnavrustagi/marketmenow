@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+pytest.importorskip("langchain_core", reason="langchain extras not installed")
+
 import marketmenow.integrations.langchain as lc_module
 from conftest import MockAdapter, MockRenderer, MockUploader
 from marketmenow.integrations.langchain import (

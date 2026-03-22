@@ -89,7 +89,10 @@ async def _run_regeneration(
     output_dir: str,
 ) -> None:
     try:
-        hub.publish(item_id, ProgressEvent(event_type="phase", message="Regeneration started", phase="generation"))
+        hub.publish(
+            item_id,
+            ProgressEvent(event_type="phase", message="Regeneration started", phase="generation"),
+        )
         result = await run_cli_streaming(generate_cmd, item_id=item_id, output_dir=output_dir)
 
         if result.exit_code == 0:
@@ -104,7 +107,12 @@ async def _run_regeneration(
                 preview_data=preview,
                 output_path=primary_output,
             )
-            hub.publish(item_id, ProgressEvent(event_type="done", message="Regeneration complete — ready for review"))
+            hub.publish(
+                item_id,
+                ProgressEvent(
+                    event_type="done", message="Regeneration complete — ready for review"
+                ),
+            )
         else:
             await db.update_content_status(
                 item_id,

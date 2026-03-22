@@ -48,12 +48,17 @@ async def _process_job(job: dict, limits: dict) -> None:
             queue_id, "failed", error_message="No publish command configured"
         )
         await db.update_content_status(content_id, "failed", error_message="No publish command")
-        hub.publish(content_id, ProgressEvent(event_type="error", message="No publish command configured"))
+        hub.publish(
+            content_id, ProgressEvent(event_type="error", message="No publish command configured")
+        )
         return
 
     await db.update_queue_status(queue_id, "posting")
     await db.update_content_status(content_id, "posting")
-    hub.publish(content_id, ProgressEvent(event_type="phase", message=f"Publishing to {platform}...", phase="posting"))
+    hub.publish(
+        content_id,
+        ProgressEvent(event_type="phase", message=f"Publishing to {platform}...", phase="posting"),
+    )
 
     result: CliResult = await run_cli_streaming(
         publish_command,
@@ -65,14 +70,19 @@ async def _process_job(job: dict, limits: dict) -> None:
         await db.update_queue_status(queue_id, "posted")
         await db.update_content_status(content_id, "posted")
         await db.log_post(platform, content_id, success=True)
-        hub.publish(content_id, ProgressEvent(event_type="done", message=f"Posted to {platform} successfully"))
+        hub.publish(
+            content_id,
+            ProgressEvent(event_type="done", message=f"Posted to {platform} successfully"),
+        )
         logger.info("Posted content %s to %s", content_id, platform)
     else:
         error = result.stderr[:500] or f"Exit code {result.exit_code}"
         await db.update_queue_status(queue_id, "failed", error_message=error)
         await db.update_content_status(content_id, "failed", error_message=error)
         await db.log_post(platform, content_id, success=False)
-        hub.publish(content_id, ProgressEvent(event_type="error", message=f"Post failed: {error[:200]}"))
+        hub.publish(
+            content_id, ProgressEvent(event_type="error", message=f"Post failed: {error[:200]}")
+        )
         logger.error("Failed posting %s to %s: %s", content_id, platform, error)
 
 

@@ -71,6 +71,7 @@ class TestBuildWorkflowRegistry:
             "instagram-carousel",
             "twitter-thread",
             "twitter-engage",
+            "twitter-outreach",
             "reddit-engage",
             "reddit-launch",
             "linkedin-post",
