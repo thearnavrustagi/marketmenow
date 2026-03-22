@@ -17,9 +17,10 @@ Thanks for your interest in contributing! This guide covers everything you need 
 git clone https://github.com/Wayground/marketmenow.git
 cd marketmenow
 uv sync --all-extras
+uv run pre-commit install --hook-type pre-push
 ```
 
-This installs all dependencies including optional ones (LangChain, etc.).
+This installs all dependencies including optional ones (LangChain, etc.) and sets up a pre-push Git hook that runs the test suite and linter before every push.
 
 ### Verify Installation
 
@@ -208,6 +209,28 @@ If you followed the steps above, the core pipeline, orchestrator, and scheduler 
 2. Create a frozen Pydantic model inheriting `BaseContent`.
 3. Add a `case` arm in `ContentNormaliser.normalise()` in `src/marketmenow/normaliser.py`.
 4. Existing adapters gain support by updating their `supported_modalities()` return value.
+
+## Pre-Push Checks
+
+A pre-push Git hook runs automatically before every `git push`. It executes three checks:
+
+1. **Test suite** — `uv run --extra dev pytest --tb=short -q`
+2. **Ruff lint** — `uv run ruff check src/ tests/`
+3. **Ruff format** — `uv run ruff format --check src/ tests/`
+
+If any check fails, the push is blocked. Fix the issue and push again. This keeps `main` clean without slowing down local commits.
+
+The hook is installed by `setup.sh` or manually via:
+
+```bash
+uv run pre-commit install --hook-type pre-push
+```
+
+To run the checks without pushing:
+
+```bash
+uv run pre-commit run --hook-stage pre-push --all-files
+```
 
 ## Pull Request Process
 

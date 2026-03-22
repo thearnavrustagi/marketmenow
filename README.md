@@ -105,6 +105,7 @@ uv sync
 docker compose up -d
 cp .env.example .env
 
+uv run pre-commit install --hook-type pre-push   # tests + lint before every push
 uv run playwright install chromium
 cd src/adapters/instagram/reels/remotion && npm install && cd -
 

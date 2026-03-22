@@ -73,7 +73,19 @@ else
     warn "Install later: https://nodejs.org (v18+)"
 fi
 
-# ── 6. Environment file ─────────────────────────────────────────────
+# ── 6. Git hooks (pre-push: tests + lint) ──────────────────────────
+
+step "Installing Git hooks"
+
+if [ -d .git ]; then
+    uv run pre-commit install --hook-type pre-push 2>/dev/null \
+        && info "pre-push hook installed (runs tests + lint before push)" \
+        || warn "pre-commit install failed — run 'uv run pre-commit install --hook-type pre-push' manually"
+else
+    warn "Not a Git repository — skipping hook install"
+fi
+
+# ── 7. Environment file ─────────────────────────────────────────────
 
 step "Setting up environment"
 
@@ -85,7 +97,7 @@ else
     info ".env already exists — skipping"
 fi
 
-# ── 7. PostgreSQL via Docker ─────────────────────────────────────────
+# ── 8. PostgreSQL via Docker ─────────────────────────────────────────
 
 step "Database setup"
 
