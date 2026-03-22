@@ -161,8 +161,7 @@ class ReelOrchestrator:
             variables["kid_voice_id"] = self._settings.local_tts_kid_voice
         else:
             variables["gradeasy_voice_id"] = (
-                self._settings.elevenlabs_gradeasy_voice_id
-                or self._settings.elevenlabs_voice_id
+                self._settings.elevenlabs_gradeasy_voice_id or self._settings.elevenlabs_voice_id
             )
             variables["kid_voice_id"] = self._settings.elevenlabs_voice_id
 

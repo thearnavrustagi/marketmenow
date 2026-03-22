@@ -28,8 +28,7 @@ class ElevenLabsTTS:
         effective_voice = voice_id or self._voice_id
         if not effective_voice:
             raise RuntimeError(
-                "No ElevenLabs voice ID configured. "
-                "Set ELEVENLABS_VOICE_ID in your .env file."
+                "No ElevenLabs voice ID configured. Set ELEVENLABS_VOICE_ID in your .env file."
             )
         response = await self._client.text_to_speech.convert_with_timestamps(
             voice_id=effective_voice,

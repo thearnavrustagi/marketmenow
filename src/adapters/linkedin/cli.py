@@ -709,7 +709,9 @@ def batch_post(
     async def _run() -> None:
         mode = "API" if settings.use_api else "browser"
         console.print()
-        console.print(f"[bold blue]Generating content with Gemini...[/bold blue] [dim](mode: {mode})[/dim]")
+        console.print(
+            f"[bold blue]Generating content with Gemini...[/bold blue] [dim](mode: {mode})[/dim]"
+        )
         console.print()
 
         generator = LinkedInContentGenerator(settings)
@@ -735,9 +737,7 @@ def batch_post(
         if dry_run:
             dry_msg = "[bold yellow]Dry run — no posts published.[/bold yellow]"
             if carousel_post:
-                dry_msg += (
-                    f"\n[dim]Carousel would post {len(carousel_post.images)} slides.[/dim]"
-                )
+                dry_msg += f"\n[dim]Carousel would post {len(carousel_post.images)} slides.[/dim]"
             console.print(Panel(dry_msg, border_style="yellow"))
             return
 
@@ -784,9 +784,7 @@ def batch_post(
                     if result.success:
                         console.print("  [green]Carousel published.[/green]")
                     else:
-                        console.print(
-                            f"  [red]Carousel failed: {result.error_message}[/red]"
-                        )
+                        console.print(f"  [red]Carousel failed: {result.error_message}[/red]")
                 except Exception as exc:
                     logger.exception("Carousel publish failed")
                     console.print(f"  [red]Carousel error: {exc}[/red]")

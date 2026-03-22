@@ -142,13 +142,16 @@ class CarouselOrchestrator:
                     wait = _INITIAL_BACKOFF_S * (2**retry)
                     logging.getLogger(__name__).warning(
                         "Imagen attempt %d/%d failed (prompt variant %d): %s — retrying in %.0fs",
-                        retry + 1, _MAX_IMAGE_RETRIES, attempt + 1, exc, wait,
+                        retry + 1,
+                        _MAX_IMAGE_RETRIES,
+                        attempt + 1,
+                        exc,
+                        wait,
                     )
                     await asyncio.sleep(wait)
 
         raise RuntimeError(
-            f"Imagen failed after all retries for: {prompt[:80]}... "
-            f"Last error: {last_error}"
+            f"Imagen failed after all retries for: {prompt[:80]}... Last error: {last_error}"
         )
 
     @staticmethod

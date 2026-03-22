@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from jinja2 import Environment
+
 from marketmenow.integrations.genai import create_genai_client
 
 from ..grading.models import GradingResult, RubricItem
@@ -70,9 +71,7 @@ class ReelScriptGenerator:
             )
         else:
             if assignment_image is None:
-                raise ValueError(
-                    "assignment_image is required for templates without a pipeline"
-                )
+                raise ValueError("assignment_image is required for templates without a pipeline")
             variables = await self._legacy_generate(
                 template,
                 assignment_image,

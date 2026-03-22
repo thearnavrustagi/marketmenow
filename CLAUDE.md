@@ -29,6 +29,7 @@ uv run mmn --help                    # CLI help
 uv run mmn workflows                 # List available marketing workflows
 uv run mmn run <workflow> [OPTIONS]  # Run a workflow (e.g. instagram-reel, twitter-engage)
 uv run mmn auth <platform>           # Authenticate with a platform
+uv run mmn heal                      # Run tests and auto-fix failures via Cursor agent
 uv run mmn-web                       # Start web dashboard (http://localhost:8000)
 docker compose up -d                 # Start PostgreSQL (required for web dashboard)
 ```

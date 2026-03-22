@@ -47,10 +47,12 @@ def _preview_in_browser(results: list[SendResult]) -> None:
     subject_bar = (
         f'<div style="background:#f0f0f0;padding:12px 20px;font-family:Arial,sans-serif;'
         f'font-size:14px;color:#555;border-bottom:1px solid #ddd;">'
-        f'<strong>Subject:</strong> {result.rendered_subject} &nbsp;&nbsp;|&nbsp;&nbsp;'
-        f'<strong>To:</strong> {result.email}</div>'
+        f"<strong>Subject:</strong> {result.rendered_subject} &nbsp;&nbsp;|&nbsp;&nbsp;"
+        f"<strong>To:</strong> {result.email}</div>"
     )
-    html = result.rendered_html.replace("<body", f"<body>\n{subject_bar}\n<!-- original body -->", 1)
+    html = result.rendered_html.replace(
+        "<body", f"<body>\n{subject_bar}\n<!-- original body -->", 1
+    )
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as f:
         f.write(html)
         tmp_path = f.name

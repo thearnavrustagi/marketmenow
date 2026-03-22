@@ -30,7 +30,9 @@ def _base_url_for_token(token: str) -> str:
 class InstagramAPIError(Exception):
     """Wraps a Meta Graph API error with an actionable message."""
 
-    def __init__(self, status_code: int, meta_message: str, meta_code: str = "", subcode: str = "") -> None:
+    def __init__(
+        self, status_code: int, meta_message: str, meta_code: str = "", subcode: str = ""
+    ) -> None:
         self.status_code = status_code
         self.meta_message = meta_message
         self.meta_code = meta_code
@@ -44,14 +46,38 @@ class InstagramAPIError(Exception):
 
 
 _ERROR_HINTS: list[tuple[str, str]] = [
-    ("API access blocked", "Your Instagram access token has been revoked or the app is in restricted mode. Generate a new token at https://developers.facebook.com and update INSTAGRAM_ACCESS_TOKEN in .env."),
-    ("Invalid OAuth", "The access token is malformed or expired. Generate a fresh token and update INSTAGRAM_ACCESS_TOKEN in .env."),
-    ("expired", "Your access token has expired (they last ~60 days). Generate a new long-lived token and update INSTAGRAM_ACCESS_TOKEN in .env."),
-    ("does not exist", "The Instagram Business Account ID is wrong. Check INSTAGRAM_BUSINESS_ACCOUNT_ID in .env matches your account."),
-    ("not authorized", "Your token doesn't have the required permissions. Re-authenticate with instagram_basic + instagram_content_publish scopes."),
-    ("media_type", "Instagram rejected the media format. Reels must be MP4, 9:16 aspect ratio, 3-90 seconds. Carousels need JPEG/PNG under 8MB."),
-    ("transcode", "Instagram couldn't process the video. Try a different codec (H.264) or reduce resolution to 1080x1920."),
-    ("URL is not reachable", "Instagram can't fetch the media from S3. The presigned URL may have expired. Check your AWS_S3_BUCKET and AWS credentials in .env."),
+    (
+        "API access blocked",
+        "Your Instagram access token has been revoked or the app is in restricted mode. Generate a new token at https://developers.facebook.com and update INSTAGRAM_ACCESS_TOKEN in .env.",
+    ),
+    (
+        "Invalid OAuth",
+        "The access token is malformed or expired. Generate a fresh token and update INSTAGRAM_ACCESS_TOKEN in .env.",
+    ),
+    (
+        "expired",
+        "Your access token has expired (they last ~60 days). Generate a new long-lived token and update INSTAGRAM_ACCESS_TOKEN in .env.",
+    ),
+    (
+        "does not exist",
+        "The Instagram Business Account ID is wrong. Check INSTAGRAM_BUSINESS_ACCOUNT_ID in .env matches your account.",
+    ),
+    (
+        "not authorized",
+        "Your token doesn't have the required permissions. Re-authenticate with instagram_basic + instagram_content_publish scopes.",
+    ),
+    (
+        "media_type",
+        "Instagram rejected the media format. Reels must be MP4, 9:16 aspect ratio, 3-90 seconds. Carousels need JPEG/PNG under 8MB.",
+    ),
+    (
+        "transcode",
+        "Instagram couldn't process the video. Try a different codec (H.264) or reduce resolution to 1080x1920.",
+    ),
+    (
+        "URL is not reachable",
+        "Instagram can't fetch the media from S3. The presigned URL may have expired. Check your AWS_S3_BUCKET and AWS credentials in .env.",
+    ),
     ("rate limit", "You've hit Instagram's rate limit. Wait 5-10 minutes before retrying."),
 ]
 
@@ -90,7 +116,10 @@ def _raise_for_status(resp: httpx.Response) -> None:
         pass
     logger.error(
         "Instagram API %s (code=%s, subcode=%s): %s",
-        resp.status_code, meta_code, subcode, meta_message,
+        resp.status_code,
+        meta_code,
+        subcode,
+        meta_message,
     )
     raise InstagramAPIError(resp.status_code, meta_message, meta_code, subcode)
 
@@ -236,28 +265,38 @@ class InstagramAdapter:
         return await self._await_and_publish(container_id)
 
     async def _post_with_retry(
-        self, path: str, *, data: dict[str, str],
+        self,
+        path: str,
+        *,
+        data: dict[str, str],
     ) -> httpx.Response:
         """POST to the Graph API with retry + backoff on transient errors."""
         last_exc: Exception | None = None
         for attempt in range(_MAX_RETRIES):
             try:
                 resp = await self._client.post(
-                    path, params=self._params(), data=data,
+                    path,
+                    params=self._params(),
+                    data=data,
                 )
                 if resp.is_success or resp.status_code in (400, 403):
                     return resp
                 logger.warning(
                     "Instagram API %s on attempt %d/%d for %s — retrying",
-                    resp.status_code, attempt + 1, _MAX_RETRIES, path,
+                    resp.status_code,
+                    attempt + 1,
+                    _MAX_RETRIES,
+                    path,
                 )
             except httpx.HTTPError as exc:
                 last_exc = exc
                 logger.warning(
                     "Instagram request failed on attempt %d/%d: %s — retrying",
-                    attempt + 1, _MAX_RETRIES, exc,
+                    attempt + 1,
+                    _MAX_RETRIES,
+                    exc,
                 )
-            await asyncio.sleep(_INITIAL_BACKOFF_S * (2 ** attempt))
+            await asyncio.sleep(_INITIAL_BACKOFF_S * (2**attempt))
 
         if last_exc:
             raise last_exc

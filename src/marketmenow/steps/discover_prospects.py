@@ -64,7 +64,11 @@ class DiscoverProspectsStep:
 
         settings = TwitterSettings()
         headless_raw = ctx.get_param("headless", True)
-        headless = headless_raw if isinstance(headless_raw, bool) else str(headless_raw).lower() in ("true", "1", "yes")
+        headless = (
+            headless_raw
+            if isinstance(headless_raw, bool)
+            else str(headless_raw).lower() in ("true", "1", "yes")
+        )
         settings = settings.model_copy(update={"headless": headless})
 
         orchestrator = TwitterOutreachOrchestrator(settings, profile, history)

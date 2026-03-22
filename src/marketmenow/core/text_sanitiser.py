@@ -18,8 +18,7 @@ def _sanitise_extra(extra: dict[str, object]) -> dict[str, object]:
             cleaned[key] = _sanitise_str(value)
         elif isinstance(value, list):
             cleaned[key] = [
-                _sanitise_str(item) if isinstance(item, str) else item
-                for item in value
+                _sanitise_str(item) if isinstance(item, str) else item for item in value
             ]
         else:
             cleaned[key] = value

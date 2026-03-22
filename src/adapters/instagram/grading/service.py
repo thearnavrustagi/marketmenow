@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from google.genai import types as genai_types
+
 from marketmenow.integrations.genai import create_genai_client
 
 from ..prompts import load_prompt

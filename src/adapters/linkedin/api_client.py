@@ -67,7 +67,9 @@ class LinkedInAPIClient:
         return image_urn
 
     async def upload_images(
-        self, paths: list[Path], alt_texts: list[str] | None = None,
+        self,
+        paths: list[Path],
+        alt_texts: list[str] | None = None,
     ) -> list[dict[str, str]]:
         """Upload multiple images and return ``[{"id": urn, "altText": …}, …]``."""
         alts = alt_texts or [""] * len(paths)
@@ -87,7 +89,9 @@ class LinkedInAPIClient:
         return await self._create_post(body)
 
     async def create_image_post(
-        self, commentary: str, image_paths: list[Path],
+        self,
+        commentary: str,
+        image_paths: list[Path],
     ) -> str:
         """Create a single-image or multi-image (carousel) post."""
         images = await self.upload_images(image_paths)
@@ -101,7 +105,10 @@ class LinkedInAPIClient:
         return await self._create_post(body)
 
     async def create_article_post(
-        self, commentary: str, article_url: str, title: str = "",
+        self,
+        commentary: str,
+        article_url: str,
+        title: str = "",
     ) -> str:
         """Share a link / article."""
         body = self._base_post_body(commentary)

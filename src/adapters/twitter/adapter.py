@@ -23,7 +23,9 @@ class TwitterAdapter:
         return "twitter"
 
     def supported_modalities(self) -> frozenset[ContentModality]:
-        return frozenset({ContentModality.REPLY, ContentModality.THREAD, ContentModality.DIRECT_MESSAGE})
+        return frozenset(
+            {ContentModality.REPLY, ContentModality.THREAD, ContentModality.DIRECT_MESSAGE}
+        )
 
     async def authenticate(self, credentials: dict[str, str]) -> None:
         if not await self._browser.is_logged_in():

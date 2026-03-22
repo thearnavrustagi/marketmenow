@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+from conftest import make_text_post
 from marketmenow.core.text_sanitiser import sanitise_text
 from marketmenow.models.content import ContentModality, MediaAsset
 from marketmenow.normaliser import NormalisedContent
-
-from conftest import make_text_post
 
 
 def _make_normalised(**overrides: object) -> NormalisedContent:
@@ -49,9 +48,7 @@ class TestSanitiseText:
         assert result.extra["poll_question"] == "Which - option?"
 
     def test_extra_list_of_strings_sanitised(self) -> None:
-        nc = _make_normalised(
-            extra={"poll_options": ["A \u2014 first", "B \u2014 second"]}
-        )
+        nc = _make_normalised(extra={"poll_options": ["A \u2014 first", "B \u2014 second"]})
         result = sanitise_text(nc)
         assert result.extra["poll_options"] == ["A - first", "B - second"]
 

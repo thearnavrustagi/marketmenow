@@ -63,14 +63,14 @@ def _split_targets(raw: str) -> list[str]:
 
 def _normalise_group_url(group: str) -> str:
     value = group.strip()
-    if value.startswith("http://") or value.startswith("https://"):
+    if value.startswith(("http://", "https://")):
         return value
     return f"https://www.facebook.com/groups/{value}"
 
 
 def _normalise_page_url(page: str) -> str:
     value = page.strip().lstrip("/")
-    if value.startswith("http://") or value.startswith("https://"):
+    if value.startswith(("http://", "https://")):
         return value
     if value.isdigit():
         return f"https://www.facebook.com/profile.php?id={value}"

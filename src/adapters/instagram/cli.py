@@ -252,7 +252,9 @@ async def _carousel_generate_async(
 def reel_create(
     assignment: Annotated[
         Path | None,
-        typer.Option("--assignment", help="Path to assignment image (optional if template auto-generates)"),
+        typer.Option(
+            "--assignment", help="Path to assignment image (optional if template auto-generates)"
+        ),
     ] = None,
     template: Annotated[str, typer.Option("--template", help="Template ID")] = "can_ai_grade_this",
     rubric: Annotated[
@@ -492,9 +494,13 @@ def reel_validate(
 def instagram_all(
     assignment: Annotated[
         Path | None,
-        typer.Option("--assignment", help="Path to assignment image (optional if template auto-generates)"),
+        typer.Option(
+            "--assignment", help="Path to assignment image (optional if template auto-generates)"
+        ),
     ] = None,
-    template: Annotated[str, typer.Option("--template", help="Reel template ID")] = "can_ai_grade_this",
+    template: Annotated[
+        str, typer.Option("--template", help="Reel template ID")
+    ] = "can_ai_grade_this",
     rubric: Annotated[
         Path | None,
         typer.Option("--rubric", help="Path to rubric JSON/YAML file"),

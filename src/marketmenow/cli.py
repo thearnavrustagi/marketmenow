@@ -658,6 +658,192 @@ def version() -> None:
     console.print(f"[bold]marketmenow[/bold] [cyan]{VERSION}[/cyan]")
 
 
+# ── mmn heal ──────────────────────────────────────────────────────────
+
+
+@app.command(rich_help_panel="Utilities")
+def heal(
+    fix: bool = typer.Option(True, "--fix/--no-fix", help="Prompt to auto-fix via Cursor agent"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show full output"),
+) -> None:
+    """Run lint, format, and tests — then auto-fix failures with the Cursor agent."""
+    import re
+    import shutil
+    import subprocess
+
+    project_root = Path(__file__).resolve().parents[2]
+    problems: list[str] = []
+
+    # ── 1. Lint ──────────────────────────────────────────────────────
+    console.print()
+    console.print("[bold]Running ruff check...[/bold]")
+
+    lint_result = subprocess.run(
+        ["uv", "run", "ruff", "check", "src/", "tests/"],
+        capture_output=True,
+        text=True,
+        cwd=project_root,
+    )
+    lint_output = lint_result.stdout + lint_result.stderr
+
+    if lint_result.returncode == 0:
+        console.print("[green]  Lint: all checks passed.[/green]")
+    else:
+        console.print("[red]  Lint: issues found.[/red]")
+        if verbose:
+            console.print(lint_output)
+
+        console.print("  [dim]Auto-fixing safe issues...[/dim]")
+        subprocess.run(
+            ["uv", "run", "ruff", "check", "--fix", "src/", "tests/"],
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+        )
+        recheck = subprocess.run(
+            ["uv", "run", "ruff", "check", "src/", "tests/"],
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+        )
+        if recheck.returncode == 0:
+            console.print("  [green]All lint issues auto-fixed.[/green]")
+        else:
+            remaining = recheck.stdout + recheck.stderr
+            problems.append(f"Ruff lint errors:\n{remaining}")
+            console.print(f"  [red]{remaining.strip().splitlines()[-1]}[/red]")
+
+    # ── 2. Format ────────────────────────────────────────────────────
+    console.print()
+    console.print("[bold]Running ruff format...[/bold]")
+
+    fmt_check = subprocess.run(
+        ["uv", "run", "ruff", "format", "--check", "src/", "tests/"],
+        capture_output=True,
+        text=True,
+        cwd=project_root,
+    )
+
+    if fmt_check.returncode == 0:
+        console.print("[green]  Format: all files formatted.[/green]")
+    else:
+        fmt_result = subprocess.run(
+            ["uv", "run", "ruff", "format", "src/", "tests/"],
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+        )
+        formatted = fmt_result.stdout + fmt_result.stderr
+        count = sum(1 for line in formatted.splitlines() if "file" in line.lower())
+        console.print(f"  [green]Reformatted {count or 'all'} files.[/green]")
+
+    # ── 3. Tests ─────────────────────────────────────────────────────
+    console.print()
+    console.print("[bold]Running test suite...[/bold]\n")
+
+    test_result = subprocess.run(
+        ["uv", "run", "--extra", "dev", "pytest", "--tb=short", "-q"],
+        capture_output=True,
+        text=True,
+        cwd=project_root,
+    )
+    test_output = test_result.stdout + test_result.stderr
+
+    if test_result.returncode == 0:
+        console.print(Panel("[bold green]All tests passed.[/bold green]", border_style="green"))
+    else:
+        if verbose:
+            console.print(test_output)
+            console.print()
+
+        failures: list[dict[str, str]] = []
+        current: dict[str, str] | None = None
+        for line in test_output.splitlines():
+            m = re.match(r"^FAILED\s+(\S+)", line)
+            if m:
+                failures.append({"test": m.group(1), "detail": ""})
+                continue
+
+            m2 = re.match(r"^(tests/\S+::\S+)", line)
+            if m2 and not line.startswith("PASSED"):
+                current = {"test": m2.group(1), "detail": ""}
+                continue
+
+            if current is not None:
+                if line.strip() and not line.startswith("="):
+                    current["detail"] += line + "\n"
+                if line.startswith(("FAILED", "=")):
+                    failures.append(current)
+                    current = None
+
+        if not failures:
+            for line in test_output.splitlines():
+                m = re.match(r"^(E\s+.+|FAILED .+|.*Error.*|.*assert.*)", line)
+                if m:
+                    failures.append({"test": "unknown", "detail": m.group(0)})
+
+        table = Table(title="Test Failures", show_lines=True, border_style="red")
+        table.add_column("#", style="bold", width=4)
+        table.add_column("Test", style="bold cyan", min_width=30)
+        table.add_column("Error", min_width=40)
+
+        for i, f in enumerate(failures, 1):
+            detail = f["detail"].strip()
+            if len(detail) > 200:
+                detail = detail[:200] + "..."
+            table.add_row(str(i), f["test"], detail or "(see full output with --verbose)")
+
+        console.print(table)
+        console.print()
+
+        summary_line = ""
+        for line in reversed(test_output.splitlines()):
+            if "failed" in line or "error" in line.lower():
+                summary_line = line.strip()
+                break
+        if summary_line:
+            console.print(f"[bold red]{summary_line}[/bold red]")
+        console.print()
+
+        test_names = " ".join(f["test"] for f in failures if f["test"] != "unknown")
+        problems.append(
+            f"{len(failures)} test failure(s): {test_names}\n\n"
+            f"Pytest output:\n{test_output[-3000:]}"
+        )
+
+    # ── 4. Summary ───────────────────────────────────────────────────
+    if not problems:
+        console.print(
+            Panel(
+                "[bold green]Everything clean — lint, format, and tests all pass.[/bold green]",
+                border_style="green",
+            )
+        )
+        raise typer.Exit(0)
+
+    if not fix:
+        raise typer.Exit(1)
+
+    if not shutil.which("agent"):
+        console.print("[yellow]Cursor agent CLI not found on PATH.[/yellow]")
+        console.print("[dim]Install it: curl https://cursor.com/install -fsS | bash[/dim]")
+        raise typer.Exit(1)
+
+    if not typer.confirm("Fix remaining issues with Cursor agent?"):
+        raise typer.Exit(1)
+
+    prompt = (
+        "The pre-push checks found issues that need fixing. "
+        "Fix the source code (not the tests). "
+        "Do not weaken or delete any test assertions.\n\n" + "\n---\n".join(problems)
+    )
+
+    console.print()
+    console.print("[bold]Handing off to Cursor agent...[/bold]\n")
+
+    subprocess.run(["agent", prompt], cwd=project_root)
+
+
 # ── Hidden adapter CLI groups (used by web frontend subprocess calls) ──
 
 app.add_typer(instagram_app, name="instagram", hidden=True)

@@ -17,7 +17,7 @@ This package is **platform-agnostic**. It must never import from `src/adapters/`
 | `normaliser.py`           | `NormalisedContent` model + `ContentNormaliser` (match/case dispatch) |
 | `registry.py`             | `PlatformBundle` dataclass + `AdapterRegistry`               |
 | `exceptions.py`           | `MarketMeNowError` hierarchy (`AdapterNotFoundError`, `UnsupportedModalityError`, `AuthenticationError`, `PublishError`, `RenderError`, `UploadError`) |
-| `cli.py`                  | Top-level Typer app (`mmn`) — `run`, `workflows`, `auth`, `distribute`, `platforms`, `version` + hidden adapter CLI groups for web frontend |
+| `cli.py`                  | Top-level Typer app (`mmn`) — `run`, `workflows`, `auth`, `distribute`, `platforms`, `version`, `heal` + hidden adapter CLI groups for web frontend |
 | `core/workflow.py`        | `WorkflowStep` protocol, `WorkflowContext`, `Workflow` runner, `ParamDef` |
 | `core/workflow_registry.py`| `WorkflowRegistry` + `build_workflow_registry()` — auto-discovers workflows |
 | `steps/*.py`              | Reusable workflow steps (generate_reel, post_to_platform, discover_posts, discover_prospects, enrich_profiles, score_prospects, generate_messages, send_messages, etc.) |
