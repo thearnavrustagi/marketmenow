@@ -28,6 +28,11 @@ class ScoreProspectsStep:
 
         self._ensure_vertex_env(ctx)
 
+        ctx.console.print(
+            f"[bold cyan]Scoring {len(profiles)} profiles against rubric "
+            f"(min_score={customer_profile.ideal_customer.min_score})...[/bold cyan]"
+        )
+
         scorer = ProspectScorer(
             vertex_project=self._get_vertex_project(),
             vertex_location=self._get_vertex_location(),
@@ -35,12 +40,20 @@ class ScoreProspectsStep:
 
         scored: list[ScoredProspect] = []
         for i, profile in enumerate(profiles, start=1):
-            ctx.console.print(f"  Scoring {i}/{len(profiles)}: @{profile.handle}")
+            ctx.console.print(f"  [dim]Scoring {i}/{len(profiles)}:[/dim] @{profile.handle}")
             try:
                 result = await scorer.score(profile, customer_profile)
                 scored.append(result)
+                if result.disqualify_reason:
+                    ctx.console.print(
+                        f"    [red]Disqualified: {result.disqualify_reason}[/red]"
+                    )
+                else:
+                    ctx.console.print(
+                        f"    [green]Score: {result.total_score}/{result.max_score}[/green] — {result.dm_angle[:70]}"
+                    )
             except Exception as exc:
-                ctx.console.print(f"  [yellow]Failed to score @{profile.handle}: {exc}[/yellow]")
+                ctx.console.print(f"    [yellow]Error: {exc}[/yellow]")
 
         qualified = [
             s
@@ -60,6 +73,11 @@ class ScoreProspectsStep:
 
         max_messages = int(ctx.get_param("max-messages", 10) or 10)
         qualified = qualified[:max_messages]
+
+        disqualified = len(scored) - len(qualified)
+        ctx.console.print(
+            f"\n[bold]Scoring summary: {len(qualified)} qualified, {disqualified} dropped[/bold]"
+        )
 
         self._print_table(ctx, qualified)
         ctx.set_artifact("scored_prospects", qualified)

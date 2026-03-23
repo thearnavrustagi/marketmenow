@@ -7,7 +7,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { VisualProps } from "../schema";
-import { GRADEASY_FONT } from "../fonts";
+import { BRAND_FONT } from "../fonts";
 
 export const SegmentationScene: React.FC<{ visual: VisualProps }> = ({
   visual,
@@ -83,7 +83,7 @@ export const SegmentationScene: React.FC<{ visual: VisualProps }> = ({
         </div>
       )}
 
-      {/* Dark bottom panel with Gradeasy.ai branding + status */}
+      {/* Dark bottom panel with brand name + status */}
       <div
         style={{
           position: "absolute",
@@ -105,7 +105,7 @@ export const SegmentationScene: React.FC<{ visual: VisualProps }> = ({
           style={{
             display: "flex",
             alignItems: "baseline",
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
           }}
         >
           <span
@@ -116,7 +116,7 @@ export const SegmentationScene: React.FC<{ visual: VisualProps }> = ({
               letterSpacing: -1,
             }}
           >
-            {(visual.brand_name as string) ?? "Gradeasy"}
+            {(visual.brand_name as string) ?? "BrandName"}
           </span>
           <span
             style={{
@@ -134,7 +134,7 @@ export const SegmentationScene: React.FC<{ visual: VisualProps }> = ({
             color: "rgba(255,255,255,0.7)",
             fontSize: Number(visual.status_font_size ?? 28),
             fontWeight: 500,
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
             letterSpacing: 0.5,
             opacity: pulseOpacity,
             minWidth: 360,

@@ -273,7 +273,7 @@ export const ResultScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
               textTransform: "uppercase",
             }}
           >
-            {(visual.brand_name as string) ?? "Gradeasy"}
+            {(visual.brand_name as string) ?? "BrandName"}
           </span>
           <div style={{ width: 40, height: 2, background: "#d0ccc6" }} />
         </div>

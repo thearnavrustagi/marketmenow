@@ -21,6 +21,9 @@ class DiscoveredPost(BaseModel, frozen=True):
     discovered_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
     )
+    media_alt_texts: tuple[str, ...] = ()
+    card_text: str = ""
+    media_screenshot: bytes | None = Field(default=None, exclude=True, repr=False)
 
 
 class PostDiscoverer:
@@ -215,12 +218,68 @@ class PostDiscoverer:
         except Exception:
             author = source_label
 
+        media_alt_texts = await self._extract_media_alt_texts(article)
+        card_text = await self._extract_card_text(article)
+        media_screenshot = await self._capture_media_screenshot(article)
+
         return DiscoveredPost(
             author_handle=author,
             post_url=post_url,
             post_text=post_text[:1000],
             engagement_score=engagement,
+            media_alt_texts=media_alt_texts,
+            card_text=card_text,
+            media_screenshot=media_screenshot,
         )
+
+    @staticmethod
+    async def _extract_media_alt_texts(article: object) -> tuple[str, ...]:
+        """Pull alt text from tweet images (excludes avatars)."""
+        alt_texts: list[str] = []
+        try:
+            photos = article.locator('[data-testid="tweetPhoto"] img')  # type: ignore[attr-defined]
+            count = await photos.count()
+            for i in range(count):
+                alt = await photos.nth(i).get_attribute("alt", timeout=2_000)
+                if alt and alt.strip() and alt.strip().lower() != "image":
+                    alt_texts.append(alt.strip())
+        except Exception:
+            pass
+        return tuple(alt_texts)
+
+    @staticmethod
+    async def _extract_card_text(article: object) -> str:
+        """Pull title + description from link preview cards."""
+        parts: list[str] = []
+        try:
+            card = article.locator('[data-testid="card.wrapper"]')  # type: ignore[attr-defined]
+            if await card.count() > 0:
+                card_text = await card.first.inner_text(timeout=3_000)
+                if card_text and card_text.strip():
+                    parts.append(card_text.strip())
+        except Exception:
+            pass
+        if not parts:
+            try:
+                quote = article.locator('[data-testid="quoteTweet"]')  # type: ignore[attr-defined]
+                if await quote.count() > 0:
+                    qt = await quote.first.inner_text(timeout=3_000)
+                    if qt and qt.strip():
+                        parts.append(f"[Quoted tweet] {qt.strip()}")
+            except Exception:
+                pass
+        return "\n".join(parts)[:500]
+
+    @staticmethod
+    async def _capture_media_screenshot(article: object) -> bytes | None:
+        """Screenshot the tweet article for multimodal LLM context."""
+        try:
+            screenshot = await article.screenshot(type="jpeg", quality=60, timeout=5_000)  # type: ignore[attr-defined]
+            if screenshot and len(screenshot) > 0:
+                return bytes(screenshot)
+        except Exception:
+            logger.debug("Could not screenshot tweet article", exc_info=True)
+        return None
 
     @staticmethod
     def _parse_metric(text: str) -> int:

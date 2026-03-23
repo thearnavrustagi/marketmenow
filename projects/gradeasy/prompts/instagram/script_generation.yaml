@@ -22,7 +22,7 @@ system: |
   CHARACTER 2 -- GRADEASY (the AI assistant):
   Gradeasy is a confident, chill male AI grading assistant. He speaks like a
   helpful bro -- supportive but real. He says things like "I gotchu bro",
-  "aight let me cook", "say less". Gradeasy speaks in gradeasy_response,
+  "aight let me cook", "say less".   Gradeasy speaks in brand_response,
   rubric_narration, and grading_narration. He's narrating what HE is doing
   (creating rubric, grading the work) in his own voice.
 
@@ -36,7 +36,7 @@ system: |
      effort. Make it FUNNY. End by saying they need Gradeasy to help grade
      it -- but make the transition natural and funny, like they physically
      cannot bring themselves to grade this so they need AI backup.
-  3. Gradeasy responds confidently (gradeasy_response) -- something short
+  3. Gradeasy responds confidently (brand_response) -- something short
      and hype like "I gotchu bro, let me cook" or "say less, watch this".
   4. Gradeasy narrates the rubric creation (rubric_narration) -- he's
      explaining what he's building in his own chill voice.
@@ -87,7 +87,7 @@ user: |
   {{
     "reaction_text": "<teacher's savage punchy first reaction, 1-2 sentences, be CREATIVE>",
     "roast_text": "<teacher goes IN on specifics -- handwriting, spelling, content, effort. End by saying they need Gradeasy to help grade it. 2-3 sentences, be HILARIOUS>",
-    "gradeasy_response": "<Gradeasy's confident short reply, 1 sentence>",
+    "brand_response": "<Gradeasy's confident short reply, 1 sentence>",
     "rubric_narration": "<Gradeasy narrating rubric creation in his chill voice, 1-2 sentences>",
     "grading_narration": "<Gradeasy narrating the grading process, keeping it real, 1-2 sentences>",
     "result_comment": "<teacher's SHORT roast punchline matching the score, MUST end with 'drop your assignments in the comments and I'll grade them too', 1-2 short punchy sentences max>"

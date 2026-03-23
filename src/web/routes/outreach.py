@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 _background_tasks: set[asyncio.Task[None]] = set()
 
-_HISTORY_PATH = Path(".outreach_history.json")
+_HISTORY_PATH = Path("projects/gradeasy/.outreach_history.json")
 _CAMPAIGNS_DIR = Path("campaigns")
 
 

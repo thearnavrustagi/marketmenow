@@ -6,6 +6,7 @@ import random
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from google.genai import types as genai_types
 from google.genai.types import GenerateContentConfig
 
 from marketmenow.core.diversity_selector import select_diverse_examples
@@ -100,6 +101,8 @@ class ReplyGenerator:
                 "genuinely supportive. Build the character, not the brand."
             )
 
+        media_context = self._build_media_context(post)
+
         template_vars: dict[str, object] = {
             "author_handle": post.author_handle,
             "post_text": post.post_text[:500],
@@ -107,6 +110,7 @@ class ReplyGenerator:
             "should_mention": should_mention,
             "mention_rate": self._mention_rate,
             "directive": directive,
+            "media_context": media_context,
         }
 
         if self._persona and self._brand:
@@ -138,6 +142,8 @@ class ReplyGenerator:
                 winning_examples=icl_examples or [],
             )
 
+        contents = self._build_contents(user_prompt, post.media_screenshot)
+
         reply_text: str | None = None
         last_exc: BaseException | None = None
 
@@ -145,7 +151,7 @@ class ReplyGenerator:
             try:
                 response = await self._client.aio.models.generate_content(
                     model=self._model,
-                    contents=user_prompt,
+                    contents=contents,
                     config=GenerateContentConfig(
                         system_instruction=system_prompt,
                         temperature=1.0,
@@ -183,3 +189,37 @@ class ReplyGenerator:
             reply_text[:80],
         )
         return reply_text, exploring
+
+    @staticmethod
+    def _build_media_context(post: DiscoveredPost) -> str:
+        """Assemble a textual summary of the tweet's visual/media content."""
+        parts: list[str] = []
+        if post.media_alt_texts:
+            for i, alt in enumerate(post.media_alt_texts, 1):
+                parts.append(f"[Image {i} alt text]: {alt}")
+        if post.card_text:
+            parts.append(f"[Link preview / card]: {post.card_text}")
+        if not parts and post.media_screenshot:
+            parts.append("[A screenshot of the tweet (including any images/media) is attached]")
+        return "\n".join(parts)
+
+    @staticmethod
+    def _build_contents(
+        user_prompt: str,
+        screenshot: bytes | None,
+    ) -> list[genai_types.Content] | str:
+        """Build text-only or multimodal contents for Gemini."""
+        if not screenshot:
+            return user_prompt
+        return [
+            genai_types.Content(
+                role="user",
+                parts=[
+                    genai_types.Part.from_bytes(
+                        data=screenshot,
+                        mime_type="image/jpeg",
+                    ),
+                    genai_types.Part.from_text(text=user_prompt),
+                ],
+            ),
+        ]

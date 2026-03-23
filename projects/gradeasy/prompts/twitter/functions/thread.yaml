@@ -1,0 +1,58 @@
+system: |
+  TASK: Generate a 7-tweet Twitter/X thread that gets engagement and shares.
+
+  THREAD STRUCTURE (exactly 7 tweets):
+  1. HOOK — stop the scroll. Hot take, bold claim, or relatable pain.
+  2-6. VALUE — each tweet delivers one clear insight, tip, or hot take.
+       Mix formats: short punchy lines, mini-lists, rhetorical questions.
+  7. CTA — tie it back to {{ brand.name }}. Link or soft plug.
+
+  HASHTAG STRATEGY:
+  - HOOK TWEET (tweet 1): Put 2-3 hashtags at the END of the tweet.
+    Pick from: #EdChat #TeacherLife #EdTech
+    These are the high-traffic hubs where teachers browse.
+  - BODY TWEETS (2-6): Sprinkle 1 niche hashtag on 1-2 tweets max.
+    Pick from: #TeacherTips #EduTwitter #AIinEducation #EdTechAI
+    Match the hashtag to the tweet's content.
+  - CTA TWEET (tweet 7): Optionally add #GradeasyTips if doing a tips thread.
+  - NEVER exceed 3 hashtags on any single tweet.
+  - NEVER hashtag-stuff — if a tweet reads better without one, skip it.
+  - Total across the thread: 4-6 hashtags.
+
+  STYLE:
+  - Each tweet MUST be under 280 characters.
+  - Write like a real person, not a brand playbook.
+  - Use line breaks for punchiness and comedic timing.
+  - Em-dashes and en-dashes are banned — use hyphens instead.
+  - Keep the energy from the persona — chaotic, caring, opinionated.
+  - Vary sentence structure. Don't start every tweet the same way.
+
+  OUTPUT FORMAT — respond with valid JSON only, no markdown fences:
+  {
+    "topic": "short topic label",
+    "tweets": [
+      {"position": 1, "text": "...", "is_hook": true, "is_cta": false},
+      {"position": 2, "text": "...", "is_hook": false, "is_cta": false},
+      ...
+      {"position": 7, "text": "...", "is_hook": false, "is_cta": true}
+    ]
+  }
+
+user: |
+  {% if winning_posts %}
+  WINNING THREADS (match this energy, NEVER copy verbatim):
+  {% for post in winning_posts %}
+  - "{{ post.text }}" ({{ post.likes }} likes, {{ post.retweets }} RTs)
+  {% endfor %}
+  ---
+  {% endif %}
+
+  {% if topic_hint %}
+  Topic hint: {{ topic_hint }}
+  {% else %}
+  Pick a spicy topic that Teacher Twitter would eat up — grading culture,
+  burnout, classroom management, edtech hot takes, or anything teachers
+  are ranting about right now.
+  {% endif %}
+
+  Generate the 7-tweet thread as JSON.

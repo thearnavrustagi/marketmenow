@@ -123,7 +123,7 @@ Each beat references a scene component. Here's every scene and what visual props
 | `panel_background` | string | `#0A0A0A` | |
 | `frame_background` | string | `#E0E0E0` | |
 
-### `GradeasyResponseScene` — Brand logo + text response (generic, works for any product)
+### `BrandResponseScene` — Brand logo + text response (generic, works for any product)
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `text_overlay` | string | `"I gotchu bro"` | |
@@ -298,7 +298,7 @@ Create `prompts/instagram/your_script.yaml` with `system:` and `user:` fields. T
 Map your story to a sequence of scenes:
 ```
 Hook (TikTokCommentScene) → Problem reveal (RevealScene) → Reaction (FlashRevealScene)
-→ Product intro (GradeasyResponseScene) → Product working (SegmentationScene)
+→ Product intro (BrandResponseScene) → Product working (SegmentationScene)
 → Result (ResultScene)
 ```
 
@@ -377,7 +377,7 @@ that receives visual props:
    Props: image, text_overlay, brand_color, brand_name, brand_suffix,
           panel_background, frame_background
 
-6. GradeasyResponseScene — Brand logo animation + text response
+6. BrandResponseScene — Brand logo animation + text response
    Props: text_overlay, brand_color, brand_name, brand_suffix, background,
           font_size (use this as your "product speaks" scene)
 
@@ -538,10 +538,10 @@ beats:
     visual: { image: "{{ assignment_image }}" }
 
   - id: product_response
-    scene: GradeasyResponseScene
-    audio: { type: tts, text: "{{ gradeasy_response }}" }
+    scene: BrandResponseScene
+    audio: { type: tts, text: "{{ brand_response }}" }
     duration: from_audio
-    visual: { text_overlay: "{{ gradeasy_response }}" }
+    visual: { text_overlay: "{{ brand_response }}" }
 
   - id: result
     scene: ResultScene
@@ -576,6 +576,6 @@ separate code blocks, clearly labeled.
 - **Start simple.** A 6-beat reel with one `llm` pipeline step is enough. You can always add complexity later.
 - **Use `CustomScene` for unique layouts.** If none of the built-in scenes fit your concept, `CustomScene` lets you define arbitrary layers of images, text, and boxes with per-layer animations.
 - **Test with `--dry-run` first.** Check that the pipeline produces all required variables before doing a full render.
-- **Reuse scenes creatively.** `GradeasyResponseScene` works for any "product speaks" moment — it just shows brand logo + text (despite the name, it's generic). `SegmentationScene` works for any "product is processing" moment.
+- **Reuse scenes creatively.** `BrandResponseScene` works for any "product speaks" moment — it shows brand logo + text. `SegmentationScene` works for any "product is processing" moment.
 - **Add your own SFX.** Drop `.mp3` files into `assets/sfx/` and reference them in beats.
 - **Multiple templates.** You can have as many templates as you want. Use `--template your_id` to pick one at render time.

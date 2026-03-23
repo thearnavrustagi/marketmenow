@@ -19,21 +19,27 @@ ideal_customer:
   rubric:
     - name: "Role Fit"
       description: >
-        Is this person a K-12 teacher, professor, TA, or education professional?
-        Bio says "teacher", "educator", etc. or posts clearly indicate teaching role.
-      max_points: 3
+        Is this person a K-12 teacher, professor, TA, or education professional
+        who grades student work (essays, tests, assignments)?
+        Bio must say "teacher", "educator", "professor", etc. or posts clearly
+        indicate a teaching role. IMMEDIATELY DISQUALIFY anyone involved in
+        Pokemon card grading, sports card grading (PSA, BGS, CGC), coin grading,
+        collectibles, or any non-education grading context.
+      max_points: 5
 
     - name: "Pain Signal"
       description: >
-        Have they expressed frustration about grading specifically?
-        Mentions of late nights grading, piles of papers, grading burnout.
+        Have they expressed frustration about grading student work specifically?
+        Mentions of late nights grading papers/essays, piles of student work,
+        grading burnout from teaching. Must be about academic grading, not
+        card/collectible grading.
       max_points: 3
 
     - name: "Tech Openness"
       description: >
-        Do they use or discuss edtech tools? Mention AI, apps, digital tools?
-        Are they curious about technology rather than resistant?
-      max_points: 3
+        Do they use or discuss edtech tools? Mention AI, apps, digital tools
+        in an education context? Are they curious about classroom technology?
+      max_points: 2
 
     - name: "Engagement Level"
       description: >
@@ -44,20 +50,73 @@ ideal_customer:
     - name: "DM Receptiveness"
       description: >
         Follower count sweet spot (100-10K). Do they seem approachable in tone?
-      max_points: 2
+      max_points: 1
 
   min_score: 8
   max_prospects_to_enrich: 50
 
+  bio_blocklist:
+    - "pokemon"
+    - "PSA"
+    - "BGS"
+    - "CGC"
+    - "card grading"
+    - "card grader"
+    - "sports card"
+    - "coin grading"
+    - "coin dealer"
+    - "numismatic"
+    - "collectibles"
+    - "slab"
+    - "graded cards"
+    - "trading cards"
+    - "crypto"
+    - "forex"
+    - "NFT"
+    - "dropship"
+
+  bio_require_any:
+    - "teacher"
+    - "educator"
+    - "teaching"
+    - "prof "
+    - "professor"
+    - "school"
+    - "classroom"
+    - "students"
+    - "grade "
+    - "grading"
+    - "k-12"
+    - "k12"
+    - "kindergarten"
+    - "elementary"
+    - "middle school"
+    - "high school"
+    - "math teacher"
+    - "english teacher"
+    - "science teacher"
+    - "history teacher"
+    - "special ed"
+    - "sped"
+    - "ELA"
+    - "EdTech"
+    - "instructional"
+    - "principal"
+    - "tutor"
+    - "homeschool"
+    - "TA "
+
 # Discovery vectors — presence = enabled, remove an entry to disable that vector.
+# All pain_search queries exclude collectible grading (Pokemon, PSA, BGS, cards, coins).
 discovery:
   - type: pain_search
     entries:
-      - '"grading takes forever" -is:retweet'
-      - '"up late grading" OR "grading all weekend" -is:retweet'
-      - '"so many papers to grade" -is:retweet lang:en'
-      - '(grading OR marking) (exhausted OR overwhelmed) -is:retweet'
-      - '"AI grading" OR "automate grading" lang:en'
+      - '"so many papers to grade" -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+      - '(teacher OR teaching) (grading OR "marking papers") (exhausted OR overwhelmed OR "takes forever") -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+      - '"up late grading" (students OR essays OR papers OR assignments) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+      - '"grading all weekend" (teacher OR school OR class) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+      - '(teacher OR educator) "grading burnout" -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+      - '"grade essays" OR "grade papers" OR "grading assignments" (tired OR hate OR exhausting) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
     max_per_entry: 5
 
   - type: conversation_mining
@@ -65,6 +124,8 @@ discovery:
       - "@coolcatteacher"
       - "@cultofpedagogy"
       - "@TeachBetter"
+      - "@WeAreTeachers"
+      - "@edaborado"
     max_per_entry: 5
 
   - type: hashtag_scan
@@ -72,7 +133,8 @@ discovery:
       - "#teacherlife"
       - "#teacherproblems"
       - "#gradingseason"
-      - "#edtech"
+      - "#teachertwitter"
+      - "#iteachtoo"
     max_per_entry: 5
 
 messaging:

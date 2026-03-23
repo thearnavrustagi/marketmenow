@@ -57,7 +57,11 @@ class OutreachHistory:
 
     def contacted_handles(self, platform: str) -> set[str]:
         prefix = f"{platform}:"
-        return {k.split(":", 1)[1] for k in self._data if k.startswith(prefix)}
+        return {
+            k.split(":", 1)[1]
+            for k, v in self._data.items()
+            if k.startswith(prefix) and v.get("success", True)
+        }
 
     @property
     def total_contacted(self) -> int:

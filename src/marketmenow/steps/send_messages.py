@@ -47,7 +47,13 @@ class SendMessagesStep:
             "outreach_orchestrator"
         )
 
-        ctx.console.print(f"[bold]Sending {len(messages)} DMs on Twitter...[/bold]")
+        ctx.console.print(f"[bold cyan]Sending {len(messages)} DMs on Twitter...[/bold cyan]")
+        for i, msg in enumerate(messages, 1):
+            ctx.console.print(
+                f"  [dim]Queue {i}/{len(messages)}:[/dim] @{msg.recipient_handle} "
+                f"(score {msg.prospect_score})"
+            )
+
         results = await orchestrator.send_batch(messages)
 
         self._print_summary(ctx, results)

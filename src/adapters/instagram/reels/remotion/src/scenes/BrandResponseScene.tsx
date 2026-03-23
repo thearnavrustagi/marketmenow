@@ -6,16 +6,16 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { VisualProps } from "../schema";
-import { GRADEASY_FONT } from "../fonts";
+import { BRAND_FONT } from "../fonts";
 
-export const GradeasyResponseScene: React.FC<{ visual: VisualProps }> = ({
+export const BrandResponseScene: React.FC<{ visual: VisualProps }> = ({
   visual,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const BRAND_BLUE = (visual.brand_color as string) ?? "#4A8DF8";
-  const brandName = (visual.brand_name as string) ?? "Gradeasy";
+  const brandName = (visual.brand_name as string) ?? "BrandName";
   const brandSuffix = (visual.brand_suffix as string) ?? ".ai";
   const responseText = (visual.text_overlay as string) ?? "I gotchu bro";
 
@@ -44,12 +44,12 @@ export const GradeasyResponseScene: React.FC<{ visual: VisualProps }> = ({
         alignItems: "center",
       }}
     >
-      {/* Gradeasy.ai logo */}
+      {/* Brand logo */}
       <div
         style={{
           display: "flex",
           alignItems: "baseline",
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
           transform: `scale(${logoScale})`,
           marginBottom: 60,
         }}
@@ -82,7 +82,7 @@ export const GradeasyResponseScene: React.FC<{ visual: VisualProps }> = ({
           color: (visual.text_color as string) ?? "rgba(255,255,255,0.9)",
           fontSize: Number(visual.font_size ?? 48),
           fontWeight: Number(visual.font_weight ?? 600),
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
           textAlign: "center",
           lineHeight: 1.4,
           opacity: textOpacity,

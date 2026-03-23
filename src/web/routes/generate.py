@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 _background_tasks: set[asyncio.Task] = set()
 
-_EMAIL_OFFSET_FILE = Path("vault/.email_offset")
+_EMAIL_OFFSET_FILE = Path("projects/gradeasy/vault/.email_offset")
 
 
 @router.get("", response_class=HTMLResponse)

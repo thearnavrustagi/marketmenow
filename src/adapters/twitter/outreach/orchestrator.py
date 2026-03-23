@@ -11,6 +11,7 @@ from marketmenow.outreach.models import (
     CustomerProfile,
     DiscoveredProspectPost,
     DiscoveryVectorConfig,
+    ICPConfig,
     OutreachMessage,
     OutreachSendResult,
     UserProfile,
@@ -138,28 +139,59 @@ class TwitterOutreachOrchestrator:
     ) -> list[UserProfile]:
         """Visit each handle's profile and return enriched profiles."""
         scraper = TwitterProfileScraper(self.browser)
-        max_enrich = self._profile.ideal_customer.max_prospects_to_enrich
+        icp = self._profile.ideal_customer
+        max_enrich = icp.max_prospects_to_enrich
 
         handles = list(prospects.keys())
         random.shuffle(handles)
         handles = handles[:max_enrich]
 
         profiles: list[UserProfile] = []
-        for handle in handles:
+        skipped_bio = 0
+        for i, handle in enumerate(handles, 1):
+            logger.info("Enriching %d/%d: @%s", i, len(handles), handle)
             try:
                 profile = await scraper.enrich(handle, prospects[handle])
-                if profile is not None:
-                    profiles.append(profile)
+                if profile is None:
+                    logger.info("  @%s — skipped (profile unavailable)", handle)
+                    continue
+
+                block_reason = self._check_bio_filter(profile.bio, icp)
+                if block_reason:
+                    logger.info("  @%s — filtered out: %s  |  bio: %s", handle, block_reason, profile.bio[:120])
+                    skipped_bio += 1
+                    continue
+
+                profiles.append(profile)
+                dm_tag = "DM open" if profile.dm_possible else "DM closed"
+                logger.info(
+                    "  @%s — %s  |  %d followers  |  bio: %s",
+                    handle, dm_tag, profile.follower_count, profile.bio[:100],
+                )
             except Exception:
                 logger.exception("Failed to enrich profile @%s", handle)
             await self.browser._random_delay(2.0, 5.0)
 
         logger.info(
-            "Enrichment complete: %d handles -> %d profiles",
+            "Enrichment complete: %d visited, %d passed, %d filtered by bio",
             len(handles),
             len(profiles),
+            skipped_bio,
         )
         return profiles
+
+    @staticmethod
+    def _check_bio_filter(bio: str, icp: ICPConfig) -> str:
+        """Return a rejection reason if the bio fails blocklist/require checks, else ''."""
+        bio_lower = bio.lower()
+        for term in icp.bio_blocklist:
+            if term.lower() in bio_lower:
+                return f"blocklist hit: '{term}'"
+        if icp.bio_require_any and not any(
+            kw.lower() in bio_lower for kw in icp.bio_require_any
+        ):
+            return "no required keyword found in bio"
+        return ""
 
     async def send_batch(
         self,
@@ -171,8 +203,13 @@ class TwitterOutreachOrchestrator:
         results: list[OutreachSendResult] = []
 
         for i, msg in enumerate(messages):
+            logger.info("Sending DM %d/%d to @%s ...", i + 1, len(messages), msg.recipient_handle)
             result = await sender.send(msg.recipient_handle, msg.message_text)
             results.append(result)
+            if result.success:
+                logger.info("  DM to @%s: sent successfully", msg.recipient_handle)
+            else:
+                logger.warning("  DM to @%s: FAILED — %s", msg.recipient_handle, result.error_message)
 
             self._history.record(
                 platform="twitter",

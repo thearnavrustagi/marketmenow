@@ -160,9 +160,7 @@ class ReelScriptGenerator:
             "assignment_image": str(assignment_image.resolve()),
             "reaction_text": script_vars["reaction_text"],
             "roast_text": script_vars.get("roast_text", script_vars["reaction_text"]),
-            "brand_response": script_vars.get(
-                "brand_response", script_vars.get("gradeasy_response", "Let me handle this")
-            ),
+            "brand_response": script_vars.get("brand_response", "Let me handle this"),
             "reaction_image": "",
             "comment_username": "student",
             "comment_avatar": "",

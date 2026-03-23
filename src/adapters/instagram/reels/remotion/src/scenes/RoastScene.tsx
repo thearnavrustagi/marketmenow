@@ -7,7 +7,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { VisualProps } from "../schema";
-import { GRADEASY_FONT } from "../fonts";
+import { BRAND_FONT } from "../fonts";
 
 export const RoastScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
   const frame = useCurrentFrame();
@@ -15,7 +15,7 @@ export const RoastScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
 
   const BRAND_BLUE = (visual.brand_color as string) ?? "#4A8DF8";
   const FRAME_BG = (visual.frame_background as string) ?? "#E0E0E0";
-  const brandName = (visual.brand_name as string) ?? "Gradeasy";
+  const brandName = (visual.brand_name as string) ?? "BrandName";
   const brandSuffix = (visual.brand_suffix as string) ?? ".ai";
 
   const rawImage = (visual.image as string) ?? "";
@@ -86,7 +86,7 @@ export const RoastScene: React.FC<{ visual: VisualProps }> = ({ visual }) => {
           style={{
             display: "flex",
             alignItems: "baseline",
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
           }}
         >
           <span

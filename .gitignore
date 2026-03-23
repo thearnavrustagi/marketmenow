@@ -24,6 +24,9 @@ credentials.yaml
 .twitter_audit_log.jsonl
 .twitter_reply_history.json
 
+# ── Outreach / contact history (any location) ─────────
+**/.outreach_history.json
+
 # ── ML model weights ───────────────────────────────────
 models/
 !src/marketmenow/models/
@@ -55,6 +58,7 @@ htmlcov/
 
 # ── Vault (contact CSVs, offset markers) ──────────────
 vault/
+**/vault/
 
 # ── Brand-specific content (prompts, email templates, reel templates) ──
 /prompts/

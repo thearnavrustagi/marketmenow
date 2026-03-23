@@ -43,6 +43,8 @@ class ICPConfig(BaseModel, frozen=True):
     rubric: list[RubricCriterion]
     min_score: int
     max_prospects_to_enrich: int = 50
+    bio_blocklist: list[str] = Field(default_factory=list)
+    bio_require_any: list[str] = Field(default_factory=list)
 
 
 class CustomerProfile(BaseModel, frozen=True):

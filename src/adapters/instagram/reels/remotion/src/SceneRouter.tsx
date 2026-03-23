@@ -2,9 +2,9 @@ import { Audio, Series, staticFile, interpolate, useCurrentFrame, useVideoConfig
 import type { BeatProps, ReelProps, VisualProps } from "./schema";
 import { TransitionWrapper } from "./transitions";
 import {
+  BrandResponseScene,
   CustomScene,
   FlashRevealScene,
-  GradeasyResponseScene,
   GradingScene,
   HookScene,
   ReactionImageScene,
@@ -28,7 +28,8 @@ const SCENE_MAP: Record<string, SceneComponent> = {
   TikTokCommentScene,
   FlashRevealScene,
   RoastScene,
-  GradeasyResponseScene,
+  BrandResponseScene,
+  GradeasyResponseScene: BrandResponseScene, // backward compat alias
   SegmentationScene,
   TransitionScene,
   RubricScene,

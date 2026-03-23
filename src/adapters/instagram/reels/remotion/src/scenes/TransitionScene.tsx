@@ -8,7 +8,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { VisualProps } from "../schema";
-import { GRADEASY_FONT } from "../fonts";
+import { BRAND_FONT } from "../fonts";
 
 export const TransitionScene: React.FC<{ visual: VisualProps }> = ({
   visual,
@@ -76,7 +76,7 @@ export const TransitionScene: React.FC<{ visual: VisualProps }> = ({
         </div>
       )}
 
-      {/* Dark bottom panel with Gradeasy.ai branding */}
+      {/* Dark bottom panel with brand name + suffix */}
       <div
         style={{
           position: "absolute",
@@ -99,7 +99,7 @@ export const TransitionScene: React.FC<{ visual: VisualProps }> = ({
           style={{
             display: "flex",
             alignItems: "baseline",
-            fontFamily: GRADEASY_FONT,
+            fontFamily: BRAND_FONT,
           }}
         >
           <span
@@ -110,7 +110,7 @@ export const TransitionScene: React.FC<{ visual: VisualProps }> = ({
               letterSpacing: -1,
             }}
           >
-            {(visual.brand_name as string) ?? "Gradeasy"}
+            {(visual.brand_name as string) ?? "BrandName"}
           </span>
           <span
             style={{

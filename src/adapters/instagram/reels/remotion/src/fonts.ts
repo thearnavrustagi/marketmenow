@@ -4,4 +4,4 @@ const { fontFamily: loaded } = loadFont("normal", {
   weights: ["700"],
 });
 
-export const GRADEASY_FONT = loaded ?? fontFamily;
+export const BRAND_FONT = loaded ?? fontFamily;

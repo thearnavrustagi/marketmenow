@@ -45,11 +45,24 @@ class EnrichProfilesStep:
             len(prospects),
             customer_profile.ideal_customer.max_prospects_to_enrich,
         )
-        with ctx.console.status(f"[bold cyan]Enriching up to {total} profiles..."):
-            profiles = await orchestrator.enrich(prospects)
+        ctx.console.print(f"[bold cyan]Enriching up to {total} profiles...[/bold cyan]")
 
-        dm_possible = [p for p in profiles if p.dm_possible]
+        profiles = await orchestrator.enrich(prospects)
+
+        dm_open = [p for p in profiles if p.dm_possible]
+        dm_closed = [p for p in profiles if not p.dm_possible]
+
         ctx.console.print(
-            f"[green]Enriched {len(profiles)} profiles ({len(dm_possible)} accept DMs)[/green]"
+            f"[green]Enrichment done: {len(profiles)} profiles passed bio filter[/green]"
         )
-        ctx.set_artifact("user_profiles", dm_possible)
+        ctx.console.print(
+            f"  [green]{len(dm_open)} accept DMs[/green]  |  "
+            f"[yellow]{len(dm_closed)} DMs closed (dropped)[/yellow]"
+        )
+
+        if dm_open:
+            ctx.console.print("[dim]Proceeding with DM-open profiles:[/dim]")
+            for p in dm_open:
+                ctx.console.print(f"  [cyan]@{p.handle}[/cyan] — {p.bio[:80]}")
+
+        ctx.set_artifact("user_profiles", dm_open)

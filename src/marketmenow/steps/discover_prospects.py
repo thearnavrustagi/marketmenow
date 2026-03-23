@@ -45,8 +45,28 @@ class DiscoverProspectsStep:
         customer_profile = CustomerProfile(**raw)
         ctx.set_artifact("customer_profile", customer_profile)
 
-        history = OutreachHistory()
+        ctx.console.print(f"[dim]Profile loaded: {profile_path.name}[/dim]")
+        ctx.console.print(f"[dim]Product: {customer_profile.product.name} — {customer_profile.product.tagline}[/dim]")
+        ctx.console.print(f"[dim]Vectors: {len(customer_profile.discovery_vectors)} configured[/dim]")
+        if customer_profile.ideal_customer.bio_blocklist:
+            ctx.console.print(f"[dim]Bio blocklist: {len(customer_profile.ideal_customer.bio_blocklist)} terms[/dim]")
+        if customer_profile.ideal_customer.bio_require_any:
+            ctx.console.print(f"[dim]Bio require: {len(customer_profile.ideal_customer.bio_require_any)} keywords[/dim]")
+
+        history_path = None
+        if ctx.project:
+            from marketmenow.core.project_manager import ProjectManager
+
+            pm = ProjectManager()
+            project_dir = pm.project_dir(ctx.project.slug)
+            history_path = project_dir / ".outreach_history.json"
+
+        history = OutreachHistory(path=history_path) if history_path else OutreachHistory()
         ctx.set_artifact("outreach_history", history)
+
+        contacted = history.contacted_handles(self._platform)
+        if contacted:
+            ctx.console.print(f"[dim]Already contacted: {len(contacted)} handles (will skip)[/dim]")
 
         if self._platform == "twitter":
             await self._discover_twitter(ctx, customer_profile, history)
@@ -75,17 +95,19 @@ class DiscoverProspectsStep:
         ctx.set_artifact("outreach_orchestrator", orchestrator)
 
         await orchestrator.launch()
+        ctx.console.print("[dim]Browser launched, checking login...[/dim]")
         if not await orchestrator.ensure_logged_in():
             raise WorkflowError("Not logged in to Twitter. Run `mmn twitter login` first.")
+        ctx.console.print("[green]Logged in to Twitter.[/green]")
 
-        with ctx.console.status("[bold cyan]Running discovery vectors..."):
-            prospects = await orchestrator.discover()
+        ctx.console.print("[bold cyan]Running discovery vectors...[/bold cyan]")
+        prospects = await orchestrator.discover()
 
         if not prospects:
             raise WorkflowError("No prospects discovered. Check your search queries.")
 
+        total_posts = sum(len(v) for v in prospects.values())
         ctx.console.print(
-            f"[green]Discovered {sum(len(v) for v in prospects.values())} posts "
-            f"from {len(prospects)} unique handles[/green]"
+            f"[green]Discovery complete: {total_posts} posts from {len(prospects)} unique handles[/green]"
         )
         ctx.set_artifact("discovered_prospects", prospects)

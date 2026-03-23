@@ -5,7 +5,7 @@ export { ReactionImageScene } from "./ReactionImageScene";
 export { TikTokCommentScene } from "./TikTokCommentScene";
 export { FlashRevealScene } from "./FlashRevealScene";
 export { RoastScene } from "./RoastScene";
-export { GradeasyResponseScene } from "./GradeasyResponseScene";
+export { BrandResponseScene } from "./BrandResponseScene";
 export { SegmentationScene } from "./SegmentationScene";
 export { TransitionScene } from "./TransitionScene";
 export { RubricScene } from "./RubricScene";

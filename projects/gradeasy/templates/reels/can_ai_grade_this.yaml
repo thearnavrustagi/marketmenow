@@ -139,7 +139,7 @@ pipeline:
       output_fields:
         - reaction_text
         - roast_text
-        - gradeasy_response
+        - brand_response
         - rubric_narration
         - grading_narration
         - result_comment
@@ -152,14 +152,14 @@ variables:
   - labeling_image_prompt
   - reaction_text
   - roast_text
-  - gradeasy_response
+  - brand_response
   - reaction_image
   - rubric_items
   - grading_result
   - rubric_narration
   - grading_narration
   - result_comment
-  - gradeasy_voice_id
+  - brand_voice_id
   - kid_voice_id
 
 beats:
@@ -239,19 +239,19 @@ beats:
       image: "{{ assignment_image }}"
       text_overlay: "{{ roast_text }}"
 
-  - id: gradeasy_response
-    scene: GradeasyResponseScene
+  - id: brand_response
+    scene: BrandResponseScene
     entry_transition:
       type: scale
       duration_frames: 8
     audio:
       type: tts
-      text: "{{ gradeasy_response }}"
-      voice: "{{ gradeasy_voice_id }}"
+      text: "{{ brand_response }}"
+      voice: "{{ brand_voice_id }}"
     duration: from_audio
     pad_seconds: 0.2
     visual:
-      text_overlay: "{{ gradeasy_response }}"
+      text_overlay: "{{ brand_response }}"
 
   - id: transition
     scene: TransitionScene
@@ -290,7 +290,7 @@ beats:
     audio:
       type: tts
       text: "{{ rubric_narration }}"
-      voice: "{{ gradeasy_voice_id }}"
+      voice: "{{ brand_voice_id }}"
     duration: from_audio
     visual:
       rubric_items: "{{ rubric_items }}"
@@ -303,7 +303,7 @@ beats:
     audio:
       type: tts
       text: "{{ grading_narration }}"
-      voice: "{{ gradeasy_voice_id }}"
+      voice: "{{ brand_voice_id }}"
     duration: from_audio
     visual:
       student_name: "{{ student_name }}"
