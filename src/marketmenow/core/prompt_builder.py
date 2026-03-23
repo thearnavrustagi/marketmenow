@@ -98,18 +98,24 @@ class PromptBuilder:
         }
 
         persona_path = self._resolve_file("persona.yaml", platform, project_slug)
-        function_path = self._resolve_file(
-            f"functions/{function}.yaml", platform, project_slug
-        )
+        function_path = self._resolve_file(f"functions/{function}.yaml", platform, project_slug)
 
         if persona_path and function_path:
             return self._build_decomposed(
-                persona_path, function_path, platform, project_slug,
-                icl_examples, shared_vars,
+                persona_path,
+                function_path,
+                platform,
+                project_slug,
+                icl_examples,
+                shared_vars,
             )
 
         return self._build_legacy(
-            platform, function, icl_examples, shared_vars, project_slug,
+            platform,
+            function,
+            icl_examples,
+            shared_vars,
+            project_slug,
         )
 
     def _build_decomposed(
@@ -125,18 +131,21 @@ class PromptBuilder:
         function_data = self._load_yaml(function_path)
 
         persona_system = self._render_template(
-            persona_data.get("system", ""), variables,
+            persona_data.get("system", ""),
+            variables,
         )
 
         function_system = self._render_template(
-            function_data.get("system", ""), variables,
+            function_data.get("system", ""),
+            variables,
         )
 
         icl_text = self._render_icl_block(platform, icl_examples, project_slug, variables)
 
         user_vars = {**variables, "icl_block": icl_text}
         function_user = self._render_template(
-            function_data.get("user", ""), user_vars,
+            function_data.get("user", ""),
+            user_vars,
         )
 
         system = persona_system.rstrip() + "\n\n" + function_system.lstrip()
@@ -171,7 +180,10 @@ class PromptBuilder:
         icl_text = ""
         if icl_examples:
             icl_text = self._render_icl_block(
-                platform, icl_examples, project_slug, variables,
+                platform,
+                icl_examples,
+                project_slug,
+                variables,
             )
         variables_with_icl = {
             **variables,
@@ -199,7 +211,8 @@ class PromptBuilder:
             data = self._load_yaml(icl_path)
             template_str = data.get("block", "")
             return self._render_template(
-                template_str, {**variables, "examples": icl_examples},
+                template_str,
+                {**variables, "examples": icl_examples},
             )
 
         lines: list[str] = [
@@ -208,9 +221,7 @@ class PromptBuilder:
         for ex in icl_examples:
             parent = ex.get("parent_author", "")
             if parent:
-                lines.append(
-                    f'Original by @{parent}: "{ex.get("parent_text", "")}"'
-                )
+                lines.append(f'Original by @{parent}: "{ex.get("parent_text", "")}"')
             reply_text = ex.get("our_reply", ex.get("text", ""))
             likes = ex.get("likes", 0)
             rts = ex.get("retweets", 0)

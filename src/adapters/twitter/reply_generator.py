@@ -125,7 +125,8 @@ class ReplyGenerator:
             from .prompts import load_prompt
 
             prompt_data = load_prompt(
-                "reply_generation", project_slug=self._project_slug,
+                "reply_generation",
+                project_slug=self._project_slug,
             )
             from jinja2 import Template
 

@@ -866,9 +866,7 @@ _YT_TITLE_VARIANTS = [
 ]
 
 _YT_DEFAULT_DESCRIPTION = (
-    "AI-generated content from MarketMeNow.\n"
-    "\n"
-    "#shorts #shortvideo #ai #contentcreation #marketing"
+    "AI-generated content from MarketMeNow.\n\n#shorts #shortvideo #ai #contentcreation #marketing"
 )
 
 

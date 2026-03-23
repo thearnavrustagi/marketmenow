@@ -50,7 +50,8 @@ def test_prompt_builder_build_decomposed(
         "system": "You ARE {{ brand.name }}. {{ persona.voice }}.",
     }
     (project_dir / "persona.yaml").write_text(
-        yaml.dump(persona_yaml), encoding="utf-8",
+        yaml.dump(persona_yaml),
+        encoding="utf-8",
     )
 
     func_dir = tmp_path / "prompts" / "twitter" / "functions"
@@ -60,10 +61,12 @@ def test_prompt_builder_build_decomposed(
         "user": "{{ icl_block }}POST by @{{ author_handle }}: {{ post_text }}",
     }
     (func_dir / "reply.yaml").write_text(
-        yaml.dump(func_yaml), encoding="utf-8",
+        yaml.dump(func_yaml),
+        encoding="utf-8",
     )
 
     import marketmenow.core.prompt_builder as pb
+
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"
@@ -101,10 +104,12 @@ def test_prompt_builder_build_legacy_fallback(
         "user": "{% if winning_examples %}EXAMPLES{% endif %}POST: {{ post_text }}",
     }
     (prompts_dir / "reply_generation.yaml").write_text(
-        yaml.dump(legacy), encoding="utf-8",
+        yaml.dump(legacy),
+        encoding="utf-8",
     )
 
     import marketmenow.core.prompt_builder as pb
+
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"
@@ -135,7 +140,8 @@ def test_prompt_builder_icl_block_rendered(
     project_dir = tmp_path / "projects" / "test" / "prompts" / "twitter"
     project_dir.mkdir(parents=True)
     (project_dir / "persona.yaml").write_text(
-        yaml.dump({"system": "Persona here."}), encoding="utf-8",
+        yaml.dump({"system": "Persona here."}),
+        encoding="utf-8",
     )
 
     func_dir = tmp_path / "prompts" / "twitter" / "functions"
@@ -146,6 +152,7 @@ def test_prompt_builder_icl_block_rendered(
     )
 
     import marketmenow.core.prompt_builder as pb
+
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"
@@ -159,7 +166,13 @@ def test_prompt_builder_icl_block_rendered(
             persona=persona,
             brand=brand,
             icl_examples=[
-                {"parent_author": "bob", "parent_text": "hey", "our_reply": "yo", "likes": 5, "retweets": 1},
+                {
+                    "parent_author": "bob",
+                    "parent_text": "hey",
+                    "our_reply": "yo",
+                    "likes": 5,
+                    "retweets": 1,
+                },
             ],
             template_vars={},
             project_slug="test",
@@ -179,7 +192,8 @@ def test_prompt_builder_no_icl_on_explore(
     project_dir = tmp_path / "projects" / "test" / "prompts" / "twitter"
     project_dir.mkdir(parents=True)
     (project_dir / "persona.yaml").write_text(
-        yaml.dump({"system": "P."}), encoding="utf-8",
+        yaml.dump({"system": "P."}),
+        encoding="utf-8",
     )
 
     func_dir = tmp_path / "prompts" / "twitter" / "functions"
@@ -190,6 +204,7 @@ def test_prompt_builder_no_icl_on_explore(
     )
 
     import marketmenow.core.prompt_builder as pb
+
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"
@@ -220,7 +235,8 @@ def test_prompt_builder_platform_override(
     project_dir = tmp_path / "projects" / "test" / "prompts" / "reddit"
     project_dir.mkdir(parents=True)
     (project_dir / "persona.yaml").write_text(
-        yaml.dump({"system": "Tone: {{ persona.tone }}"}), encoding="utf-8",
+        yaml.dump({"system": "Tone: {{ persona.tone }}"}),
+        encoding="utf-8",
     )
 
     func_dir = tmp_path / "prompts" / "reddit" / "functions"
@@ -231,6 +247,7 @@ def test_prompt_builder_platform_override(
     )
 
     import marketmenow.core.prompt_builder as pb
+
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"

@@ -14,15 +14,14 @@ def generate_twitter_prompt(brand: BrandConfig, persona: PersonaConfig) -> str:
     ``prompts/twitter/functions/`` directory.  This generates the
     project-scoped **persona** file that defines *who* the account is.
     """
-    features_items = _bullet_list(brand.features, fallback="(no features listed)")
     phrases_items = _bullet_list(
         [f'"{p}"' for p in persona.example_phrases],
         fallback='"(no examples yet)"',
     )
 
     system_lines = [
-        f"You ARE {{{{ brand.name }}}}. You're the social media personality behind",
-        f"{{{{ brand.tagline }}}}.",
+        "You ARE {{ brand.name }}. You're the social media personality behind",
+        "{{ brand.tagline }}.",
         "You are NOT a corporate account - you are a CHARACTER with a real voice.",
         "",
         "YOUR PERSONALITY:",
@@ -53,7 +52,7 @@ def generate_reddit_prompt(brand: BrandConfig, persona: PersonaConfig) -> str:
     system_lines = [
         "You are a helpful, knowledgeable community member on Reddit.",
         "You are NOT a brand account. You are a real person who happens to",
-        f"have experience with {{{{ brand.url }}}} - {{{{ brand.tagline }}}}.",
+        "have experience with {{ brand.url }} - {{ brand.tagline }}.",
         "",
         "YOUR PERSONA:",
         f"- {persona.description}" if persona.description else "- (describe persona here)",
