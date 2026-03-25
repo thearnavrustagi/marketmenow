@@ -239,9 +239,7 @@ class TikTokBrowser:
             await file_input.wait_for(state="attached", timeout=10_000)
         except Exception:
             logger.debug("File input not in main page, trying iframe")
-            file_input = iframe_locator.locator(
-                'input[type="file"][accept*="video"]'
-            ).first
+            file_input = iframe_locator.locator('input[type="file"][accept*="video"]').first
             await file_input.wait_for(state="attached", timeout=15_000)
 
         await file_input.set_input_files(str(video_path.resolve()))
@@ -262,14 +260,14 @@ class TikTokBrowser:
     async def _dismiss_modals(self, page: Page) -> None:
         """Close any TikTok modal overlays that block interaction."""
         for _ in range(5):
-            overlay = page.locator('div.TUXModal-overlay').first
+            overlay = page.locator("div.TUXModal-overlay").first
             try:
                 if await overlay.is_visible(timeout=1_000):  # type: ignore[call-arg]
                     logger.debug("Modal overlay detected, attempting to dismiss")
                     # Try clicking close/X buttons inside the modal
                     for close_sel in [
                         'div.TUXModal-overlay button[aria-label="Close"]',
-                        'div.TUXModal-overlay button:has(svg)',
+                        "div.TUXModal-overlay button:has(svg)",
                         'div.TUXModal-overlay [data-e2e*="close"]',
                         'button[aria-label="Close"]',
                     ]:
@@ -308,9 +306,7 @@ class TikTokBrowser:
                 pass
             # Check if Post button exists and is not disabled
             try:
-                post_btn = page.locator(
-                    'button:has-text("Post"):not([disabled])'
-                ).first
+                post_btn = page.locator('button:has-text("Post"):not([disabled])').first
                 if await post_btn.is_visible(timeout=500):  # type: ignore[call-arg]
                     logger.debug("Post button visible and enabled")
                     return
@@ -365,10 +361,7 @@ class TikTokBrowser:
         """Click the Post/Publish button."""
         await self._dismiss_modals(page)
 
-        post_btn = page.locator(
-            'button:has-text("Post"), '
-            'button:has-text("Publish")'
-        ).first
+        post_btn = page.locator('button:has-text("Post"), button:has-text("Publish")').first
 
         try:
             await post_btn.wait_for(state="visible", timeout=15_000)

@@ -724,7 +724,6 @@ def batch_post(
         if carousel:
             from adapters.instagram.carousel.orchestrator import CarouselOrchestrator
             from adapters.instagram.settings import InstagramSettings
-
             from marketmenow.core.project_manager import ProjectManager
 
             ig_settings = InstagramSettings()

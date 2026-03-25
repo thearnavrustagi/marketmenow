@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 _background_tasks: set[asyncio.Task] = set()
 
+
 def _email_offset_file() -> Path:
     pm = ProjectManager()
     slug = pm.get_active_project()
@@ -341,9 +342,8 @@ async def _run_batch(entries: list[_BatchEntry]) -> None:
         idx = _get_index(entry.key)
 
         try:
-            _reel_dependent = (
-                (entry.command_type == "short" and entry.platform == "youtube")
-                or (entry.command_type == "upload" and entry.platform == "tiktok")
+            _reel_dependent = (entry.command_type == "short" and entry.platform == "youtube") or (
+                entry.command_type == "upload" and entry.platform == "tiktok"
             )
             if _reel_dependent:
                 platform_label = "YouTube" if entry.platform == "youtube" else "TikTok"

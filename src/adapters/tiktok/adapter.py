@@ -60,8 +60,7 @@ _ERROR_HINTS: dict[str, str] = {
         "developer audit to post publicly."
     ),
     "url_ownership_unverified": (
-        "PULL_FROM_URL requires domain ownership verification on the TikTok "
-        "developer portal."
+        "PULL_FROM_URL requires domain ownership verification on the TikTok developer portal."
     ),
 }
 
@@ -382,9 +381,12 @@ class TikTokAdapter:
                         if resp.status_code >= 500 and attempt < _MAX_RETRIES - 1:
                             logger.warning(
                                 "Chunk %d upload got %s, retrying (%d/%d)",
-                                i, resp.status_code, attempt + 1, _MAX_RETRIES,
+                                i,
+                                resp.status_code,
+                                attempt + 1,
+                                _MAX_RETRIES,
                             )
-                            await asyncio.sleep(2.0 * (2 ** attempt))
+                            await asyncio.sleep(2.0 * (2**attempt))
                             continue
                         resp.raise_for_status()
                     except httpx.HTTPError:
@@ -392,12 +394,17 @@ class TikTokAdapter:
                             raise
                         logger.warning(
                             "Chunk %d upload failed, retrying (%d/%d)",
-                            i, attempt + 1, _MAX_RETRIES,
+                            i,
+                            attempt + 1,
+                            _MAX_RETRIES,
                         )
-                        await asyncio.sleep(2.0 * (2 ** attempt))
+                        await asyncio.sleep(2.0 * (2**attempt))
 
                 logger.debug(
-                    "Uploaded chunk %d/%d (%s)", i + 1, total_chunks, content_range,
+                    "Uploaded chunk %d/%d (%s)",
+                    i + 1,
+                    total_chunks,
+                    content_range,
                 )
 
     async def _poll_status(self, publish_id: str) -> None:
@@ -418,7 +425,8 @@ class TikTokAdapter:
                     if status in ("FAILED", "PUBLISH_FAILED"):
                         fail_reason = body.get("data", {}).get("fail_reason", "unknown")
                         raise TikTokAPIError(
-                            200, "publish_failed",
+                            200,
+                            "publish_failed",
                             f"Publish failed: {fail_reason}",
                         )
             except TikTokAPIError:
@@ -429,7 +437,8 @@ class TikTokAdapter:
             await asyncio.sleep(_STATUS_POLL_INTERVAL_S)
 
         raise TikTokAPIError(
-            200, "publish_timeout",
+            200,
+            "publish_timeout",
             f"Publish status not resolved after {_STATUS_POLL_MAX_ATTEMPTS} polls",
         )
 

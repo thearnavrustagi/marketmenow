@@ -31,6 +31,13 @@ items:
     command_type: short
     count: 2
 
+  - platform: tiktok
+    command_type: upload
+    count: 2
+    params:
+      title: "Can AI grade your homework? Try it free at gradeasy.ai"
+      hashtags: "AIGrading,EdTech,Gradeasy,TeacherHack,fyp,SchoolHacks,AI,gradeasy"
+
   - platform: email
     command_type: send
     params:

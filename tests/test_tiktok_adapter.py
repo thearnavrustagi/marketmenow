@@ -113,7 +113,11 @@ class TestTikTokRenderer:
             hashtags=["longtag"],
         )
         result = await renderer.render(normalised)
-        total_len = sum(len(s) for s in result.text_segments) + len(" ".join(f"#{t}" for t in result.hashtags)) + 2
+        total_len = (
+            sum(len(s) for s in result.text_segments)
+            + len(" ".join(f"#{t}" for t in result.hashtags))
+            + 2
+        )
         assert total_len <= 2200
 
 
@@ -125,22 +129,28 @@ class TestTikTokRenderer:
 class TestTikTokAdapter:
     def test_platform_name(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         assert adapter.platform_name == "tiktok"
 
     def test_supported_modalities(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         assert adapter.supported_modalities() == frozenset({ContentModality.VIDEO})
 
     async def test_send_dm_unsupported(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         video = VideoPost(
             video=MediaAsset(uri="/tmp/test.mp4", mime_type="video/mp4"),
@@ -157,8 +167,10 @@ class TestTikTokAdapter:
 
     async def test_publish_unsupported_modality(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         from marketmenow.models.content import TextPost
 
@@ -175,8 +187,10 @@ class TestTikTokAdapter:
 
     async def test_publish_missing_file(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         video = VideoPost(
             video=MediaAsset(uri="/nonexistent/video.mp4", mime_type="video/mp4"),
@@ -186,7 +200,11 @@ class TestTikTokAdapter:
             modality=ContentModality.VIDEO,
             text_segments=["caption"],
             media_assets=[video.video],
-            extra={"_media_refs": [MediaRef(platform="tiktok", remote_id="", remote_url="/nonexistent/video.mp4")]},
+            extra={
+                "_media_refs": [
+                    MediaRef(platform="tiktok", remote_id="", remote_url="/nonexistent/video.mp4")
+                ]
+            },
         )
         result = await adapter.publish(content)
         assert result.success is False
@@ -219,8 +237,10 @@ class TestTikTokAdapter:
 
     def test_use_api_when_no_session_id(self) -> None:
         adapter = TikTokAdapter(
-            client_key="ck", client_secret="cs",
-            access_token="at", refresh_token="rt",
+            client_key="ck",
+            client_secret="cs",
+            access_token="at",
+            refresh_token="rt",
         )
         assert adapter._use_browser is False
 

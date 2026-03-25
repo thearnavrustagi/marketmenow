@@ -980,13 +980,32 @@ def _build_youtube_short_publish(params: dict, output_dir: str) -> list[str]:
     return cmd
 
 
+_TT_CAPTION_VARIANTS = [
+    "Can AI grade your homework? Try it free at gradeasy.ai",
+    "We let AI grade a real assignment. Try it at gradeasy.ai",
+    "AI graded this in seconds. See yours at gradeasy.ai",
+    "POV: AI is grading your homework now. gradeasy.ai",
+    "Watch AI grade this assignment. Try free at gradeasy.ai",
+    "This AI just graded a real paper. gradeasy.ai",
+    "Can our AI handle your homework? gradeasy.ai",
+]
+
+_TT_DEFAULT_HASHTAGS = "AIGrading,EdTech,Gradeasy,TeacherHack,fyp,SchoolHacks,AI,gradeasy"
+
+
+def _pick_tt_caption() -> str:
+    import random
+
+    return random.choice(_TT_CAPTION_VARIANTS)
+
+
 def _build_tiktok_upload_generate(params: dict, output_dir: str) -> list[str]:
     """Preview: placeholder command (TikTok reuses the reel MP4)."""
     cmd = ["mmn", "tiktok", "upload", os.path.join(output_dir, "*.mp4")]
-    if params.get("title"):
-        cmd.extend(["--title", params["title"]])
-    if params.get("hashtags"):
-        cmd.extend(["--hashtags", params["hashtags"]])
+    title = params.get("title") or _pick_tt_caption()
+    cmd.extend(["--title", title])
+    hashtags = params.get("hashtags") or _TT_DEFAULT_HASHTAGS
+    cmd.extend(["--hashtags", hashtags])
     if params.get("privacy"):
         cmd.extend(["--privacy", params["privacy"]])
     return cmd
@@ -996,10 +1015,10 @@ def _build_tiktok_upload_publish(params: dict, output_dir: str) -> list[str]:
     cmd = ["mmn", "tiktok", "upload"]
     latest_mp4 = os.path.join(output_dir, "latest.mp4")
     cmd.append(latest_mp4)
-    if params.get("title"):
-        cmd.extend(["--title", params["title"]])
-    if params.get("hashtags"):
-        cmd.extend(["--hashtags", params["hashtags"]])
+    title = params.get("title") or _pick_tt_caption()
+    cmd.extend(["--title", title])
+    hashtags = params.get("hashtags") or _TT_DEFAULT_HASHTAGS
+    cmd.extend(["--hashtags", hashtags])
     if params.get("privacy"):
         cmd.extend(["--privacy", params["privacy"]])
     return cmd

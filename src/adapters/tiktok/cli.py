@@ -103,14 +103,16 @@ def tiktok_auth() -> None:
     state = secrets.token_urlsafe(32)
     code_verifier = secrets.token_urlsafe(64)
 
-    auth_params = urllib.parse.urlencode({
-        "client_key": settings.tiktok_client_key,
-        "response_type": "code",
-        "scope": "video.publish,video.upload",
-        "redirect_uri": _REDIRECT_URI,
-        "state": state,
-        "code_verifier": code_verifier,
-    })
+    auth_params = urllib.parse.urlencode(
+        {
+            "client_key": settings.tiktok_client_key,
+            "response_type": "code",
+            "scope": "video.publish,video.upload",
+            "redirect_uri": _REDIRECT_URI,
+            "state": state,
+            "code_verifier": code_verifier,
+        }
+    )
     auth_url = f"{_TIKTOK_AUTH_URL}?{auth_params}"
 
     captured: dict[str, str] = {}
@@ -194,7 +196,9 @@ def tiktok_upload(
     hashtags: Annotated[str | None, typer.Option(help="Comma-separated hashtags")] = None,
     privacy: Annotated[
         str,
-        typer.Option(help="Privacy: PUBLIC_TO_EVERYONE, FOLLOWER_OF_CREATOR, MUTUAL_FOLLOW_FRIENDS, or SELF_ONLY"),
+        typer.Option(
+            help="Privacy: PUBLIC_TO_EVERYONE, FOLLOWER_OF_CREATOR, MUTUAL_FOLLOW_FRIENDS, or SELF_ONLY"
+        ),
     ] = "",
 ) -> None:
     """Upload a local video to TikTok."""

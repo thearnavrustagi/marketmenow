@@ -207,9 +207,9 @@ async def _carousel_generate_async(
     if output_dir:
         settings = settings.model_copy(update={"output_dir": output_dir})
 
-    from .carousel.orchestrator import CarouselOrchestrator
-
     from marketmenow.core.project_manager import ProjectManager
+
+    from .carousel.orchestrator import CarouselOrchestrator
 
     pm = ProjectManager()
     slug = pm.get_active_project()

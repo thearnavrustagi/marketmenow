@@ -265,7 +265,11 @@ async def send_batch(
                     break
                 except Exception as exc:
                     if "421" in str(exc) and attempt < 2:
-                        logger.warning("Row %d → %s  421 rate limit, reconnecting in 5s…", row_idx, contact.email)
+                        logger.warning(
+                            "Row %d → %s  421 rate limit, reconnecting in 5s…",
+                            row_idx,
+                            contact.email,
+                        )
                         await asyncio.sleep(5)
                         with contextlib.suppress(Exception):
                             await smtp.quit()
@@ -280,7 +284,9 @@ async def send_batch(
                         logger.error("Row %d → %s  ✗ %s", row_idx, contact.email, exc)
                         break
             if result is None:
-                result = SendResult(row_index=row_idx, email=contact.email, success=False, error="max retries")
+                result = SendResult(
+                    row_index=row_idx, email=contact.email, success=False, error="max retries"
+                )
 
             results.append(result)
             if on_progress:
