@@ -1025,7 +1025,7 @@ def _build_tiktok_upload_publish(params: dict, output_dir: str) -> list[str]:
 
 
 def _build_email_generate(params: dict, _output_dir: str) -> list[str]:
-    cmd = ["mmn", "email", "send", "--dry-run", "--paraphrase"]
+    cmd = ["mmn", "email", "send", "--dry-run"]
     if params.get("template"):
         cmd.extend(["-t", params["template"]])
     if params.get("file"):
@@ -1036,7 +1036,7 @@ def _build_email_generate(params: dict, _output_dir: str) -> list[str]:
 
 
 def _build_email_publish(params: dict, _output_dir: str) -> list[str]:
-    cmd = ["mmn", "email", "send", "--paraphrase"]
+    cmd = ["mmn", "email", "send"]
     if params.get("template"):
         cmd.extend(["-t", params["template"]])
     if params.get("file"):
