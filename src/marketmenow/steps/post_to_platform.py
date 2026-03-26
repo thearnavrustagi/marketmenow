@@ -28,6 +28,10 @@ class PostToPlatformStep:
         from marketmenow.core.registry_builder import build_registry
         from marketmenow.models.content import BaseContent
 
+        if ctx.get_param("dry_run", False):
+            ctx.console.print("[yellow]Dry run — skipping publish.[/yellow]")
+            return
+
         content = ctx.get_artifact("content")
         if not isinstance(content, BaseContent):
             raise WorkflowError("Artifact 'content' is not a BaseContent instance")

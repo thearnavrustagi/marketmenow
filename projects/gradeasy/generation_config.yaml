@@ -4,6 +4,12 @@ items:
     count: 2
 
   - platform: instagram
+    command_type: reel
+    count: 2
+    params:
+      template: reddit_horror_story
+
+  - platform: instagram
     command_type: carousel
     count: 2
 

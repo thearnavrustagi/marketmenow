@@ -1,0 +1,65 @@
+---
+description: Rules for LLM prompt management
+globs: src/**
+alwaysApply: false
+---
+# Prompt Management Rules
+
+## No Inline Prompts
+
+All LLM prompt text — system prompts, user prompts, image-generation prompts,
+and ICL templates — MUST live in YAML files under `prompts/`.
+
+Python code loads prompts via `yaml.safe_load` + Jinja2 `Template.render()`;
+it must never contain hardcoded prompt strings.
+
+## Standard YAML Schema
+
+Chat prompts use two keys:
+
+```yaml
+system: |
+  The AI's persona, rules, and constraints.
+  Uses {{ jinja2_variables }} for dynamic data.
+
+user: |
+  The per-request template with {{ variables }}.
+```
+
+ICL (in-context learning) templates use the `block:` key:
+
+```yaml
+block: |
+  {% for ex in examples %}...{% endfor %}
+```
+
+Image-generation fallback prompts may use custom keys (e.g. `simplify_template:`,
+`fallback:`).
+
+## Resolution Order
+
+`PromptBuilder` and adapter `load_prompt()` helpers resolve files in this order:
+
+1. `projects/{slug}/prompts/{platform}/{file}` — project + platform override
+2. `projects/{slug}/prompts/{file}` — project-level default
+3. `prompts/{platform}/{file}` — global default
+
+## Onboarding Templates
+
+Persona templates used during `mmn project add` live in `prompts/templates/`.
+These are YAML files with placeholder tokens (`{{ persona_description }}`, etc.)
+that get filled in by `core/project_templates.py` and written to the new project.
+
+## Exempt from This Rule
+
+- LangChain tool docstrings (`integrations/langchain.py`) — required by framework
+- Error messages, CLI help text, log messages
+- The `labeling_instruction` conditional fragment in `worksheet.py` which is a
+  short inline string passed as a template variable, not a standalone prompt
+
+## Adding a New Prompt
+
+1. Create a YAML file in `prompts/{platform}/` (or `prompts/` for cross-platform).
+2. Add an entry to the inventory table in `prompts/prompt.md`.
+3. Load it in Python using the adapter's `load_prompt()` helper or
+   `PromptBuilder.build()`.

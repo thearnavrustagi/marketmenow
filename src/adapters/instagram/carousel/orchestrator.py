@@ -212,18 +212,34 @@ class CarouselOrchestrator:
     @staticmethod
     def _simplify_prompt(prompt: str) -> str:
         """Strip a prompt down to a safe, generic version for retry."""
-        words = prompt.split()[:12]
-        return (
-            "A beautiful, high-quality editorial photograph, "
-            + " ".join(words)
-            + ", soft natural lighting, clean composition, no text"
-        )
+        from jinja2 import Template
+
+        data = _load_image_fallback_prompts()
+        words = " ".join(prompt.split()[:12])
+        return Template(data["simplify_template"]).render(words=words).strip()
 
     @staticmethod
     def _fallback_prompt() -> str:
         """Last-resort generic prompt that should never be rejected."""
-        return (
-            "A professional editorial photograph of a clean modern desk "
-            "with notebooks, pens, and a laptop, warm natural lighting, "
-            "shallow depth of field, no text or people"
-        )
+        data = _load_image_fallback_prompts()
+        return data["fallback"].strip()
+
+
+def _load_image_fallback_prompts() -> dict[str, str]:
+    """Load carousel image fallback prompts from YAML (cached)."""
+    cached = getattr(_load_image_fallback_prompts, "_cache", None)
+    if cached is not None:
+        return cached
+
+    from pathlib import Path
+
+    import yaml
+
+    prompts_path = (
+        Path(__file__).resolve().parents[4] / "prompts" / "instagram" / "carousel_image_fallback.yaml"
+    )
+    with prompts_path.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    _load_image_fallback_prompts._cache = data  # type: ignore[attr-defined]
+    return data

@@ -63,12 +63,7 @@ class WorksheetConfig(BaseModel, frozen=True):
     subjects: list[str] = Field(default_factory=list)
     num_questions_min: int = 1
     num_questions_max: int = 3
-    fill_prompt: str = (
-        "Fill in this worksheet as a dumb kid would. Write hilariously wrong answers "
-        "in messy, bad handwriting. Use brainrot humor — stuff like '67', 'skibidi', "
-        "'rizz', 'sigma', 'fanum tax', 'ohio'. Make it look like a real student filled "
-        "it in poorly. The answers should be confidently wrong and funny ragebait."
-    )
+    fill_prompt: str = ""
 
 
 class PipelineStepDef(BaseModel, frozen=True):

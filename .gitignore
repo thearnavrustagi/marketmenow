@@ -72,5 +72,9 @@ src/adapters/instagram/reels/assets/avatars/
 *.log
 replies_*
 
+# ── Background media assets (large files) ─────────────
+projects/*/assets/backgrounds/
+projects/*/assets/music/
+
 # ── Project state ──────────────────────────────────────
 .mmn_active_project

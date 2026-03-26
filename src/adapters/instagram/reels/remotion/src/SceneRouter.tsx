@@ -1,7 +1,8 @@
-import { Audio, Series, staticFile, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, OffthreadVideo, Series, staticFile, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import type { BeatProps, ReelProps, VisualProps } from "./schema";
 import { TransitionWrapper } from "./transitions";
 import {
+  BrandCTAScene,
   BrandResponseScene,
   CustomScene,
   FlashRevealScene,
@@ -9,6 +10,7 @@ import {
   HookScene,
   ReactionImageScene,
   ReactionScene,
+  RedditStoryScene,
   ResultScene,
   RevealScene,
   RoastScene,
@@ -36,6 +38,8 @@ const SCENE_MAP: Record<string, SceneComponent> = {
   GradingScene,
   ResultScene,
   CustomScene,
+  RedditStoryScene,
+  BrandCTAScene,
 };
 
 const WORDS_PER_CHUNK = 5;
@@ -118,34 +122,61 @@ const Subtitle: React.FC<{ text: string }> = ({ text }) => {
 };
 
 export const SceneRouter: React.FC<ReelProps> = ({ beats }) => {
-  return (
-    <Series>
-      {beats.map((beat) => {
-        const Scene = SCENE_MAP[beat.scene];
-        if (!Scene) {
-          console.warn(`Unknown scene: ${beat.scene}`);
-          return null;
-        }
+  const firstVisual = beats.length > 0 ? beats[0].visual : {};
+  const bgVideo = (firstVisual.background_video as string) ?? "";
+  const bgMusic = (firstVisual.background_music as string) ?? "";
 
-        return (
-          <Series.Sequence
-            key={beat.id}
-            durationInFrames={beat.durationFrames}
-          >
-            <TransitionWrapper
-              entryTransition={beat.entryTransition}
-              exitTransition={beat.exitTransition}
-              durationFrames={beat.durationFrames}
+  return (
+    <AbsoluteFill>
+      {/* Shared continuous background video layer */}
+      {bgVideo && (
+        <OffthreadVideo
+          src={staticFile(bgVideo)}
+          muted
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* Background music at low volume */}
+      {bgMusic && (
+        <Audio src={staticFile(bgMusic)} volume={0.2} loop />
+      )}
+
+      {/* Beat scenes layered on top */}
+      <Series>
+        {beats.map((beat) => {
+          const Scene = SCENE_MAP[beat.scene];
+          if (!Scene) {
+            console.warn(`Unknown scene: ${beat.scene}`);
+            return null;
+          }
+
+          return (
+            <Series.Sequence
+              key={beat.id}
+              durationInFrames={beat.durationFrames}
             >
-              <Scene visual={beat.visual} />
-            </TransitionWrapper>
-            {beat.subtitle && <Subtitle text={beat.subtitle} />}
-            {beat.audioSrc && (
-              <Audio src={staticFile(beat.audioSrc)} volume={1} />
-            )}
-          </Series.Sequence>
-        );
-      })}
-    </Series>
+              <TransitionWrapper
+                entryTransition={beat.entryTransition}
+                exitTransition={beat.exitTransition}
+                durationFrames={beat.durationFrames}
+              >
+                <Scene visual={beat.visual} />
+              </TransitionWrapper>
+              {beat.subtitle && <Subtitle text={beat.subtitle} />}
+              {beat.audioSrc && (
+                <Audio src={staticFile(beat.audioSrc)} volume={1} />
+              )}
+            </Series.Sequence>
+          );
+        })}
+      </Series>
+    </AbsoluteFill>
   );
 };

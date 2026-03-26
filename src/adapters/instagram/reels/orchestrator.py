@@ -190,16 +190,18 @@ class ReelOrchestrator:
             )
             variables["kid_voice_id"] = self._settings.elevenlabs_voice_id
 
-        resolved_beats = self._script_gen._resolve_beats(template.beats, variables)
-
-        # Merge default_visual from template into each beat
+        # Merge default_visual into beats BEFORE resolving Jinja so
+        # placeholders in default_visual (e.g. {{ background_video }}) get resolved.
+        pre_merge_beats = template.beats
         if template.default_visual:
-            resolved_beats = [
+            pre_merge_beats = [
                 beat.model_copy(
                     update={"visual": _merge_default_visual(beat.visual, template.default_visual)}
                 )
-                for beat in resolved_beats
+                for beat in pre_merge_beats
             ]
+
+        resolved_beats = self._script_gen._resolve_beats(pre_merge_beats, variables)
 
         self._check_unresolved_placeholders(resolved_beats)
 
@@ -416,7 +418,7 @@ class ReelOrchestrator:
             shutil.copy2(src, dest)
             return f"assets/{run_id}/{src.name}"
 
-        _image_keys = {"image", "reaction_image", "avatar", "comment_image", "background_image"}
+        _image_keys = {"image", "reaction_image", "avatar", "comment_image", "background_image", "background_video", "background_music"}
 
         def _rewrite_visual(visual: dict[str, object]) -> dict[str, object]:
             """Replace absolute file paths in visual props with public-relative paths."""

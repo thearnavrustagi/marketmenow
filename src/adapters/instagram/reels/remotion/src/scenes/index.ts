@@ -12,3 +12,5 @@ export { RubricScene } from "./RubricScene";
 export { GradingScene } from "./GradingScene";
 export { ResultScene } from "./ResultScene";
 export { CustomScene } from "./CustomScene";
+export { RedditStoryScene } from "./RedditStoryScene";
+export { BrandCTAScene } from "./BrandCTAScene";

@@ -89,6 +89,11 @@ async def generate_worksheet_content(
     ``questions`` (list of dicts), and ``labeling_image_prompt``.
     """
     from google.genai import types as genai_types
+    from jinja2 import Template
+
+    from ..prompts import load_prompt
+
+    prompt_data = load_prompt("worksheet_generation")
 
     qtypes_desc = "\n".join(f"  - {qt.type}: {qt.description}" for qt in question_types)
 
@@ -103,35 +108,13 @@ async def generate_worksheet_content(
             "boxes/lines where students would write the labels."
         )
 
-    system_prompt = (
-        "You are a worksheet designer for school teachers. You produce worksheet "
-        "content in a structured JSON format AND as clean LaTeX source code.\n\n"
-        "LaTeX rules: must compile with pdflatex using only amsmath, geometry, "
-        "enumitem, graphicx, and multicol packages. Use geometry for A4 paper with "
-        "reasonable margins. Include title, subject header, name/date fields.\n\n"
-        "Make the worksheet look like a real school assignment."
-    )
-
-    user_prompt = (
-        f"Create a worksheet for the subject: {subject}\n\n"
-        f"Include these question types:\n{qtypes_desc}\n\n"
-        "Generate 2-4 questions per question type. Grade-school to middle-school "
-        "level (ages 10-14). Real, substantive questions.\n"
-        f"{labeling_instruction}\n\n"
-        "Return JSON with these fields:\n"
-        '  "title": worksheet title (e.g. "Science Quiz - Chapter 5")\n'
-        '  "subject": the subject name\n'
-        '  "questions": array of objects, each with:\n'
-        '    "number": question number (int)\n'
-        '    "type": the question type string\n'
-        '    "text": the full question text\n'
-        '    "options": array of option strings (for multiple_choice/match/true_false), '
-        "or null\n"
-        '    "answer_lines": how many blank lines for the answer (int, 1-8)\n'
-        '  "latex": the complete LaTeX document source code (string)\n'
-        '  "labeling_image_prompt": image generation prompt string, or ""\n\n'
-        "Return ONLY valid JSON, no markdown fences."
-    )
+    render_vars = {
+        "subject": subject,
+        "qtypes_desc": qtypes_desc,
+        "labeling_instruction": labeling_instruction,
+    }
+    system_prompt = Template(prompt_data["system"]).render(**render_vars)
+    user_prompt = Template(prompt_data["user"]).render(**render_vars)
 
     response = await client.aio.models.generate_content(  # type: ignore[union-attr]
         model=model,
@@ -474,7 +457,9 @@ async def _fill_worksheet_step(ctx: PipelineContext, inputs: dict[str, object]) 
     if not fill_prompt and config:
         fill_prompt = config.fill_prompt
     if not fill_prompt:
-        fill_prompt = WorksheetConfig().fill_prompt
+        from ..prompts import load_prompt as _load_prompt
+
+        fill_prompt = _load_prompt("worksheet_fill").get("user", "")
 
     output_dir = Path(str(ctx.services.get("output_dir", "/tmp")))
     vertex_project = str(ctx.services.get("vertex_project", ""))

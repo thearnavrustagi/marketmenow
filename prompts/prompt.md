@@ -48,6 +48,9 @@ Variables use `{{ double_braces }}` (Jinja2) or `{single_braces}` (Python `.form
 | `instagram/carousel_top5.yaml` | Generates "Top 5" list carousel content with image prompts | (none -- the AI picks a fresh topic each run) |
 | `instagram/autograde.yaml` | Evaluates submitted work against a rubric | `rubric_text` |
 | `instagram/generate_rubric.yaml` | Creates an evaluation rubric from an image | (none -- reads the image) |
+| `instagram/worksheet_generation.yaml` | Generates worksheet content (JSON + LaTeX) for school subjects | `subject`, `qtypes_desc`, `labeling_instruction` |
+| `instagram/worksheet_fill.yaml` | Image-edit instruction to fill a worksheet with funny wrong answers | (none -- receives worksheet image) |
+| `instagram/carousel_image_fallback.yaml` | Imagen safety fallback and simplify templates for carousel images | `words` (in simplify template) |
 | `twitter/functions/reply.yaml` | Reply function template (mention strategy, format rules) | `author_handle`, `post_text`, `reply_number`, `mention_rate`, `directive` |
 | `twitter/functions/thread.yaml` | Thread function template (7-tweet structure, CTA) | `winning_posts`, `topic_hint` |
 | `twitter/reply_generation.yaml` | Legacy single-file reply prompt | `author_handle`, `post_text`, `reply_number`, `should_mention`, `mention_rate`, `winning_examples` |
@@ -57,6 +60,22 @@ Variables use `{{ double_braces }}` (Jinja2) or `{single_braces}` (Python `.form
 | `reddit/functions/comment.yaml` | Reddit comment function template | `subreddit`, `post_text`, `comment_number`, `directive` |
 | `reddit/comment_generation.yaml` | Legacy single-file Reddit comment prompt | `subreddit`, `post_title`, `post_text`, `comment_number`, `should_mention`, `mention_rate` |
 | `email/paraphrase.yaml` | Paraphrases email HTML so no two emails read identically | (receives raw HTML as user content) |
+| `icl_block_default.yaml` | Default ICL block template (used when platform-specific one is missing) | `examples` |
+| `templates/twitter_persona.yaml` | Onboarding template for Twitter persona (copied to new projects) | `persona_description`, `persona_voice`, `persona_tone`, `phrases_block` |
+| `templates/reddit_persona.yaml` | Onboarding template for Reddit persona | `persona_description`, `persona_voice`, `persona_tone` |
+| `templates/instagram_script.yaml` | Onboarding template for Instagram reel script prompt | `brand_name`, `brand_url`, `brand_tagline`, `features_block`, `persona_*`, `phrases_block` |
+
+---
+
+## Onboarding Templates (`prompts/templates/`)
+
+These YAML files are used by `mmn project add` to generate project-specific persona prompts. They contain placeholder tokens like `{{ persona_description }}` that are replaced with the actual brand/persona values during onboarding. The Jinja2 runtime variables (like `{{ brand.name }}`) are left intact so they resolve at prompt-render time.
+
+| Template | Used by | Output location |
+|----------|---------|-----------------|
+| `templates/twitter_persona.yaml` | `generate_twitter_prompt()` | `projects/{slug}/prompts/twitter/persona.yaml` |
+| `templates/reddit_persona.yaml` | `generate_reddit_prompt()` | `projects/{slug}/prompts/reddit/persona.yaml` |
+| `templates/instagram_script.yaml` | `generate_instagram_prompt()` | `projects/{slug}/prompts/instagram/script_generation.yaml` |
 
 ---
 

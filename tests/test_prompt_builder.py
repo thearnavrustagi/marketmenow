@@ -144,19 +144,25 @@ def test_prompt_builder_icl_block_rendered(
         encoding="utf-8",
     )
 
-    func_dir = tmp_path / "prompts" / "twitter" / "functions"
+    prompts_dir = tmp_path / "prompts"
+    func_dir = prompts_dir / "twitter" / "functions"
     func_dir.mkdir(parents=True)
     (func_dir / "reply.yaml").write_text(
         yaml.dump({"system": "Rules.", "user": "{{ icl_block }}TASK"}),
         encoding="utf-8",
     )
 
+    import shutil
+
+    real_icl = Path(__file__).resolve().parents[1] / "prompts" / "icl_block_default.yaml"
+    shutil.copy(real_icl, prompts_dir / "icl_block_default.yaml")
+
     import marketmenow.core.prompt_builder as pb
 
     orig_projects = pb._PROJECTS_DIR
     orig_prompts = pb._PROMPTS_DIR
     pb._PROJECTS_DIR = tmp_path / "projects"
-    pb._PROMPTS_DIR = tmp_path / "prompts"
+    pb._PROMPTS_DIR = prompts_dir
 
     try:
         builder = PromptBuilder()

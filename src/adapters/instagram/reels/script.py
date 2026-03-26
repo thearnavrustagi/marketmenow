@@ -121,6 +121,8 @@ class ReelScriptGenerator:
             "grader": self._grader,
             "genai_client": self._client,
         }
+        if self._project_slug:
+            services["project_slug"] = self._project_slug
         if extra_services:
             services.update(extra_services)
 

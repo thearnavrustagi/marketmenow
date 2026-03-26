@@ -215,16 +215,16 @@ class PromptBuilder:
                 {**variables, "examples": icl_examples},
             )
 
-        lines: list[str] = [
-            "WINNING EXAMPLES (match this energy, NEVER copy verbatim):",
-        ]
-        for ex in icl_examples:
-            parent = ex.get("parent_author", "")
-            if parent:
-                lines.append(f'Original by @{parent}: "{ex.get("parent_text", "")}"')
-            reply_text = ex.get("our_reply", ex.get("text", ""))
-            likes = ex.get("likes", 0)
-            rts = ex.get("retweets", 0)
-            lines.append(f'Your reply ({likes} likes, {rts} RTs): "{reply_text}"')
-        lines.append("---")
-        return "\n".join(lines)
+        default_icl_path = _PROMPTS_DIR / "icl_block_default.yaml"
+        if default_icl_path.exists():
+            data = self._load_yaml(default_icl_path)
+            template_str = data.get("block", "")
+            return self._render_template(
+                template_str,
+                {**variables, "examples": icl_examples},
+            )
+
+        raise FileNotFoundError(
+            "No ICL block template found. Expected icl_block.yaml in "
+            f"prompts/{platform}/ or prompts/icl_block_default.yaml"
+        )
