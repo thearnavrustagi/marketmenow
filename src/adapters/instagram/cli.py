@@ -383,9 +383,25 @@ async def _reel_create_async(
 
     tags = [t.strip() for t in hashtags.split(",")] if hashtags else None
 
+    from marketmenow.core.project_manager import ProjectManager
+
     from .reels.orchestrator import ReelOrchestrator
 
-    orch = ReelOrchestrator(settings)
+    pm = ProjectManager()
+    reel_slug = pm.get_active_project()
+    reel_brand = None
+    reel_persona = None
+    if reel_slug:
+        reel_proj = pm.load_project(reel_slug)
+        reel_brand = reel_proj.brand
+        reel_persona = pm.load_persona(reel_slug, reel_proj.default_persona)
+
+    orch = ReelOrchestrator(
+        settings,
+        brand=reel_brand,
+        persona=reel_persona,
+        project_slug=reel_slug,
+    )
 
     with console.status(f"[bold green]Generating reel (template={template})..."):
         reel = await orch.create_reel(

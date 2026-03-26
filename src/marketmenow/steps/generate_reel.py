@@ -64,7 +64,17 @@ class GenerateReelStep:
         hashtags_raw = str(ctx.get_param("hashtags", "") or "")
         hashtags = [t.strip() for t in hashtags_raw.split(",") if t.strip()] or None
 
-        orch = ReelOrchestrator(settings, templates_dir=template_dir)
+        brand = ctx.project.brand if ctx.project else None
+        persona = ctx.persona
+        project_slug_str = str(project_slug) if project_slug else None
+
+        orch = ReelOrchestrator(
+            settings,
+            templates_dir=template_dir,
+            brand=brand,
+            persona=persona,
+            project_slug=project_slug_str,
+        )
 
         with ctx.console.status(f"[bold green]Generating reel (template={template_id})..."):
             reel = await orch.create_reel(

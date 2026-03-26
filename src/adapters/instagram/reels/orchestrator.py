@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import math
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from jinja2 import Environment
@@ -20,7 +22,11 @@ from .template_loader import ReelTemplateLoader
 from .tts import TTSProvider, TTSService
 from .tts_backends import create_tts_service
 
+if TYPE_CHECKING:
+    from marketmenow.models.project import BrandConfig, PersonaConfig
+
 _JINJA_ENV = Environment()
+logger = logging.getLogger(__name__)
 
 
 def _ensure_vertex_credentials(settings: InstagramSettings) -> None:
@@ -47,8 +53,14 @@ class ReelOrchestrator:
         self,
         settings: InstagramSettings,
         templates_dir: Path | None = None,
+        *,
+        brand: BrandConfig | None = None,
+        persona: PersonaConfig | None = None,
+        project_slug: str | None = None,
     ) -> None:
         self._settings = settings
+        self._brand = brand
+        self._persona = persona
         self._output_dir = settings.output_dir / "reels"
         self._output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -63,6 +75,9 @@ class ReelOrchestrator:
             grading_service=self._grader,
             vertex_project=settings.vertex_ai_project,
             vertex_location=settings.vertex_ai_location,
+            brand=brand,
+            persona=persona,
+            project_slug=project_slug,
         )
         kokoro_voice_overrides: dict[str, str] | None = None
         kokoro_pitch_shift: dict[str, float] | None = None
@@ -129,6 +144,12 @@ class ReelOrchestrator:
             extra_services=extra_services,
         )
 
+        if self._brand:
+            variables.setdefault("brand", self._brand.model_dump())
+            variables.setdefault("brand_name", self._brand.name)
+        if self._persona:
+            variables.setdefault("persona", self._persona.model_dump())
+
         if reaction_image and reaction_image.exists():
             variables["reaction_image"] = str(reaction_image.resolve())
         elif not variables.get("reaction_image"):
@@ -180,6 +201,8 @@ class ReelOrchestrator:
                 for beat in resolved_beats
             ]
 
+        self._check_unresolved_placeholders(resolved_beats)
+
         beats_with_audio = await self._synthesize_all(resolved_beats, template.fps)
 
         reel_script = ReelScript(
@@ -207,11 +230,19 @@ class ReelOrchestrator:
             try:
                 tmpl = _JINJA_ENV.from_string(template.caption_template)
                 final_caption = tmpl.render(**variables)
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "Failed to render caption_template: %s — using raw template", exc
+                )
                 final_caption = template.caption_template
 
         if not final_caption:
             final_caption = "Check out this reel!"
+
+        if final_caption and "{{" in final_caption:
+            logger.warning(
+                "Unresolved Jinja2 placeholder in caption: %s", final_caption[:200]
+            )
 
         final_hashtags = (
             hashtags
@@ -228,6 +259,34 @@ class ReelOrchestrator:
             caption=final_caption,
             hashtags=final_hashtags,
         )
+
+    @staticmethod
+    def _check_unresolved_placeholders(beats: list[BeatDefinition]) -> None:
+        """Warn about any ``{{ }}`` Jinja2 placeholders that survived resolution."""
+        import re
+
+        pattern = re.compile(r"\{\{.*?\}\}")
+        for beat in beats:
+            if beat.audio.text and pattern.search(beat.audio.text):
+                logger.warning(
+                    "Unresolved placeholder in beat '%s' audio text: %s",
+                    beat.id,
+                    beat.audio.text[:200],
+                )
+            if beat.audio.voice and pattern.search(beat.audio.voice):
+                logger.warning(
+                    "Unresolved placeholder in beat '%s' voice: %s",
+                    beat.id,
+                    beat.audio.voice,
+                )
+            for key, val in beat.visual.items():
+                if isinstance(val, str) and pattern.search(val):
+                    logger.warning(
+                        "Unresolved placeholder in beat '%s' visual.%s: %s",
+                        beat.id,
+                        key,
+                        val[:200],
+                    )
 
     async def _synthesize_all(
         self,

@@ -56,7 +56,14 @@ class CarouselOrchestrator:
             vertex_project=settings.vertex_ai_project,
             vertex_location=settings.vertex_ai_location,
         )
-        self._renderer = SlideRenderer(self._output_dir)
+        from .renderer import _hex_to_rgb
+
+        self._renderer = SlideRenderer(
+            self._output_dir,
+            brand_letter=brand.logo_letter if brand and brand.logo_letter else "G",
+            brand_suffix=brand.logo_suffix if brand and brand.logo_suffix else ".",
+            accent_color=_hex_to_rgb(brand.color) if brand and brand.color != "#000000" else (68, 136, 255),
+        )
 
     async def create_carousel(self) -> ImagePost:
         run_id = uuid4().hex[:8]

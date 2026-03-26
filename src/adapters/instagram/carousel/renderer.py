@@ -142,26 +142,30 @@ def _draw_brand_mark(
     bottom_y: int,
     size: int,
     color: tuple[int, int, int] = BLACK,
+    *,
+    letter: str = "G",
+    suffix: str = ".",
+    accent: tuple[int, int, int] = ACCENT_BLUE,
 ) -> None:
-    """Draw 'G.' anchored to bottom-right corner."""
+    """Draw brand mark (e.g. 'G.') anchored to bottom-right corner."""
     font_sg = _load_space_grotesk(size)
     font_dm = _load_dm_mono(size)
 
-    g_bbox = draw.textbbox((0, 0), "G", font=font_sg)
-    g_w = g_bbox[2] - g_bbox[0]
+    letter_bbox = draw.textbbox((0, 0), letter, font=font_sg)
+    letter_w = letter_bbox[2] - letter_bbox[0]
 
-    dot_bbox = draw.textbbox((0, 0), ".", font=font_dm)
-    dot_w = dot_bbox[2] - dot_bbox[0]
+    suffix_bbox = draw.textbbox((0, 0), suffix, font=font_dm)
+    suffix_w = suffix_bbox[2] - suffix_bbox[0]
 
     gap = max(1, size // 40)
-    total_w = g_w + gap + dot_w
+    total_w = letter_w + gap + suffix_w
 
-    max_bottom = max(g_bbox[3], dot_bbox[3])
+    max_bottom = max(letter_bbox[3], suffix_bbox[3])
     y = bottom_y - max_bottom
 
     x = right_x - total_w
-    draw.text((x, y), "G", font=font_sg, fill=color)
-    draw.text((x + g_w + gap, y), ".", font=font_dm, fill=ACCENT_BLUE)
+    draw.text((x, y), letter, font=font_sg, fill=color)
+    draw.text((x + letter_w + gap, y), suffix, font=font_dm, fill=accent)
 
 
 def _draw_gradient_overlay(
@@ -185,14 +189,32 @@ def _draw_gradient_overlay(
 # ---------------------------------------------------------------------------
 # Slide Renderer
 # ---------------------------------------------------------------------------
+def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
+    """Convert a hex color string like '#4488ff' to an RGB tuple."""
+    h = hex_color.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
 class SlideRenderer:
     """Renders carousel slides as 1080x1350 PNGs with flexbox-style layout."""
 
     LINE_SPACING = 6
 
-    def __init__(self, output_dir: Path) -> None:
+    def __init__(
+        self,
+        output_dir: Path,
+        *,
+        brand_letter: str = "G",
+        brand_suffix: str = ".",
+        accent_color: tuple[int, int, int] = ACCENT_BLUE,
+    ) -> None:
         self._output_dir = output_dir
         self._output_dir.mkdir(parents=True, exist_ok=True)
+        self._brand_letter = brand_letter
+        self._brand_suffix = brand_suffix
+        self._accent_color = accent_color
 
     # -- Cover slide --------------------------------------------------------
 
@@ -238,10 +260,13 @@ class SlideRenderer:
             )
             sub_h = s_bbox[3] - s_bbox[1]
 
-        # Brand mark height — use raw bbox bottom (not height) to match _draw_brand_mark anchoring
-        brand_g_bbox = draw.textbbox((0, 0), "G", font=_load_space_grotesk(COVER_BRAND_SIZE))
-        brand_dot_bbox = draw.textbbox((0, 0), ".", font=_load_dm_mono(COVER_BRAND_SIZE))
-        brand_h = max(brand_g_bbox[3], brand_dot_bbox[3])
+        brand_letter_bbox = draw.textbbox(
+            (0, 0), self._brand_letter, font=_load_space_grotesk(COVER_BRAND_SIZE)
+        )
+        brand_suffix_bbox = draw.textbbox(
+            (0, 0), self._brand_suffix, font=_load_dm_mono(COVER_BRAND_SIZE)
+        )
+        brand_h = max(brand_letter_bbox[3], brand_suffix_bbox[3])
 
         # Flex layout: bottom-align [heading, gap, subtitle, gap, brand] from bottom
         gap_h_s = 20 if subtitle else 0
@@ -271,13 +296,15 @@ class SlideRenderer:
                 spacing=self.LINE_SPACING,
             )
 
-        # Brand mark — bottom-right
         _draw_brand_mark(
             draw,
             right_x=SLIDE_W - BRAND_PAD_RIGHT,
             bottom_y=SLIDE_H - BRAND_PAD_BOTTOM,
             size=COVER_BRAND_SIZE,
             color=WHITE,
+            letter=self._brand_letter,
+            suffix=self._brand_suffix,
+            accent=self._accent_color,
         )
 
         out = self._output_dir / f"{run_id}_cover.png"
@@ -327,10 +354,13 @@ class SlideRenderer:
         )
         sub_h = s_bbox[3] - s_bbox[1]
 
-        # Brand mark height
-        brand_g_bbox = draw.textbbox((0, 0), "G", font=_load_space_grotesk(ITEM_BRAND_SIZE))
-        brand_dot_bbox = draw.textbbox((0, 0), ".", font=_load_dm_mono(ITEM_BRAND_SIZE))
-        brand_h = max(brand_g_bbox[3], brand_dot_bbox[3])
+        brand_letter_bbox = draw.textbbox(
+            (0, 0), self._brand_letter, font=_load_space_grotesk(ITEM_BRAND_SIZE)
+        )
+        brand_suffix_bbox = draw.textbbox(
+            (0, 0), self._brand_suffix, font=_load_dm_mono(ITEM_BRAND_SIZE)
+        )
+        brand_h = max(brand_letter_bbox[3], brand_suffix_bbox[3])
 
         # Layout from the bottom: brand, gap, sub, gap, heading
         gap_h_s = 16
@@ -367,19 +397,21 @@ class SlideRenderer:
         draw.rounded_rectangle(
             [BADGE_PAD_X, BADGE_PAD_Y, BADGE_PAD_X + badge_w, BADGE_PAD_Y + BADGE_H],
             radius=BADGE_RADIUS,
-            fill=ACCENT_BLUE,
+            fill=self._accent_color,
         )
         num_x = BADGE_PAD_X + (badge_w - num_text_w) // 2
         num_y = BADGE_PAD_Y + (BADGE_H - (num_bbox[3] - num_bbox[1])) // 2 - num_bbox[1]
         draw.text((num_x, num_y), num_text, font=font_num, fill=WHITE)
 
-        # Brand mark — bottom-right
         _draw_brand_mark(
             draw,
             right_x=SLIDE_W - BRAND_PAD_RIGHT,
             bottom_y=SLIDE_H - BRAND_PAD_BOTTOM,
             size=ITEM_BRAND_SIZE,
             color=WHITE,
+            letter=self._brand_letter,
+            suffix=self._brand_suffix,
+            accent=self._accent_color,
         )
 
         out = self._output_dir / f"{run_id}_item_{number}.png"

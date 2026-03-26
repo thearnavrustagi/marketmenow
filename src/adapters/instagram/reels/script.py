@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from jinja2 import Environment
 
@@ -18,7 +20,11 @@ from .pipeline_steps import (
     default_registry,
 )
 
+if TYPE_CHECKING:
+    from marketmenow.models.project import BrandConfig, PersonaConfig
+
 _JINJA_ENV = Environment()
+logger = logging.getLogger(__name__)
 
 
 class ReelScriptGenerator:
@@ -35,9 +41,15 @@ class ReelScriptGenerator:
         vertex_project: str | None,
         vertex_location: str = "us-central1",
         step_registry: StepRegistry | None = None,
+        brand: BrandConfig | None = None,
+        persona: PersonaConfig | None = None,
+        project_slug: str | None = None,
     ) -> None:
         self._grader = grading_service
         self._registry = step_registry or default_registry
+        self._brand = brand
+        self._persona = persona
+        self._project_slug = project_slug
 
         self._client = create_genai_client(
             vertex_project=vertex_project,
@@ -97,6 +109,11 @@ class ReelScriptGenerator:
         extra_services: dict[str, object] | None = None,
     ) -> dict[str, object]:
         initial_vars: dict[str, object] = {"name": template.name}
+        if self._brand:
+            initial_vars["brand"] = self._brand.model_dump()
+            initial_vars["brand_name"] = self._brand.name
+        if self._persona:
+            initial_vars["persona"] = self._persona.model_dump()
         if assignment_image is not None:
             initial_vars["assignment_image"] = str(assignment_image.resolve())
 
@@ -178,8 +195,23 @@ class ReelScriptGenerator:
         grading_result: GradingResult,
     ) -> dict[str, str]:
         from google.genai import types as genai_types
+        from jinja2 import Template
 
-        prompt = load_prompt("script_generation")
+        prompt = load_prompt("script_generation", project_slug=self._project_slug)
+
+        jinja_vars: dict[str, object] = {}
+        if self._brand:
+            jinja_vars["brand"] = self._brand.model_dump()
+        if self._persona:
+            jinja_vars["persona"] = self._persona.model_dump()
+
+        system_text = prompt["system"]
+        if jinja_vars:
+            try:
+                system_text = Template(system_text).render(**jinja_vars)
+            except Exception as exc:
+                logger.warning("Failed to render script_generation system prompt: %s", exc)
+
         rubric_eval_text = "\n".join(
             f"  - {ev.rubric_item_name}: {ev.points_awarded}/{ev.max_points} -- {ev.feedback}"
             for ev in grading_result.rubric_evaluations
@@ -192,6 +224,11 @@ class ReelScriptGenerator:
             feedback=grading_result.feedback,
             rubric_eval_text=rubric_eval_text,
         )
+        if jinja_vars:
+            try:
+                user_text = Template(user_text).render(**jinja_vars)
+            except Exception as exc:
+                logger.warning("Failed to render script_generation user prompt: %s", exc)
 
         response = await self._client.aio.models.generate_content(
             model=self._model,
@@ -202,7 +239,7 @@ class ReelScriptGenerator:
                 ),
             ],
             config=genai_types.GenerateContentConfig(
-                system_instruction=prompt["system"],
+                system_instruction=system_text,
                 response_mime_type="application/json",
                 temperature=0.8,
             ),
@@ -256,7 +293,12 @@ def _render_template_str(text: str, variables: dict[str, object]) -> str:
         tmpl = _JINJA_ENV.from_string(text)
         result = tmpl.render(**variables)
         return result
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "Jinja2 render failed for template '%s': %s — returning raw string",
+            text[:100],
+            exc,
+        )
         return text
 
 
