@@ -14,7 +14,6 @@ default_visual:
   title: "{{ title }}"
   upvotes: "2.4k"
   background_video: "{{ background_video }}"
-  background_music: "{{ background_music }}"
 
 caption_template: |
   {{ caption }}

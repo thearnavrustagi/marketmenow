@@ -203,12 +203,17 @@ def _get_batch_items() -> list[dict[str, object]]:
         try:
             config = pm.load_generation_config(slug)
             items = []
+            key_counters: dict[str, int] = {}
             for item in config.items:
-                for i in range(item.count):
-                    key = f"{item.command_type}_{i}" if item.count > 1 else item.command_type
-                    title_suffix = f" {i + 1}" if item.count > 1 else ""
+                for _i in range(item.count):
+                    ct = item.command_type
+                    idx = key_counters.get(ct, 0)
+                    key_counters[ct] = idx + 1
+
                     meta = get_meta(item.platform, item.command_type)
-                    title = meta["label"] if meta else f"{item.platform} {item.command_type}"
+                    title = meta["label"] if meta else f"{item.platform} {ct}"
+                    title_suffix = f" {idx + 1}" if key_counters[ct] > 1 or idx > 0 else ""
+                    key = f"{ct}_{idx}" if idx > 0 else ct
 
                     params = dict(item.params)
                     for k, v in params.items():
@@ -226,6 +231,14 @@ def _get_batch_items() -> list[dict[str, object]]:
                             "params": params,
                         }
                     )
+
+            for ct, total in key_counters.items():
+                if total > 1:
+                    for it in items:
+                        if it["command_type"] == ct and "_" not in str(it["key"]):
+                            it["key"] = f"{ct}_0"
+                            it["title"] = f"{it['title']} 1" if not it["title"].endswith(" 1") else it["title"]
+
             return items
         except FileNotFoundError:
             pass

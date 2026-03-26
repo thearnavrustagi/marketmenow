@@ -79,15 +79,27 @@ class ReelTemplateLoader:
     def __init__(self, templates_dir: Path | None = None) -> None:
         self._dir = templates_dir or _TEMPLATES_DIR
 
+    def _resolve_template_path(self, template_id: str) -> Path:
+        """Find a template YAML file, checking the project dir first then global."""
+        path = self._dir / f"{template_id}.yaml"
+        if path.exists():
+            return path
+        if self._dir != _TEMPLATES_DIR:
+            fallback = _TEMPLATES_DIR / f"{template_id}.yaml"
+            if fallback.exists():
+                return fallback
+        raise FileNotFoundError(f"Template '{template_id}' not found at {path}")
+
     def list_templates(self) -> list[str]:
         """Return IDs of all available templates (filename without extension)."""
-        return sorted(p.stem for p in self._dir.glob("*.yaml") if p.is_file())
+        ids = {p.stem for p in self._dir.glob("*.yaml") if p.is_file()}
+        if self._dir != _TEMPLATES_DIR:
+            ids |= {p.stem for p in _TEMPLATES_DIR.glob("*.yaml") if p.is_file()}
+        return sorted(ids)
 
     def load(self, template_id: str) -> ReelTemplate:
         """Load and validate a template by its ID."""
-        path = self._dir / f"{template_id}.yaml"
-        if not path.exists():
-            raise FileNotFoundError(f"Template '{template_id}' not found at {path}")
+        path = self._resolve_template_path(template_id)
 
         with path.open("r", encoding="utf-8") as f:
             raw = yaml.safe_load(f)

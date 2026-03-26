@@ -396,8 +396,15 @@ async def _reel_create_async(
         reel_brand = reel_proj.brand
         reel_persona = pm.load_persona(reel_slug, reel_proj.default_persona)
 
+    reel_templates_dir = None
+    if reel_slug:
+        project_templates = pm.project_dir(reel_slug) / "templates" / "reels"
+        if project_templates.is_dir():
+            reel_templates_dir = project_templates
+
     orch = ReelOrchestrator(
         settings,
+        templates_dir=reel_templates_dir,
         brand=reel_brand,
         persona=reel_persona,
         project_slug=reel_slug,
