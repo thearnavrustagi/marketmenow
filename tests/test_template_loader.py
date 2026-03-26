@@ -49,7 +49,8 @@ class TestListTemplates:
         assert "beta" in templates
         assert "not_yaml" not in templates
 
-    def test_empty_dir(self, tmp_path: Path) -> None:
+    def test_empty_dir(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("adapters.instagram.reels.template_loader._TEMPLATES_DIR", tmp_path)
         loader = ReelTemplateLoader(tmp_path)
         assert loader.list_templates() == []
 

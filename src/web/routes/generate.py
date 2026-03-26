@@ -237,7 +237,11 @@ def _get_batch_items() -> list[dict[str, object]]:
                     for it in items:
                         if it["command_type"] == ct and "_" not in str(it["key"]):
                             it["key"] = f"{ct}_0"
-                            it["title"] = f"{it['title']} 1" if not it["title"].endswith(" 1") else it["title"]
+                            it["title"] = (
+                                f"{it['title']} 1"
+                                if not it["title"].endswith(" 1")
+                                else it["title"]
+                            )
 
             return items
         except FileNotFoundError:
