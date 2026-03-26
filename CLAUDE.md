@@ -65,7 +65,7 @@ Higher-level composable marketing workflows. A `Workflow` is a named sequence of
 - `Workflow` — frozen dataclass with `name`, `description`, `steps`, `params` (ParamDef schema)
 - `WorkflowRegistry` (`core/workflow_registry.py`) — holds registered workflows, `build_workflow_registry()` auto-discovers all built-in workflows
 
-Built-in workflows: `instagram-reel`, `instagram-carousel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`, `facebook-engage`
+Built-in workflows: `instagram-reel`, `instagram-carousel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`
 
 ### Projects (models/project.py, core/project_manager.py, core/onboarding.py)
 

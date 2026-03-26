@@ -87,7 +87,10 @@ class DiscoverPostsStep:
                 settings = settings.model_copy(update={"targets_path": project_targets})
 
         _reject_default_targets(
-            settings.targets_path, _tw_settings_mod.__file__, "twitter", project_slug,
+            settings.targets_path,
+            _tw_settings_mod.__file__,
+            "twitter",
+            project_slug,
         )
 
         persona = ctx.persona
@@ -156,7 +159,10 @@ class DiscoverPostsStep:
                 settings = settings.model_copy(update={"targets_path": project_targets})
 
         _reject_default_targets(
-            settings.targets_path, _fb_settings_mod.__file__, "facebook", project_slug,
+            settings.targets_path,
+            _fb_settings_mod.__file__,
+            "facebook",
+            project_slug,
         )
 
         browser = FacebookBrowser(

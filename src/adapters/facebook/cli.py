@@ -597,7 +597,9 @@ def engage(
             comments = await orchestrator.generate_only()
 
             if not comments:
-                console.print("[yellow]No comments generated. Check your targets file and group access.[/yellow]")
+                console.print(
+                    "[yellow]No comments generated. Check your targets file and group access.[/yellow]"
+                )
                 raise typer.Exit(0)
 
             console.print(f"[green]Generated {len(comments)} comments[/green]")

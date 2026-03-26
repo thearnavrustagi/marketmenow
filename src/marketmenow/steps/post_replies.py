@@ -78,10 +78,7 @@ class PostRepliesStep:
                 if c_user and xs:
                     await browser.login_with_cookies(c_user, xs)
                 else:
-                    raise WorkflowError(
-                        "Not logged into Facebook. "
-                        "Run `mmn facebook login` first."
-                    )
+                    raise WorkflowError("Not logged into Facebook. Run `mmn facebook login` first.")
 
             orchestrator = EngagementOrchestrator(
                 settings,

@@ -55,7 +55,7 @@ def _make_generated_comment(
 def fb_settings(tmp_path: Path) -> FacebookSettings:
     targets_yaml = tmp_path / "targets.yaml"
     targets_yaml.write_text(
-        'groups:\n'
+        "groups:\n"
         '  - url: "https://www.facebook.com/groups/teachers"\n'
         '    name: "Teachers"\n'
         '  - url: "https://www.facebook.com/groups/edtech"\n'
@@ -187,9 +187,7 @@ class TestGeneratedComment:
 
 
 class TestEngagementOrchestrator:
-    async def test_generate_only_returns_comments(
-        self, fb_settings: FacebookSettings
-    ) -> None:
+    async def test_generate_only_returns_comments(self, fb_settings: FacebookSettings) -> None:
         mock_browser = AsyncMock()
         mock_browser.scrape_group_feed = AsyncMock(
             return_value=[
@@ -215,9 +213,7 @@ class TestEngagementOrchestrator:
         assert len(results) >= 1
         assert results[0].comment_text == "I totally feel this. When I was teaching 5 classes..."
 
-    async def test_comment_from_list_posts_and_tracks(
-        self, fb_settings: FacebookSettings
-    ) -> None:
+    async def test_comment_from_list_posts_and_tracks(self, fb_settings: FacebookSettings) -> None:
         mock_browser = AsyncMock()
         mock_browser.comment_on_group_post = AsyncMock(return_value=True)
 
@@ -242,9 +238,7 @@ class TestEngagementOrchestrator:
 
         assert fb_settings.audit_log_path.exists()
 
-    async def test_comment_from_list_handles_failure(
-        self, fb_settings: FacebookSettings
-    ) -> None:
+    async def test_comment_from_list_handles_failure(self, fb_settings: FacebookSettings) -> None:
         mock_browser = AsyncMock()
         mock_browser.comment_on_group_post = AsyncMock(return_value=False)
 

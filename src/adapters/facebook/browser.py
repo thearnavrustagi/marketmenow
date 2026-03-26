@@ -529,8 +529,7 @@ class FacebookBrowser:
         await self._random_delay(1.0, 2.0)
 
         post_elements = page.locator(
-            'div[role="feed"] div[role="article"],'
-            'div[role="main"] div[role="article"]'
+            'div[role="feed"] div[role="article"],div[role="main"] div[role="article"]'
         )
         count = await post_elements.count()
         logger.info("Found %d article elements in group %s", count, group_url)
@@ -563,9 +562,7 @@ class FacebookBrowser:
 
         text_parts: list[str] = []
         text_container = article.locator(
-            'div[data-ad-preview="message"],'
-            'div[data-ad-comet-preview="message"],'
-            'div[dir="auto"]'
+            'div[data-ad-preview="message"],div[data-ad-comet-preview="message"],div[dir="auto"]'
         )
         text_count = await text_container.count()
         for j in range(min(text_count, 5)):
@@ -578,7 +575,9 @@ class FacebookBrowser:
             return None
 
         post_url = ""
-        time_links = article.locator('a[href*="/posts/"], a[href*="/permalink/"], a[href*="story_fbid"]')
+        time_links = article.locator(
+            'a[href*="/posts/"], a[href*="/permalink/"], a[href*="story_fbid"]'
+        )
         link_count = await time_links.count()
         for j in range(link_count):
             href = await time_links.nth(j).get_attribute("href")
@@ -613,9 +612,7 @@ class FacebookBrowser:
             pass
 
         comments_count = "0"
-        comment_link = article.locator(
-            'span:has-text("comment"), span:has-text("Comment")'
-        ).first
+        comment_link = article.locator('span:has-text("comment"), span:has-text("Comment")').first
         try:
             c_text = (await comment_link.inner_text()).strip()
             nums = "".join(c for c in c_text if c.isdigit())

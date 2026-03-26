@@ -152,9 +152,7 @@ class TestDiscoverTwitterDefaultTargets:
         project_dir = Path("projects/_test_discover_targets")
         targets_file = project_dir / "targets" / "twitter.yaml"
         targets_file.parent.mkdir(parents=True, exist_ok=True)
-        targets_file.write_text(
-            "influencers:\n  - '@edtech_guru'\nhashtags:\n  - '#edtech'\n"
-        )
+        targets_file.write_text("influencers:\n  - '@edtech_guru'\nhashtags:\n  - '#edtech'\n")
 
         project = _make_project("_test_discover_targets")
         ctx = WorkflowContext(params={}, project=project)
@@ -163,10 +161,13 @@ class TestDiscoverTwitterDefaultTargets:
             mock_orch = AsyncMock()
             mock_orch.discover_only = AsyncMock(return_value=[])
 
-            with patch(
-                "adapters.twitter.orchestrator.EngagementOrchestrator",
-                return_value=mock_orch,
-            ), pytest.raises(WorkflowError, match="No posts discovered"):
+            with (
+                patch(
+                    "adapters.twitter.orchestrator.EngagementOrchestrator",
+                    return_value=mock_orch,
+                ),
+                pytest.raises(WorkflowError, match="No posts discovered"),
+            ):
                 await step.execute(ctx)
         finally:
             targets_file.unlink(missing_ok=True)
