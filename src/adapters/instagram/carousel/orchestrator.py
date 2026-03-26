@@ -62,7 +62,9 @@ class CarouselOrchestrator:
             self._output_dir,
             brand_letter=brand.logo_letter if brand and brand.logo_letter else "G",
             brand_suffix=brand.logo_suffix if brand and brand.logo_suffix else ".",
-            accent_color=_hex_to_rgb(brand.color) if brand and brand.color != "#000000" else (68, 136, 255),
+            accent_color=_hex_to_rgb(brand.color)
+            if brand and brand.color != "#000000"
+            else (68, 136, 255),
         )
 
     async def create_carousel(self) -> ImagePost:

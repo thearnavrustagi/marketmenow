@@ -231,18 +231,14 @@ class ReelOrchestrator:
                 tmpl = _JINJA_ENV.from_string(template.caption_template)
                 final_caption = tmpl.render(**variables)
             except Exception as exc:
-                logger.warning(
-                    "Failed to render caption_template: %s — using raw template", exc
-                )
+                logger.warning("Failed to render caption_template: %s — using raw template", exc)
                 final_caption = template.caption_template
 
         if not final_caption:
             final_caption = "Check out this reel!"
 
         if final_caption and "{{" in final_caption:
-            logger.warning(
-                "Unresolved Jinja2 placeholder in caption: %s", final_caption[:200]
-            )
+            logger.warning("Unresolved Jinja2 placeholder in caption: %s", final_caption[:200])
 
         final_hashtags = (
             hashtags
