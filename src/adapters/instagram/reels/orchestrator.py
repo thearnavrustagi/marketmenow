@@ -418,7 +418,15 @@ class ReelOrchestrator:
             shutil.copy2(src, dest)
             return f"assets/{run_id}/{src.name}"
 
-        _image_keys = {"image", "reaction_image", "avatar", "comment_image", "background_image", "background_video", "background_music"}
+        _image_keys = {
+            "image",
+            "reaction_image",
+            "avatar",
+            "comment_image",
+            "background_image",
+            "background_video",
+            "background_music",
+        }
 
         def _rewrite_visual(visual: dict[str, object]) -> dict[str, object]:
             """Replace absolute file paths in visual props with public-relative paths."""

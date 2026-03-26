@@ -20,8 +20,9 @@ async def project_page(request: Request) -> HTMLResponse:
     projects = pm.list_projects()
     active = pm.get_active_project()
     return templates.TemplateResponse(
+        request,
         "project.html",
-        {"request": request, "projects": projects, "active": active},
+        {"projects": projects, "active": active},
     )
 
 

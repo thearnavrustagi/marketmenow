@@ -236,7 +236,10 @@ def _load_image_fallback_prompts() -> dict[str, str]:
     import yaml
 
     prompts_path = (
-        Path(__file__).resolve().parents[4] / "prompts" / "instagram" / "carousel_image_fallback.yaml"
+        Path(__file__).resolve().parents[4]
+        / "prompts"
+        / "instagram"
+        / "carousel_image_fallback.yaml"
     )
     with prompts_path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}

@@ -69,6 +69,7 @@ class TestBuildWorkflowRegistry:
         expected = {
             "instagram-reel",
             "instagram-carousel",
+            "reddit-story-reel",
             "twitter-thread",
             "twitter-engage",
             "twitter-outreach",

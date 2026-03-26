@@ -74,9 +74,9 @@ async def flows_page(request: Request) -> HTMLResponse:
         cred_sets_by_platform.setdefault(cs.platform, []).append(name)
 
     return templates.TemplateResponse(
+        request,
         "flows.html",
         {
-            "request": request,
             "workflows": workflows,
             "cred_sets_by_platform": cred_sets_by_platform,
         },
@@ -90,8 +90,9 @@ async def run_flow(request: Request) -> HTMLResponse:
 
     if not workflow_name:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": "No workflow selected", "level": "error"},
+            {"message": "No workflow selected", "level": "error"},
         )
 
     cmd = ["mmn", "run", workflow_name]
@@ -125,8 +126,9 @@ async def run_flow(request: Request) -> HTMLResponse:
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
@@ -185,9 +187,9 @@ async def editor_page(request: Request, name: str = "") -> HTMLResponse:
             existing_yaml = yaml_path.read_text(encoding="utf-8")
 
     return templates.TemplateResponse(
+        request,
         "flow_editor.html",
         {
-            "request": request,
             "steps": steps,
             "existing_name": name,
             "existing_yaml": existing_yaml,
@@ -202,29 +204,32 @@ async def save_flow(request: Request) -> HTMLResponse:
 
     if not yaml_content.strip():
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": "YAML content is empty", "level": "error"},
+            {"message": "YAML content is empty", "level": "error"},
         )
 
     try:
         data = yaml.safe_load(yaml_content)
     except yaml.YAMLError as exc:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": f"Invalid YAML: {exc}", "level": "error"},
+            {"message": f"Invalid YAML: {exc}", "level": "error"},
         )
 
     if not isinstance(data, dict) or "name" not in data:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": "YAML must have a 'name' field", "level": "error"},
+            {"message": "YAML must have a 'name' field", "level": "error"},
         )
 
     if not data.get("steps"):
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
             {
-                "request": request,
                 "message": "Workflow must have at least one step",
                 "level": "error",
             },
@@ -238,8 +243,9 @@ async def save_flow(request: Request) -> HTMLResponse:
     yaml_path.write_text(yaml_content, encoding="utf-8")
 
     return templates.TemplateResponse(
+        request,
         "partials/toast.html",
-        {"request": request, "message": f"Workflow '{name}' saved", "level": "success"},
+        {"message": f"Workflow '{name}' saved", "level": "success"},
     )
 
 
@@ -249,10 +255,12 @@ async def delete_flow(request: Request, name: str) -> HTMLResponse:
     if yaml_path.exists():
         yaml_path.unlink()
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": f"Workflow '{name}' deleted", "level": "success"},
+            {"message": f"Workflow '{name}' deleted", "level": "success"},
         )
     return templates.TemplateResponse(
+        request,
         "partials/toast.html",
-        {"request": request, "message": f"Workflow '{name}' not found", "level": "error"},
+        {"message": f"Workflow '{name}' not found", "level": "error"},
     )

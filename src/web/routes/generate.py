@@ -41,8 +41,9 @@ def _email_offset_file() -> Path:
 @router.get("", response_class=HTMLResponse)
 async def generate_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
+        request,
         "generate.html",
-        {"request": request, "platforms": PLATFORM_META},
+        {"platforms": PLATFORM_META},
     )
 
 
@@ -59,9 +60,9 @@ async def generate_content(
     builders = get_builders(platform, command_type)
     if not meta or not builders:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
             {
-                "request": request,
                 "message": f"Unknown command: {platform}/{command_type}",
                 "level": "error",
             },
@@ -96,8 +97,9 @@ async def generate_content(
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
@@ -313,8 +315,9 @@ async def generate_all(request: Request) -> HTMLResponse:
     for item in items:
         if item is not None:
             resp = templates.TemplateResponse(
+                request,
                 "partials/content_card.html",
-                {"request": request, "item": item},
+                {"item": item},
             )
             cards_html += resp.body.decode()
 

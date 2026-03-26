@@ -1,11 +1,11 @@
 items:
   - platform: instagram
     command_type: reel
-    count: 2
+    params:
+      template: can_ai_grade_this
 
   - platform: instagram
     command_type: reel
-    count: 2
     params:
       template: reddit_horror_story
 

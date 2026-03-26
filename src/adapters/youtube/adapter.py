@@ -173,18 +173,24 @@ class YouTubeAdapter:
     def _execute_upload(request: object) -> str:
         """Execute a resumable upload synchronously (run in executor)."""
         response = None
-        for attempt in range(_MAX_RETRIES):
+        retries = 0
+        while response is None:
             try:
-                _, response = request.next_chunk()  # type: ignore[union-attr]
-                if response is not None:
-                    video_id: str = response["id"]
-                    logger.info("YouTube upload complete: video_id=%s", video_id)
-                    return video_id
+                status, response = request.next_chunk()  # type: ignore[union-attr]
+                if status:
+                    logger.info("Upload progress: %d%%", int(status.progress() * 100))
             except Exception:
-                if attempt == _MAX_RETRIES - 1:
+                retries += 1
+                if retries >= _MAX_RETRIES:
                     raise
-                logger.warning("Upload chunk failed (attempt %d), retrying...", attempt + 1)
-        raise RuntimeError("YouTube upload failed: no response after retries")
+                logger.warning(
+                    "Upload chunk failed (retry %d/%d), retrying...", retries, _MAX_RETRIES
+                )
+                response = None
+
+        video_id: str = response["id"]
+        logger.info("YouTube upload complete: video_id=%s", video_id)
+        return video_id
 
     @staticmethod
     def _build_title(content: NormalisedContent) -> str:

@@ -36,9 +36,9 @@ async def credentials_page(request: Request) -> HTMLResponse:
         grouped.setdefault(cs.platform, []).append(entry)
 
     return templates.TemplateResponse(
+        request,
         "credentials.html",
         {
-            "request": request,
             "grouped_sets": grouped,
             "platforms": platforms,
             "platform_keys": platform_keys,
@@ -54,8 +54,9 @@ async def save_cred(request: Request) -> HTMLResponse:
 
     if not set_name or not platform:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": "Name and platform are required", "level": "error"},
+            {"message": "Name and platform are required", "level": "error"},
         )
 
     keys_info = get_keys_for_platform(platform)
@@ -70,8 +71,9 @@ async def save_cred(request: Request) -> HTMLResponse:
     save_credential_set(set_name, platform, env_vars)
 
     return templates.TemplateResponse(
+        request,
         "partials/toast.html",
-        {"request": request, "message": f"Credential set '{set_name}' saved", "level": "success"},
+        {"message": f"Credential set '{set_name}' saved", "level": "success"},
     )
 
 
@@ -79,12 +81,14 @@ async def save_cred(request: Request) -> HTMLResponse:
 async def delete_cred(request: Request, set_name: str) -> HTMLResponse:
     if delete_credential_set(set_name):
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": f"'{set_name}' deleted", "level": "success"},
+            {"message": f"'{set_name}' deleted", "level": "success"},
         )
     return templates.TemplateResponse(
+        request,
         "partials/toast.html",
-        {"request": request, "message": f"'{set_name}' not found", "level": "error"},
+        {"message": f"'{set_name}' not found", "level": "error"},
     )
 
 

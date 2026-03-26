@@ -24,9 +24,9 @@ async def dashboard(
     activity_stats = await db.get_platform_activity_stats()
     platforms = [row["platform"] for row in activity_stats]
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
-            "request": request,
             "items": items,
             "current_status": status,
             "current_platform": platform,
@@ -55,9 +55,9 @@ async def history(
     items = await db.list_history_items(platform=platform)
     platforms = sorted({r["platform"] for r in items}) if items else []
     return templates.TemplateResponse(
+        request,
         "history.html",
         {
-            "request": request,
             "items": items,
             "current_platform": platform,
             "platforms": platforms,
@@ -88,8 +88,9 @@ async def cancel_content(request: Request, item_id: UUID) -> HTMLResponse:
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
@@ -99,6 +100,7 @@ async def content_status(request: Request, item_id: UUID) -> HTMLResponse:
     if item is None:
         return HTMLResponse("<div>Not found</div>", status_code=404)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )

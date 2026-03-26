@@ -11,25 +11,27 @@ from jinja2 import Environment
 from ..prompts import load_prompt
 
 _MD_PATTERNS = re.compile(
-    r"\*\*\*(.+?)\*\*\*"   # ***bold italic***
-    r"|\*\*(.+?)\*\*"      # **bold**
-    r"|\*(.+?)\*"          # *italic*
-    r"|__(.+?)__"          # __bold__
-    r"|_(.+?)_"            # _italic_
-    r"|~~(.+?)~~"          # ~~strikethrough~~
-    r"|`(.+?)`"            # `code`
-    r"|^#{1,6}\s+",        # headings
+    r"\*\*\*(.+?)\*\*\*"  # ***bold italic***
+    r"|\*\*(.+?)\*\*"  # **bold**
+    r"|\*(.+?)\*"  # *italic*
+    r"|__(.+?)__"  # __bold__
+    r"|_(.+?)_"  # _italic_
+    r"|~~(.+?)~~"  # ~~strikethrough~~
+    r"|`(.+?)`"  # `code`
+    r"|^#{1,6}\s+",  # headings
     re.MULTILINE,
 )
 
 
 def _strip_markdown(text: str) -> str:
     """Remove common markdown formatting from a string."""
+
     def _replace(m: re.Match[str]) -> str:
         for g in m.groups():
             if g is not None:
                 return g
         return ""
+
     return _MD_PATTERNS.sub(_replace, text).strip()
 
 
@@ -41,6 +43,7 @@ def _sanitise_dashes(text: str) -> str:
 def _clean_llm_text(text: str) -> str:
     """Strip markdown and sanitise dashes from LLM-generated text."""
     return _sanitise_dashes(_strip_markdown(text))
+
 
 _JINJA_ENV = Environment()
 
@@ -159,8 +162,7 @@ async def _load_product_step(ctx: PipelineContext, inputs: dict[str, object]) ->
     product_path = project_dir / "product.md"
     if not product_path.exists():
         raise FileNotFoundError(
-            f"product.md not found in project '{project_slug}' "
-            f"(expected at {product_path})"
+            f"product.md not found in project '{project_slug}' (expected at {product_path})"
         )
 
     result: dict[str, str] = {
@@ -171,18 +173,14 @@ async def _load_product_step(ctx: PipelineContext, inputs: dict[str, object]) ->
 
     bg_dir = project_dir / "assets" / "backgrounds"
     if bg_dir.is_dir():
-        videos = [
-            f for f in bg_dir.iterdir()
-            if f.suffix.lower() in {".mp4", ".webm", ".mov"}
-        ]
+        videos = [f for f in bg_dir.iterdir() if f.suffix.lower() in {".mp4", ".webm", ".mov"}]
         if videos:
             result["background_video"] = str(random.choice(videos).resolve())
 
     music_dir = project_dir / "assets" / "music"
     if music_dir.is_dir():
         tracks = [
-            f for f in music_dir.iterdir()
-            if f.suffix.lower() in {".mp3", ".wav", ".m4a", ".ogg"}
+            f for f in music_dir.iterdir() if f.suffix.lower() in {".mp3", ".wav", ".m4a", ".ogg"}
         ]
         if tracks:
             result["background_music"] = str(random.choice(tracks).resolve())
@@ -253,10 +251,7 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
         data = data[0]
 
     if isinstance(data, dict):
-        data = {
-            k: _clean_llm_text(v) if isinstance(v, str) else v
-            for k, v in data.items()
-        }
+        data = {k: _clean_llm_text(v) if isinstance(v, str) else v for k, v in data.items()}
 
     if isinstance(output_fields, list) and output_fields:
         return {k: data.get(k, "") for k in output_fields}

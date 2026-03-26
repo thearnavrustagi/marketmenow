@@ -31,8 +31,9 @@ async def approve_content(request: Request, item_id: UUID) -> HTMLResponse:
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
@@ -41,8 +42,9 @@ async def reject_content(request: Request, item_id: UUID) -> HTMLResponse:
     await db.update_content_status(item_id, "failed", error_message="Rejected by user")
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
@@ -69,8 +71,9 @@ async def regenerate_content(request: Request, item_id: UUID) -> HTMLResponse:
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 

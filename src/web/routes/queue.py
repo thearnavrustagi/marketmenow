@@ -23,9 +23,9 @@ async def queues_page(request: Request, platform: str | None = Query(None)) -> H
         )
 
     return templates.TemplateResponse(
+        request,
         "queues.html",
         {
-            "request": request,
             "rate_limits": rate_limits,
             "queue_items": queue_items,
             "queue_counts": queue_counts,
@@ -55,6 +55,7 @@ async def update_rate_limit(
         )
 
     return templates.TemplateResponse(
+        request,
         "partials/rate_limits_table.html",
-        {"request": request, "rate_limits": rate_limits, "queue_counts": queue_counts},
+        {"rate_limits": rate_limits, "queue_counts": queue_counts},
     )

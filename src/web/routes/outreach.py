@@ -150,9 +150,9 @@ async def outreach_page(request: Request) -> HTMLResponse:
         cred_sets_by_platform.setdefault(cs.platform, []).append(name)
 
     return templates.TemplateResponse(
+        request,
         "outreach.html",
         {
-            "request": request,
             "stats": stats,
             "entries": entries,
             "campaigns": campaigns,
@@ -169,8 +169,9 @@ async def run_outreach(request: Request) -> HTMLResponse:
 
     if not workflow_name:
         return templates.TemplateResponse(
+            request,
             "partials/toast.html",
-            {"request": request, "message": "No workflow selected", "level": "error"},
+            {"message": "No workflow selected", "level": "error"},
         )
 
     cmd = ["mmn", "run", workflow_name]
@@ -204,8 +205,9 @@ async def run_outreach(request: Request) -> HTMLResponse:
 
     item = await db.get_content_item(item_id)
     return templates.TemplateResponse(
+        request,
         "partials/content_card.html",
-        {"request": request, "item": item},
+        {"item": item},
     )
 
 
