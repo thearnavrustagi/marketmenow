@@ -284,18 +284,14 @@ Checked items are shipped. Unchecked items are planned or in progress.
 
 ### Done
 
-- [x] **7-platform content engine** - Instagram Reels & Carousels, Twitter replies & threads, Reddit comments, LinkedIn posts, YouTube Shorts, TikTok videos, bulk email - generate and publish from one CLI or web dashboard
-- [x] **In-context learning & brand templates** - learns from top-performing posts to match your voice; YAML-driven brand identity (prompts, visuals, mention strategy) with Figma MCP integration
-- [x] **Ports-and-adapters core** - modular pipeline (normalise → render → upload → publish), campaign orchestrator, scheduler, and `AdapterRegistry` - add a platform with zero changes to core
-- [x] **Personas** - bundle brand voice, visual identity, prompts, and platform credentials into switchable "personas" so you can manage multiple brands or collaborate with a team from one install
-- [x] **Twitter discovery & cold DM** - find Twitter accounts relevant to your brand, score them, and send personalized cold DMs at human-like pace
-- [x] **Pipelines & modularisation** - composable pipelines that chain the existing tools (discover → generate → review → publish) into reusable flows you define in YAML and execute with a single command
-- [x] **Auto-heal** - `mmn heal` runs lint, format, and the full test suite in one shot; remaining failures are handed off to the Cursor agent for automatic source-code fixes (never weakens tests)
+- [x] 7-platform content engine, in-context learning, ports-and-adapters core, personas, Twitter discovery & cold DM, composable pipelines, auto-heal, Reddit & LinkedIn publish
+- [x] **Exploration/Exploitation** - epsilon-greedy ICL with farthest-point embedding sampling for diverse example selection, per-reply explore/exploit toggle, performance tracking
+
 ### Up Next
 
-- [ ] **Reddit & LinkedIn publish** - finish WIP uploaders for both platforms, full end-to-end tests
-- [ ] **Exploration/Exploitation** - Worried that personas might over-index on certain type of profile and want to keep encouraging it to explore, want to build a smarter RL inspired system for better exploration/exploitation for in-context learning
-- [ ] **An evolving system** - I want the system to evolve with my code repositories, need to figure out how to do this
+- [ ] **Extend ICL to all platforms** - bring epsilon-greedy in-context learning (currently Twitter-only) to Instagram, Reddit, LinkedIn, and other adapters
+- [ ] **Analytics feedback loop** - auto-collect post performance metrics and feed them back to rank ICL examples, so the system improves with every publish
+- [ ] **An evolving system** - the system evolves with code repositories automatically
 
 
 ## Contributing

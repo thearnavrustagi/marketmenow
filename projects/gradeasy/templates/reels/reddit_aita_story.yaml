@@ -1,0 +1,184 @@
+id: reddit_aita_story
+name: "Reddit AITA Story"
+aspect_ratio: "9:16"
+fps: 30
+composition_id: ReelFromTemplate
+
+default_visual:
+  brand_color: "#4A8DF8"
+  brand_name: "Gradeasy"
+  brand_suffix: ".ai"
+  font_family: "'IBM Plex Sans', system-ui, sans-serif"
+  subreddit: "{{ subreddit }}"
+  username: "{{ username }}"
+  title: "{{ title }}"
+  upvotes: "3.1k"
+  background_video: "{{ background_video }}"
+
+caption_template: |
+  {{ caption }}
+
+  Try {{ brand_name }} free at gradeasy.ai
+
+hashtags:
+  - AITA
+  - AmITheAsshole
+  - TeacherLife
+  - TeacherProblems
+  - TeachersOfInstagram
+  - TeacherHumor
+  - AIGrading
+  - Gradeasy
+  - EdTech
+  - RedditStories
+
+hook_lines:
+  - "AITA for giving my student a zero?"
+  - "Every teacher has been here..."
+  - "The parents were NOT happy about this one..."
+  - "My colleagues are split 50/50 on this..."
+  - "I might have gone too far this time..."
+
+pipeline:
+  steps:
+    - id: pick_aita
+      type: pick_aita
+      output_var: aita_scenario
+      output_fields:
+        - aita_scenario
+
+    - id: load_product
+      type: load_product
+      output_var: product_info_raw
+      output_fields:
+        - product_info
+        - background_video
+        - background_music
+
+    - id: generate_story
+      type: llm
+      inputs:
+        prompt: aita_story_generation
+        model: gemini-2.5-pro
+        temperature: 1.0
+        context:
+          aita_scenario: "{{ aita_scenario }}"
+          product_info: "{{ product_info }}"
+          brand_name: "{{ brand_name }}"
+      output_fields:
+        - title
+        - subreddit
+        - username
+        - paragraph_1
+        - paragraph_2
+        - paragraph_3
+        - paragraph_4
+        - paragraph_5
+        - paragraph_6
+        - caption
+
+variables:
+  - title
+  - subreddit
+  - username
+  - paragraph_1
+  - paragraph_2
+  - paragraph_3
+  - paragraph_4
+  - paragraph_5
+  - paragraph_6
+  - caption
+  - aita_scenario
+  - brand_name
+  - background_video
+  - background_music
+
+beats:
+  - id: title_reveal
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ title }}"
+    duration: from_audio
+    pad_seconds: 0.8
+    visual:
+      mode: title
+
+  - id: paragraph_1
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_1 }}"
+    duration: from_audio
+    pad_seconds: 0.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_1 }}"
+
+  - id: paragraph_2
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_2 }}"
+    duration: from_audio
+    pad_seconds: 0.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_2 }}"
+
+  - id: paragraph_3
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_3 }}"
+    duration: from_audio
+    pad_seconds: 0.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_3 }}"
+
+  - id: paragraph_4
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_4 }}"
+    duration: from_audio
+    pad_seconds: 0.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_4 }}"
+
+  - id: paragraph_5
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_5 }}"
+    duration: from_audio
+    pad_seconds: 0.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_5 }}"
+
+  - id: paragraph_6
+    scene: RedditStoryScene
+    audio:
+      type: tts
+      text: "{{ paragraph_6 }}"
+    duration: from_audio
+    pad_seconds: 1.5
+    visual:
+      mode: paragraph
+      paragraph_text: "{{ paragraph_6 }}"
+
+  - id: outro_cta
+    scene: BrandCTAScene
+    audio:
+      type: tts
+      text: "Try Gradeasy out now for better grading."
+    duration: from_audio
+    pad_seconds: 1.5
+    visual:
+      brand_name: "Gradeasy"
+      brand_suffix: ".ai"
+      brand_color: "#4A8DF8"
+      cta_text: "https://gradeasy.ai"

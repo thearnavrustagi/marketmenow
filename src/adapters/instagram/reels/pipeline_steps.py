@@ -148,6 +148,14 @@ async def _pick_horror_step(ctx: PipelineContext, inputs: dict[str, object]) -> 
     return {"horror_source": title}
 
 
+async def _pick_aita_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
+    """Pick a random AITA teaching scenario from the corpus."""
+    from .aita_corpus import pick_random_aita
+
+    scenario = pick_random_aita()
+    return {"aita_scenario": scenario}
+
+
 async def _load_product_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
     """Read product.md and discover background video from the active project."""
     from marketmenow.core.project_manager import ProjectManager
@@ -273,6 +281,7 @@ def create_default_registry() -> StepRegistry:
     registry.register("worksheet", _worksheet_step)
     registry.register("fill_worksheet", _fill_worksheet_step)
     registry.register("pick_horror", _pick_horror_step)
+    registry.register("pick_aita", _pick_aita_step)
     registry.register("load_product", _load_product_step)
     return registry
 
