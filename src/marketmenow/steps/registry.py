@@ -18,6 +18,7 @@ from marketmenow.steps.post_replies import PostRepliesStep
 from marketmenow.steps.post_to_platform import PostToPlatformStep
 from marketmenow.steps.post_to_subreddits import PostToSubredditsStep
 from marketmenow.steps.prepare_youtube import PrepareYouTubeStep
+from marketmenow.steps.repurpose_content import RepurposeContentStep
 from marketmenow.steps.score_prospects import ScoreProspectsStep
 from marketmenow.steps.send_emails import SendEmailsStep
 from marketmenow.steps.send_messages import SendMessagesStep
@@ -52,6 +53,7 @@ _STEP_CLASSES: dict[str, type] = {
     "fetch-youtube-feedback": FetchYouTubeFeedbackStep,
     "inject-reel-id": InjectReelIdStep,
     "prepare-youtube": PrepareYouTubeStep,
+    "repurpose-content": RepurposeContentStep,
 }
 
 

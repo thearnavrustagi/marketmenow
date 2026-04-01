@@ -14,6 +14,7 @@ from marketmenow.models.content import (
     BaseContent,
     ImagePost,
     MediaAsset,
+    TextPost,
     Thread,
     ThreadEntry,
     VideoPost,
@@ -77,6 +78,9 @@ class ContentCapsule(BaseModel, frozen=True):
     # Publish history
     publications: list[CapsulePublication] = Field(default_factory=list)
 
+    # Derivation tracking (capsule ID this was repurposed from)
+    derived_from: str = ""
+
     # Tracking IDs
     reel_id_hex: str = ""
     template_type_hex: str = ""
@@ -133,6 +137,7 @@ class CapsuleManager:
         reel_id_hex: str = "",
         template_type_hex: str = "",
         thread_entries: list[str] | None = None,
+        derived_from: str = "",
     ) -> ContentCapsule:
         capsule_id = _generate_capsule_id()
         capsule_dir = self._capsule_dir(project_slug, capsule_id)
@@ -152,6 +157,7 @@ class CapsuleManager:
             reel_id_hex=reel_id_hex,
             template_type_hex=template_type_hex,
             thread_entries=thread_entries or [],
+            derived_from=derived_from,
         )
 
         self._write_meta(project_slug, capsule)
@@ -263,6 +269,8 @@ class CapsuleManager:
                 return self._to_image_post(capsule, capsule_dir)
             case "thread":
                 return self._to_thread(capsule)
+            case "text_post":
+                return self._to_text_post(capsule)
             case _:
                 raise ValueError(f"Unsupported capsule modality: {capsule.modality}")
 
@@ -340,6 +348,17 @@ class CapsuleManager:
 
         return Thread(
             entries=[ThreadEntry(text=text) for text in capsule.thread_entries],
+        )
+
+    @staticmethod
+    def _to_text_post(capsule: ContentCapsule) -> TextPost:
+        body = capsule.caption or capsule.description or capsule.title
+        if not body:
+            raise ValueError(f"Capsule {capsule.capsule_id} has no text content for text_post")
+
+        return TextPost(
+            body=body,
+            hashtags=capsule.hashtags,
         )
 
 

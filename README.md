@@ -81,6 +81,8 @@ One command runs lint, format, and tests - then hands failures to the Cursor age
 Every generated reel, carousel, and thread is packaged into a self-contained capsule. Cross-post to any platform with one command — no re-generation needed.
 </td>
 <td align="center">
+<h3>Cross-Platform Repurposing</h3>
+Repurpose any capsule for a different platform and format. Video caption becomes a Twitter thread. Thread becomes a LinkedIn post. LLM-powered format-aware transformations.
 </td>
 </tr>
 </table>
@@ -192,6 +194,12 @@ mmn capsule info <capsule-id>                             # show capsule details
 mmn run post-capsule --capsule <id> --platform youtube    # cross-post to YouTube
 mmn run post-capsule --capsule <id> --platform tiktok     # cross-post to TikTok
 
+# Cross-Platform Repurposing — adapt content format for different platforms
+mmn run repurpose-capsule --capsule <id> --platform twitter     # video/post → thread
+mmn run repurpose-capsule --capsule <id> --platform linkedin    # thread/video → text post
+mmn run repurpose-capsule --capsule <id> --platform reddit      # any → text post
+mmn run repurpose-capsule --capsule <id> --platform twitter --target-modality text_post  # override format
+
 # Auto-heal (lint + format + test, then auto-fix via Cursor agent)
 mmn heal              # fix issues automatically
 mmn heal --no-fix     # report only, don't invoke the agent
@@ -302,7 +310,7 @@ Checked items are shipped. Unchecked items are planned or in progress.
 - [x] **Unified PromptBuilder interface** - migrate all adapters to the composable PromptBuilder (persona + function + ICL blocks), replacing legacy direct YAML prompt loading across Instagram Reels, Reddit, Facebook, LinkedIn, email, and outreach
 - [ ] **Extend ICL to all platforms** - bring epsilon-greedy in-context learning (currently Twitter-only) to Instagram, Reddit, LinkedIn, and other adapters
 - [ ] **A/B testing** - generate content variants, publish them across splits, and measure which performs better to continuously optimise messaging and format
-- [ ] **Cross-platform content repurposing** - adapt a single piece of content across platforms automatically (e.g. LinkedIn post → Twitter thread → Instagram carousel) with better packaging and format-aware transformations
+- [x] **Cross-platform content repurposing** - adapt a single piece of content across platforms automatically (e.g. LinkedIn post → Twitter thread → Instagram carousel) with LLM-powered format-aware transformations via the `repurpose-capsule` workflow
 - [ ] **Analytics dashboard** - unified cross-platform analytics view to track performance, compare content types, and surface actionable insights across all platforms
 - [ ] **Analytics feedback loop** - auto-collect post performance metrics and feed them back to rank ICL examples, so the system improves with every publish
 - [ ] **An evolving system** - the system evolves with code repositories automatically

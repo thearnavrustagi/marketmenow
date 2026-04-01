@@ -82,6 +82,7 @@ class TestBuildWorkflowRegistry:
             "facebook-engage",
             "youtube-short-generate",
             "post-capsule",
+            "repurpose-capsule",
         }
         assert expected == names
 

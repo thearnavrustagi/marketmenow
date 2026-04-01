@@ -72,7 +72,7 @@ Higher-level composable marketing workflows. A `Workflow` is a named sequence of
 - `Workflow` — frozen dataclass with `name`, `description`, `steps`, `params` (ParamDef schema)
 - `WorkflowRegistry` (`core/workflow_registry.py`) — holds registered workflows, `build_workflow_registry()` auto-discovers all built-in workflows
 
-Built-in workflows: `instagram-reel`, `instagram-carousel`, `reddit-story-reel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`, `post-capsule`
+Built-in workflows: `instagram-reel`, `instagram-carousel`, `reddit-story-reel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`, `post-capsule`, `repurpose-capsule`
 
 ### Content Capsules (core/capsule.py, steps/package_capsule.py, steps/post_from_capsule.py)
 
@@ -84,7 +84,7 @@ Self-contained content packages stored under `projects/{slug}/capsules/{capsule_
 - `PostFromCapsuleStep` — workflow step that posts a capsule to any platform by ID
 - `post-capsule` workflow — standalone workflow: `mmn run post-capsule --capsule <id> --platform <name>`
 
-All content generation workflows (instagram-reel, instagram-carousel, tiktok-reel, twitter-thread, youtube-short-generate, reddit-story-reel) automatically package output into capsules. `PostToPlatformStep` records publications back to the capsule. Cross-posting is: `mmn run post-capsule --capsule <id> --platform youtube`.
+All content generation workflows (instagram-reel, instagram-carousel, tiktok-reel, twitter-thread, youtube-short-generate, reddit-story-reel) automatically package output into capsules. `PostToPlatformStep` records publications back to the capsule. Cross-posting (same format): `mmn run post-capsule --capsule <id> --platform youtube`. Cross-platform repurposing (format-aware): `mmn run repurpose-capsule --capsule <id> --platform twitter` — uses Gemini to reformat content for the target platform/modality and creates a new derived capsule with `derived_from` tracking.
 
 ### Projects (models/project.py, core/project_manager.py, core/onboarding.py)
 
