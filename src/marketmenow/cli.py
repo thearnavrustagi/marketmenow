@@ -490,9 +490,7 @@ def _print_workflow_help(workflow: object) -> None:
 )
 def run_workflow(
     ctx: typer.Context,
-    name: str = typer.Argument(
-        "", help="Workflow name (see [bold]mmn workflows[/bold])"
-    ),
+    name: str = typer.Argument("", help="Workflow name (see [bold]mmn workflows[/bold])"),
     set_param: list[str] | None = typer.Option(
         None,
         "--set",
