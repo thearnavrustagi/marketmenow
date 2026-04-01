@@ -104,7 +104,30 @@ class YouTubeUploadStep:
 
         if hasattr(result, "success") and result.success:
             url = getattr(result, "remote_url", "") or ""
+            post_id = getattr(result, "remote_post_id", "") or ""
             ctx.console.print(f"[green]Published to YouTube![/green] {url}")
+
+            # Record publication to capsule if one exists
+            capsule_id = str(ctx.artifacts.get("capsule_id", "") or "")
+            project_slug = str(ctx.params.get("project", "") or "")
+            if not project_slug and ctx.project:
+                project_slug = ctx.project.slug
+            if capsule_id and project_slug:
+                try:
+                    from marketmenow.core.capsule import CapsuleManager, CapsulePublication
+
+                    mgr = CapsuleManager()
+                    mgr.record_publication(
+                        project_slug,
+                        capsule_id,
+                        CapsulePublication(
+                            platform="youtube",
+                            remote_url=url,
+                            remote_post_id=post_id,
+                        ),
+                    )
+                except Exception:
+                    pass  # Don't fail the upload over capsule bookkeeping
         else:
             err = getattr(result, "error_message", str(result))
             ctx.console.print(f"[red]YouTube upload failed:[/red] {err}")

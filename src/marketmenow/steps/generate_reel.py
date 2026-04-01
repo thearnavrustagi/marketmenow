@@ -86,7 +86,7 @@ class GenerateReelStep:
         )
 
         with ctx.console.status(f"[bold green]Generating reel (template={template_id})..."):
-            reel = await orch.create_reel(
+            reel, reel_script = await orch.create_reel(
                 assignment_image=assignment_path,
                 template_id=template_id,
                 rubric_items=rubric_items,
@@ -101,4 +101,5 @@ class GenerateReelStep:
 
         ctx.console.print(f"[green]Reel rendered:[/green] {reel.video.uri}")
         ctx.set_artifact("content", reel)
+        ctx.set_artifact("_reel_script", reel_script)
         ctx.set_artifact("platform", "instagram")

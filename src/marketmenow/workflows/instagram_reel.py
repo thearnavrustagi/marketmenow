@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from marketmenow.core.workflow import ParamDef, ParamType, Workflow
 from marketmenow.steps.generate_reel import GenerateReelStep
+from marketmenow.steps.package_capsule import PackageCapsuleStep
 from marketmenow.steps.post_to_platform import PostToPlatformStep
 
 workflow = Workflow(
@@ -9,6 +10,7 @@ workflow = Workflow(
     description="Generate a reel from a YAML template and post to Instagram.",
     steps=(
         GenerateReelStep(),
+        PackageCapsuleStep(),
         PostToPlatformStep(platform="instagram"),
     ),
     params=(

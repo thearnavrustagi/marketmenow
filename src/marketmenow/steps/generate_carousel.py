@@ -38,4 +38,12 @@ class GenerateCarouselStep:
 
         ctx.console.print(f"[green]Carousel created with {len(carousel.images)} slides[/green]")
         ctx.set_artifact("content", carousel)
+        ctx.set_artifact(
+            "_carousel_meta",
+            {
+                "num_slides": len(carousel.images),
+                "caption": carousel.caption,
+                "hashtags": list(carousel.hashtags),
+            },
+        )
         ctx.set_artifact("platform", "instagram")

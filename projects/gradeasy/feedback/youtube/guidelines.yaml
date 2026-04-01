@@ -611,4 +611,651 @@ guidelines:
     like_count: 0
     comment_count: 0
     collected_at: *id001
-last_updated: '2026-04-01T06:09:06.938259+00:00'
+- id: 71ba12a1-5cd4-4e2b-8f08-723cd8ce320d
+  created_at: '2026-04-01T10:25:49.334569+00:00'
+  source_video_id: SsMWbkkQdnQ
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title makes an emotional claim about a specific outcome (e.g., 'Shocking!'),
+    ensure the title itself provides sufficient context or specific details to immediately
+    justify that emotion and convey the broader significance of the outcome.
+  evidence: 'The title ''AI graded this paper: 8/100. Shocking!'' failed to attract
+    views or likes, suggesting the generic ''Shocking!'' claim was not sufficiently
+    supported by the vague subject and numerical score to compel audience interest.'
+  metrics_snapshot:
+    video_id: SsMWbkkQdnQ
+    view_count: 63
+    like_count: 0
+    comment_count: 0
+    collected_at: &id002 2026-04-01 10:25:28.547488+00:00
+- id: 05f2fbb6-6025-4c3c-8b25-f1cad5dca38f
+  created_at: '2026-04-01T10:26:10.354532+00:00'
+  source_video_id: 0U19FZpDqVI
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When framing an 'AITA' scenario involving technology like AI, ensure the title
+    immediately specifies the controversial application or ethical boundary being
+    tested, rather than a generic action.
+  evidence: The title 'AITA for using AI after my principal added 10 hours to my week?'
+    resulted in only 64 views and 0 likes, suggesting the generic 'using AI' failed
+    to capture sufficient intrigue or highlight the specific moral dilemma.
+  metrics_snapshot:
+    video_id: 0U19FZpDqVI
+    view_count: 64
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 00334f15-e2f9-48dc-9c92-a5c6afaaaf4b
+  created_at: '2026-04-01T10:26:10.354532+00:00'
+  source_video_id: 0U19FZpDqVI
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title presents a personal grievance as the catalyst for an 'AITA' dilemma,
+    ensure the grievance is framed with sufficient emotional weight or unusual circumstances
+    to immediately elevate the stakes and compel viewer engagement.
+  evidence: The title 'AITA for using AI after my principal added 10 hours to my week?'
+    failed to attract an audience (64 views, 0 likes), indicating that 'added 10 hours
+    to my week' lacked the necessary emotional impact or dramatic context to make
+    the subsequent AI use compelling.
+  metrics_snapshot:
+    video_id: 0U19FZpDqVI
+    view_count: 64
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 3710e864-76fd-42fb-8cf7-fea8793a5bd3
+  created_at: '2026-04-01T10:26:34.132334+00:00'
+  source_video_id: nUu9hnndMws
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title attributes a significant or surprising action to an AI, it must
+    immediately establish the context that makes the AI's involvement or judgment
+    particularly noteworthy or impactful.
+  evidence: 'The title ''AI graded this paper: 24%?!'' implies the AI''s grading is
+    noteworthy due to the low score, but fails to provide any context about the paper
+    or the AI that would make this specific judgment impactful or surprising to a
+    broad audience, resulting in extremely low views and no engagement.'
+  metrics_snapshot:
+    video_id: nUu9hnndMws
+    view_count: 56
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 41a5c9db-a31d-4d34-8680-620422a6f38a
+  created_at: '2026-04-01T10:26:45.329030+00:00'
+  source_video_id: WETmxS66gOY
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid titles that present a specific, negative outcome or judgment from an
+    internal system without first establishing the context, stakes, or broader implications
+    that would make the outcome relevant or intriguing to an external audience.
+  evidence: The title 'Our AI graded this... and gave it a zero!' resulted in only
+    49 views and no engagement, indicating a failure to connect an internal process
+    and its outcome to a general audience's interests.
+  metrics_snapshot:
+    video_id: WETmxS66gOY
+    view_count: 49
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 1e18d616-642e-41f4-a7c3-3e7c1e84fe4a
+  created_at: '2026-04-01T10:27:08.187975+00:00'
+  source_video_id: 3ZXY-R1MsUw
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid titles that present an AI's evaluative judgment or score without immediately
+    providing the context, criteria, or universal implications that make the assessment
+    meaningful to a broad audience.
+  evidence: The title 'AI gave me a 15...' resulted in extremely low views (1047)
+    and a poor like-to-view ratio (0.6%), indicating that the AI's judgment of '15'
+    lacked immediate context or meaning for viewers.
+  metrics_snapshot:
+    video_id: 3ZXY-R1MsUw
+    view_count: 1047
+    like_count: 6
+    comment_count: 0
+    collected_at: *id002
+- id: 98b669f6-5fe9-4f49-932b-b8793d37b885
+  created_at: '2026-04-01T10:27:36.103033+00:00'
+  source_video_id: svL1k5ymlGo
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Ensure that any question posed in a title is sufficiently self-contained and
+    impactful to serve as a strong hook on its own, even before any subsequent promise
+    of explanation.
+  evidence: The title "An AI gave *this* paper a 20%? See why!" underperformed significantly
+    (806 views, 0 comments) because the initial question "An AI gave *this* paper
+    a 20%?" was not impactful or self-contained enough to function as a strong hook,
+    despite the follow-up promise.
+  metrics_snapshot:
+    video_id: svL1k5ymlGo
+    view_count: 806
+    like_count: 6
+    comment_count: 0
+    collected_at: *id002
+- id: 11bc4ebb-bf3f-4d43-b6ad-bd47d4972979
+  created_at: '2026-04-01T10:27:52.985088+00:00'
+  source_video_id: UFh6eFnT1ks
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid posing a dilemma in a title where the specific actions or consequences
+    are so vague that they fail to immediately establish a compelling reason for the
+    viewer to seek the answer.
+  evidence: The title 'Was I helping a dedicated student or just breaking rules?'
+    generated only 5 views, indicating that the ambiguity of the dilemma did not create
+    sufficient curiosity to engage an audience.
+  metrics_snapshot:
+    video_id: UFh6eFnT1ks
+    view_count: 5
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 37678fe4-03f5-4d39-9d10-4d7b8802f283
+  created_at: '2026-04-01T10:27:52.985088+00:00'
+  source_video_id: UFh6eFnT1ks
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid including the redundant hashtag '#Shorts' in the title, as it consumes
+    valuable character space without aiding discoverability or conveying additional
+    information to the audience.
+  evidence: 'The title ''Was I helping a dedicated student or just breaking rules?
+    #Shorts'' received only 5 views, suggesting that the use of a generic, redundant
+    hashtag did not contribute to content discoverability or engagement.'
+  metrics_snapshot:
+    video_id: UFh6eFnT1ks
+    view_count: 5
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: c73ee0ec-9235-456e-9cd9-0dccc61c00ed
+  created_at: '2026-04-01T10:28:17.859114+00:00'
+  source_video_id: mj6CeKXi02g
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When posing a personal 'Am I wrong?' question in a title, ensure the preceding
+    context immediately provides enough specific, universally understandable details
+    about the situation's conflict or unusual nature to hook a broad audience.
+  evidence: The title 'My classroom synergy project backfired. Was I wrong?' used
+    a niche context and vague negative outcome, failing to provide specific, universally
+    understandable details, which resulted in only 21 views and 0 likes.
+  metrics_snapshot:
+    video_id: mj6CeKXi02g
+    view_count: 21
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 47e4abf6-c324-42eb-a2c3-080d2d07eb7e
+  created_at: '2026-04-01T10:28:35.785007+00:00'
+  source_video_id: HctIMcDz59E
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When describing a negative event or a situation that 'backfired' in a title,
+    ensure you immediately specify the concrete nature of the negative outcome or
+    the specific area where it went wrong, rather than using a generic term.
+  evidence: The title 'My student help backfired' uses the generic term 'backfired'
+    without specifying how or what the negative consequence was, failing to immediately
+    establish intrigue for the 15 viewers and resulting in 0 comments.
+  metrics_snapshot:
+    video_id: HctIMcDz59E
+    view_count: 15
+    like_count: 1
+    comment_count: 0
+    collected_at: *id002
+- id: a3d23a3b-5f3f-4750-bb4b-05715e383758
+  created_at: '2026-04-01T10:28:35.785007+00:00'
+  source_video_id: HctIMcDz59E
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When posing a question about a personal action or dilemma in the title, ensure
+    it explicitly invites external judgment or opinion from the audience, rather than
+    a purely self-reflective query.
+  evidence: The title 'Did I make it worse?' is a self-reflective question that failed
+    to elicit any audience comments, indicating it did not effectively prompt external
+    engagement from the 15 viewers.
+  metrics_snapshot:
+    video_id: HctIMcDz59E
+    view_count: 15
+    like_count: 1
+    comment_count: 0
+    collected_at: *id002
+- id: 5b29adbb-9463-434d-8130-19da57ec1f07
+  created_at: '2026-04-01T10:28:55.708151+00:00'
+  source_video_id: INvkHw8xdq8
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid presenting an AI's specific judgment or outcome (e.g., a grade or score)
+    in a title without immediately clarifying the subject it applies to and the significance
+    of that outcome to an external audience.
+  evidence: The title 'AI graded *this* assignment 65%...' received only 20 views
+    and 0 likes because 'this assignment' is vague and the meaning of '65%' is unclear
+    without context, failing to engage viewers.
+  metrics_snapshot:
+    video_id: INvkHw8xdq8
+    view_count: 20
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 8d4c4b60-2f59-452d-88d5-67afd6f64d54
+  created_at: '2026-04-01T10:28:55.708151+00:00'
+  source_video_id: INvkHw8xdq8
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When posing a question in a title about an AI's action or judgment, ensure
+    the action itself is presented with enough specific context and clear implications
+    to make the question immediately relevant and compelling for viewer engagement.
+  evidence: The title 'AI graded *this* assignment 65%... would you agree?' failed
+    to generate engagement (20 views, 0 likes, 0 comments) because the vague subject
+    and uncontextualized grade rendered the follow-up question meaningless to potential
+    viewers.
+  metrics_snapshot:
+    video_id: INvkHw8xdq8
+    view_count: 20
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 7cb1e934-2492-4efa-8d12-3c94b11fdaea
+  created_at: '2026-04-01T10:29:24.953021+00:00'
+  source_video_id: dBy8Bhmmkus
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title refers to an object or event that could have personal implications,
+    avoid impersonal phrasing that detaches the subject from any human context, as
+    this reduces relatability and immediate viewer investment.
+  evidence: The title 'This assignment got a ZERO from AI' uses impersonal phrasing
+    ('This assignment') rather than connecting it to a specific individual or group,
+    contributing to extremely low views (38) and no engagement (0 likes, 0 comments).
+  metrics_snapshot:
+    video_id: dBy8Bhmmkus
+    view_count: 38
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 0dd10fb5-e3d1-4329-954e-e03cd791fcf9
+  created_at: '2026-04-01T10:29:24.953021+00:00'
+  source_video_id: dBy8Bhmmkus
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title describes a problem or negative outcome, ensure it immediately
+    hints at the broader implication, lesson, or actionable insight the viewer can
+    gain, beyond just the event itself.
+  evidence: The title 'This assignment got a ZERO from AI' describes a negative outcome
+    but fails to convey the broader implication or takeaway for the viewer, resulting
+    in only 38 views and no engagement.
+  metrics_snapshot:
+    video_id: dBy8Bhmmkus
+    view_count: 38
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 7cf74fe2-0b39-41c7-8147-5b4ed182ff71
+  created_at: '2026-04-01T10:29:39.631538+00:00'
+  source_video_id: MeWqkvxKbrE
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid using highly specific, informal, or meme-dependent terms in titles,
+    especially when they require prior cultural context to understand their significance
+    or humor, as this limits broad appeal.
+  evidence: The title 'What happens when AI grades 'BRUH?' on a test?' uses the informal
+    term 'BRUH?', which likely requires specific cultural context to fully grasp its
+    humor or significance, contributing to its extremely low views (49) and zero engagement.
+  metrics_snapshot:
+    video_id: MeWqkvxKbrE
+    view_count: 49
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 66d63571-b5be-43a0-b711-bebb37d3168d
+  created_at: '2026-04-01T10:29:39.631538+00:00'
+  source_video_id: MeWqkvxKbrE
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When a title poses a question about an AI's specific action or judgment, it
+    must immediately hint at the surprising, humorous, or problematic nature of the
+    outcome to generate viewer curiosity and engagement.
+  evidence: The title 'What happens when AI grades 'BRUH?' on a test?' asks about
+    an AI's action but fails to convey any compelling or surprising outcome, leading
+    to extremely low views (49) and zero engagement.
+  metrics_snapshot:
+    video_id: MeWqkvxKbrE
+    view_count: 49
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: a2938b86-ee39-480d-b656-9847624430da
+  created_at: '2026-04-01T10:29:51.919805+00:00'
+  source_video_id: 0I408P1tK7Y
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid titles that present a personal action followed by a generic statement
+    of regret or negative outcome without immediately clarifying the specific, compelling,
+    or unusual nature of the consequence.
+  evidence: The title 'I stayed late to grade papers and I shouldn't have...' garnered
+    only 11 views and 0 likes, indicating that the vague 'shouldn't have' failed to
+    provide a strong enough hook to engage viewers.
+  metrics_snapshot:
+    video_id: 0I408P1tK7Y
+    view_count: 11
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 93055f31-061d-4891-80d1-e4493760e3ea
+  created_at: '2026-04-01T10:30:08.409166+00:00'
+  source_video_id: wOYlhQsSpks
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Ensure that the timeline of events and excuses presented in a story, especially
+    in an 'AITA' scenario, are chronologically sound and free of contradictions to
+    maintain audience trust.
+  evidence: "The comment '@t44beck10: \"So the project was due Friday, but he had\
+    \ a family emergency on Saturday? That doesn\u2019t make sense.\"' directly points\
+    \ out the chronological inconsistency that undermined the story's credibility."
+  metrics_snapshot:
+    video_id: wOYlhQsSpks
+    view_count: 515
+    like_count: 6
+    comment_count: 2
+    collected_at: *id002
+- id: 66a98d94-0e79-4fb5-ba5a-db83c710e454
+  created_at: '2026-04-01T10:30:08.409166+00:00'
+  source_video_id: wOYlhQsSpks
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid presenting a student's excuse or an 'emergency' in an 'AITA' scenario
+    that the audience perceives as trivial or easily resolvable, as this undermines
+    the premise and invites criticism rather than engagement.
+  evidence: 'The comment ''@sandrasutherland8001: "And the cat being stuck in the
+    wall is not a tragic emotional emergency."'' demonstrates that the audience found
+    the presented emergency to be insufficient and not genuinely impactful.'
+  metrics_snapshot:
+    video_id: wOYlhQsSpks
+    view_count: 515
+    like_count: 6
+    comment_count: 2
+    collected_at: *id002
+- id: 28b80da9-1ae2-42d2-a8f5-6c19b6d732fc
+  created_at: '2026-04-01T10:30:08.409166+00:00'
+  source_video_id: wOYlhQsSpks
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When presenting a student's excuse in an 'AITA' scenario, ensure the narrative
+    accounts for the student's prior responsibility and effort, as audiences expect
+    a reasonable level of preparedness for deadlines.
+  evidence: 'The comment ''@sandrasutherland8001: "One day should not have caused
+    him to be late. He should have been 99% done."'' indicates that viewers expect
+    students to have completed most of their work before a last-minute issue.'
+  metrics_snapshot:
+    video_id: wOYlhQsSpks
+    view_count: 515
+    like_count: 6
+    comment_count: 2
+    collected_at: *id002
+- id: fa8900e8-3c6d-4bee-8791-2ff22beba815
+  created_at: '2026-04-01T10:30:26.793083+00:00'
+  source_video_id: 1G4mhETfX20
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid presenting a factual question or scenario in content without clearly
+    establishing a surprising, controversial, or emotionally resonant outcome that
+    inherently invites audience discussion and opinion.
+  evidence: The reel's 0 comments and extremely low 1.1% like-to-view ratio demonstrate
+    a complete failure to engage the audience, suggesting the content lacked an intrinsic
+    element to provoke interaction or positive sentiment.
+  metrics_snapshot:
+    video_id: 1G4mhETfX20
+    view_count: 947
+    like_count: 10
+    comment_count: 0
+    collected_at: *id002
+- id: 05759e1c-1241-465e-9b88-83b539918594
+  created_at: '2026-04-01T10:30:43.472725+00:00'
+  source_video_id: IJN7M7AqavI
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When using the 'AITA' format, ensure the content provides sufficient specific
+    details about the student's actions, the teacher's rationale, and the context
+    of the 'zero' to create a clear, debatable ethical dilemma that compels audience
+    judgment.
+  evidence: The video received zero comments despite using the 'AITA' format, indicating
+    a failure to present a sufficiently compelling or detailed dilemma that would
+    provoke audience discussion.
+  metrics_snapshot:
+    video_id: IJN7M7AqavI
+    view_count: 761
+    like_count: 14
+    comment_count: 0
+    collected_at: *id002
+- id: f5a5bb92-70c5-49e2-b5be-1935ea5d004d
+  created_at: '2026-04-01T10:30:43.472725+00:00'
+  source_video_id: IJN7M7AqavI
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid framing an 'AITA' scenario around an action that, without immediate
+    context, appears to be a standard or easily justifiable professional decision,
+    as this fails to create a genuine dilemma compelling audience debate.
+  evidence: The title 'AITA for giving my student a zero?' resulted in zero comments,
+    indicating the action described was perceived as too routine or straightforward
+    to provoke discussion without further compelling context.
+  metrics_snapshot:
+    video_id: IJN7M7AqavI
+    view_count: 761
+    like_count: 14
+    comment_count: 0
+    collected_at: *id002
+- id: e1cf2401-4c2e-4cf5-a2fe-eecf19b34680
+  created_at: '2026-04-01T10:30:59.934160+00:00'
+  source_video_id: x-x_t6645t0
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid using intense emotional descriptors like 'horror' in titles when the
+    accompanying subject matter or outcome is described in a way that appears trivial
+    or low-stakes, as this creates a disconnect and fails to justify viewer attention.
+  evidence: 'The title ''Grading horror: her paper pile went wrong'' uses ''horror''
+    but describes a ''paper pile went wrong,'' which does not convey a truly horrifying
+    or high-stakes situation, resulting in only 50 views and 0 likes.'
+  metrics_snapshot:
+    video_id: x-x_t6645t0
+    view_count: 50
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 41f813e3-d37a-4bf6-ab0d-b59257ab2b67
+  created_at: '2026-04-01T10:30:59.934160+00:00'
+  source_video_id: x-x_t6645t0
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid titles that describe a common or routine scenario with a generic negative
+    outcome, as this fails to establish sufficient intrigue or unique value to capture
+    audience attention.
+  evidence: 'The title ''Grading horror: her paper pile went wrong'' describes a common
+    scenario (grading) with a generic negative outcome (''went wrong'') that lacks
+    specific, compelling details, resulting in only 50 views and no engagement.'
+  metrics_snapshot:
+    video_id: x-x_t6645t0
+    view_count: 50
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: a604359a-5734-4f32-98df-5dd17e3d68ae
+  created_at: '2026-04-01T10:31:23.702622+00:00'
+  source_video_id: kcVkRS2MulY
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid posing a factual question in a title if the answer is likely to be immediately
+    apparent or intuitively conditional to the average viewer, as this diminishes
+    the need to watch the content.
+  evidence: The title 'Can AI grade this assignment in seconds?' received only 457
+    views and 1 like, suggesting viewers did not feel compelled to watch, possibly
+    because the answer felt self-evident or too dependent on unstated variables.
+  metrics_snapshot:
+    video_id: kcVkRS2MulY
+    view_count: 457
+    like_count: 1
+    comment_count: 0
+    collected_at: *id002
+- id: ec1f8a9e-911d-46ec-90c3-b70c98dd7c21
+  created_at: '2026-04-01T10:31:28.219592+00:00'
+  source_video_id: 6h5QJiAI5j0
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid using misspelled or obscure hashtags that do not clearly categorize
+    the content or aid in discoverability.
+  evidence: The hashtag '#shortvi' is likely a typo or an extremely niche tag, contributing
+    to the content's abysmal performance of 7 views and 0 comments, indicating a failure
+    to reach an audience.
+  metrics_snapshot:
+    video_id: 6h5QJiAI5j0
+    view_count: 7
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 306d306d-d5e9-449a-9577-e2a60c63afc5
+  created_at: '2026-04-01T10:31:40.787251+00:00'
+  source_video_id: _8cOW38gmCA
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid posing questions in titles that are purely factual or demonstrative,
+    as they fail to invite audience opinion, debate, or direct engagement.
+  evidence: The title 'Can our AI grade this?' resulted in 0 comments and a 1.0% like-to-view
+    ratio, indicating a complete failure to engage the audience in discussion.
+  metrics_snapshot:
+    video_id: _8cOW38gmCA
+    view_count: 98
+    like_count: 1
+    comment_count: 0
+    collected_at: *id002
+- id: d5ded627-853c-4b48-825e-a37981bd5697
+  created_at: '2026-04-01T10:31:40.787251+00:00'
+  source_video_id: _8cOW38gmCA
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid using generic and redundant hashtags like '#shortvideo' that do not
+    add specific categorization or aid in discoverability.
+  evidence: The inclusion of '#shortvideo' alongside '#shorts' and '#tik' in the title
+    'Can our AI grade this?' did not prevent the content from receiving only 98 views,
+    suggesting it did not contribute to effective audience reach.
+  metrics_snapshot:
+    video_id: _8cOW38gmCA
+    view_count: 98
+    like_count: 1
+    comment_count: 0
+    collected_at: *id002
+- id: 09360023-47ba-4018-926f-6be09ff1eb22
+  created_at: '2026-04-01T10:31:50.654765+00:00'
+  source_video_id: BcV8OCE6Or4
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid using incomplete or mistyped hashtags, as they fail to categorize content
+    effectively and significantly hinder discoverability.
+  evidence: The hashtag '#sho' is incomplete and likely a typo, contributing to the
+    content's extremely low view count of 28 and zero engagement.
+  metrics_snapshot:
+    video_id: BcV8OCE6Or4
+    view_count: 28
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 223fee02-40ae-471e-8723-83d67063dca6
+  created_at: '2026-04-01T10:31:50.654765+00:00'
+  source_video_id: BcV8OCE6Or4
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When posing a comparative question in a title, ensure the content explicitly
+    invites viewers to share their opinion on which option is superior or their personal
+    experience with the comparison.
+  evidence: 'Despite posing a comparative question ''AI vs. Teacher: Who grades better?''
+    in the title, the content received 0 comments, indicating a failure to prompt
+    audience interaction or debate on the comparison.'
+  metrics_snapshot:
+    video_id: BcV8OCE6Or4
+    view_count: 28
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 2071e452-03ed-4ae8-a24a-908be392f43b
+  created_at: '2026-04-01T10:32:09.206160+00:00'
+  source_video_id: PiPoMbGLg9c
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When labeling content as a 'horror story,' ensure the specific detail in the
+    title immediately conveys a truly terrifying, supernatural, or high-stakes element
+    that justifies the intense emotional categorization and compels immediate viewing.
+  evidence: "The title 'Teacher grading horror story - the papers started changing\
+    \ \U0001F631' failed to generate any engagement (0 likes, 0 comments) despite\
+    \ explicitly using 'horror story' and a fear emoji, suggesting the specific detail\
+    \ was not compelling enough to a broad audience."
+  metrics_snapshot:
+    video_id: PiPoMbGLg9c
+    view_count: 6
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 50cf85d6-c25f-45dd-a38f-5fca22ca6981
+  created_at: '2026-04-01T10:32:09.206160+00:00'
+  source_video_id: PiPoMbGLg9c
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When combining a niche professional context with a horror element in the title,
+    ensure the horror aspect is immediately and universally terrifying or supernatural
+    to transcend the niche and appeal to a broad audience.
+  evidence: "The title 'Teacher grading horror story - the papers started changing\
+    \ \U0001F631' combined a niche 'teacher grading' context with a horror element,\
+    \ yet resulted in only 6 views and 0 engagement, indicating the horror aspect\
+    \ was not universally compelling enough to drive viewership or interaction."
+  metrics_snapshot:
+    video_id: PiPoMbGLg9c
+    view_count: 6
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: eaa61b05-5f03-48d2-a197-4608a5661752
+  created_at: '2026-04-01T10:32:32.732575+00:00'
+  source_video_id: wfprQ6PkoAs
+  source_template_id: ''
+  guideline_type: avoid
+  rule: When posing a question in a title, ensure it immediately establishes a clear
+    and compelling reason for the viewer to seek the answer, such as a surprising
+    outcome, a practical benefit, or an engaging dilemma.
+  evidence: The title 'Can our AI grade this?' failed to generate views because its
+    vague and internally-focused question provided no clear incentive or intriguing
+    hook for an external audience to watch, resulting in only 1 view.
+  metrics_snapshot:
+    video_id: wfprQ6PkoAs
+    view_count: 1
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 50607fa4-4f65-4a5e-92b9-fdb4b143ddf1
+  created_at: '2026-04-01T10:32:32.732575+00:00'
+  source_video_id: wfprQ6PkoAs
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Ensure titles adopt an external, audience-centric perspective, clearly articulating
+    the content's value or intrigue for the viewer rather than posing internally-focused
+    questions.
+  evidence: The title 'Can our AI grade this?' failed to attract an audience because
+    its internal perspective ('our AI') and vague question ('this') did not immediately
+    convey relevance or value to external viewers, leading to only 1 view.
+  metrics_snapshot:
+    video_id: wfprQ6PkoAs
+    view_count: 1
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+- id: 91b93f26-946c-4ab6-8e1c-1a3c2c3c1d04
+  created_at: '2026-04-01T10:32:54.724073+00:00'
+  source_video_id: 2UcMmtU8NXY
+  source_template_id: ''
+  guideline_type: avoid
+  rule: Avoid titles that issue a direct command or invitation to watch a demonstration
+    if the subject of the demonstration is not immediately and clearly defined, as
+    this lack of specificity will fail to compel any viewer engagement.
+  evidence: The title 'Watch AI grade this in seconds' received 0 views, indicating
+    a complete failure to attract an audience because the vague subject 'this' provided
+    no compelling reason to follow the direct command to watch.
+  metrics_snapshot:
+    video_id: 2UcMmtU8NXY
+    view_count: 0
+    like_count: 0
+    comment_count: 0
+    collected_at: *id002
+last_updated: '2026-04-01T10:32:54.726440+00:00'

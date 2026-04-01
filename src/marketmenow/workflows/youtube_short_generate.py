@@ -4,6 +4,7 @@ from marketmenow.core.workflow import ParamDef, ParamType, Workflow
 from marketmenow.steps.fetch_feedback import FetchYouTubeFeedbackStep
 from marketmenow.steps.generate_reel import GenerateReelStep
 from marketmenow.steps.inject_reel_id import InjectReelIdStep
+from marketmenow.steps.package_capsule import PackageCapsuleStep
 from marketmenow.steps.prepare_youtube import PrepareYouTubeStep
 from marketmenow.steps.youtube_upload import YouTubeUploadStep
 
@@ -13,6 +14,7 @@ workflow = Workflow(
     steps=(
         FetchYouTubeFeedbackStep(),
         GenerateReelStep(),
+        PackageCapsuleStep(),
         PrepareYouTubeStep(),
         InjectReelIdStep(),
         YouTubeUploadStep(),

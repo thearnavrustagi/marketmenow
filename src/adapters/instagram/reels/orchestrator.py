@@ -123,7 +123,7 @@ class ReelOrchestrator:
         comment_avatar: Path | None = None,
         comment_text: str = "",
         student_name: str = "",
-    ) -> VideoPost:
+    ) -> tuple[VideoPost, ReelScript]:
         """Full pipeline: grade -> script -> TTS -> render -> VideoPost model.
 
         When *assignment_image* is ``None`` and the template has a ``worksheet``
@@ -259,11 +259,13 @@ class ReelOrchestrator:
             ]
         )
 
-        return VideoPost(
+        video_post = VideoPost(
             video=video_asset,
             caption=final_caption,
             hashtags=final_hashtags,
         )
+
+        return video_post, reel_script
 
     @staticmethod
     def _check_unresolved_placeholders(beats: list[BeatDefinition]) -> None:

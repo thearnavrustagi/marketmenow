@@ -76,5 +76,8 @@ replies_*
 projects/*/assets/backgrounds/
 projects/*/assets/music/
 
+# ── Content capsules (media + script artifacts) ───────
+projects/*/capsules/
+
 # ── Project state ──────────────────────────────────────
 .mmn_active_project

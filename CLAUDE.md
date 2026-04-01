@@ -6,14 +6,15 @@ Cross-platform marketing automation framework. Generates and publishes content a
 
 ```
 src/marketmenow/          # Platform-agnostic core (models, ports, pipeline, registry, workflows)
-src/marketmenow/steps/    # Reusable workflow steps (generate, post, discover, etc.)
-src/marketmenow/workflows/# Built-in workflow definitions (instagram-reel, twitter-engage, etc.)
+src/marketmenow/steps/    # Reusable workflow steps (generate, post, discover, package, etc.)
+src/marketmenow/workflows/# Built-in workflow definitions (instagram-reel, twitter-engage, post-capsule, etc.)
 src/adapters/             # Platform-specific adapters (instagram, twitter, linkedin, reddit, email, facebook, youtube, tiktok)
 src/web/                  # FastAPI web dashboard
 tests/                    # pytest + pytest-asyncio test suite
 prompts/                  # YAML prompt templates per platform
 campaigns/                # YAML campaign config files (e.g. reddit-launch)
 projects/                 # Per-product marketing material directories
+projects/{slug}/capsules/ # Content capsules — self-contained packages of generated content
 pyproject.toml            # Single source of truth for deps, scripts, ruff, pytest config
 ```
 
@@ -34,6 +35,9 @@ uv run mmn project list             # List all projects
 uv run mmn project use <slug>       # Set active project
 uv run mmn project info             # Show project details
 uv run mmn auth <platform>           # Authenticate with a platform
+uv run mmn capsule list               # List content capsules for active project
+uv run mmn capsule info <id>          # Show capsule details (media, publications, metadata)
+uv run mmn run post-capsule --capsule <id> --platform <name>  # Post capsule to any platform
 uv run mmn heal                      # Run tests and auto-fix failures via Cursor agent
 uv run mmn feedback                  # Analyze prior video performance and generate guidelines
 uv run mmn index                     # Retroactively index and classify all prior videos
@@ -57,6 +61,7 @@ Key components:
 - `PromptBuilder` (`core/prompt_builder.py`) — composable prompt assembly from persona + function + ICL blocks
 - `EmbeddingStore` (`core/embedding_store.py`) — Gemini text-embedding-004 wrapper with batch embed and cosine distance
 - `select_diverse_examples()` (`core/diversity_selector.py`) — farthest-point sampling for diverse ICL example selection
+- `CapsuleManager` (`core/capsule.py`) — CRUD for content capsules (create, load, list, add media, record publications, convert to content models)
 
 ### Workflows (core/workflow.py, steps/, workflows/)
 
@@ -67,7 +72,19 @@ Higher-level composable marketing workflows. A `Workflow` is a named sequence of
 - `Workflow` — frozen dataclass with `name`, `description`, `steps`, `params` (ParamDef schema)
 - `WorkflowRegistry` (`core/workflow_registry.py`) — holds registered workflows, `build_workflow_registry()` auto-discovers all built-in workflows
 
-Built-in workflows: `instagram-reel`, `instagram-carousel`, `reddit-story-reel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`
+Built-in workflows: `instagram-reel`, `instagram-carousel`, `reddit-story-reel`, `twitter-thread`, `twitter-engage`, `twitter-outreach`, `reddit-engage`, `reddit-launch`, `linkedin-post`, `email-outreach`, `youtube-short`, `tiktok-reel`, `post-capsule`
+
+### Content Capsules (core/capsule.py, steps/package_capsule.py, steps/post_from_capsule.py)
+
+Self-contained content packages stored under `projects/{slug}/capsules/{capsule_id}/`. Each capsule directory contains a `meta.yaml` with all post metadata (caption, title, description, hashtags, privacy), media files in `media/`, and generation artifacts in `script/` for regeneration.
+
+- `ContentCapsule` — frozen model with capsule_id, modality, post metadata, media entries, generation params, publication history, tracking IDs
+- `CapsuleManager` — CRUD operations: create, load, list, add_media, save_script_artifact, record_publication, to_content (converts capsule to BaseContent for publishing)
+- `PackageCapsuleStep` — workflow step that packages generated content into a capsule after generation, before posting
+- `PostFromCapsuleStep` — workflow step that posts a capsule to any platform by ID
+- `post-capsule` workflow — standalone workflow: `mmn run post-capsule --capsule <id> --platform <name>`
+
+All content generation workflows (instagram-reel, instagram-carousel, tiktok-reel, twitter-thread, youtube-short-generate, reddit-story-reel) automatically package output into capsules. `PostToPlatformStep` records publications back to the capsule. Cross-posting is: `mmn run post-capsule --capsule <id> --platform youtube`.
 
 ### Projects (models/project.py, core/project_manager.py, core/onboarding.py)
 
@@ -158,6 +175,7 @@ All defined as `typing.Protocol` with `@runtime_checkable`:
 5. **`PlatformBundle` registration.** Each adapter exposes a `create_*_bundle(settings)` factory. Registration happens in `core/registry_builder.py` — missing env vars cause graceful skip.
 6. **Project-scoped content.** Prompts, targets, templates, and campaigns resolve from the active project directory first, falling back to global paths.
 7. **PromptBuilder for content generation.** All content generation LLM prompts must use `PromptBuilder`. Deterministic tool prompts (autograde, sentiment scoring, etc.) may use direct YAML loading. No new `load_prompt()` functions. See AGENTS.md for the full design standard.
+8. **Content capsules for all generated content.** All content generation workflows must include `PackageCapsuleStep` after generation. Any new social content workflow must package output as a capsule. Cross-posting uses `post-capsule` workflow, not per-platform re-generation.
 
 ## Python Style
 
@@ -191,7 +209,8 @@ All defined as `typing.Protocol` with `@runtime_checkable`:
 1. Create a step in `src/marketmenow/steps/yourstep.py` implementing `WorkflowStep` protocol (`name`, `description`, `execute(ctx)`).
 2. Create `src/marketmenow/workflows/your_workflow.py` composing steps into a `Workflow` with `ParamDef` declarations.
 3. Add a `_try_register()` call in `core/workflow_registry.py` `build_workflow_registry()`.
-4. No changes to `core/`, `models/`, `ports/`, or `cli.py` needed — workflows auto-register.
+4. If it generates social content, include `PackageCapsuleStep()` after generation and before posting.
+5. No changes to `core/`, `models/`, `ports/`, or `cli.py` needed — workflows auto-register.
 
 ## Adding a New Content Modality
 

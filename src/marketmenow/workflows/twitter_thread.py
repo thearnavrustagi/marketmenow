@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from marketmenow.core.workflow import ParamDef, Workflow
 from marketmenow.steps.generate_thread import GenerateThreadStep
+from marketmenow.steps.package_capsule import PackageCapsuleStep
 from marketmenow.steps.post_to_platform import PostToPlatformStep
 
 workflow = Workflow(
@@ -9,6 +10,7 @@ workflow = Workflow(
     description="Generate a viral Twitter/X thread via AI and post it.",
     steps=(
         GenerateThreadStep(),
+        PackageCapsuleStep(),
         PostToPlatformStep(platform="twitter"),
     ),
     params=(

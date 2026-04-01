@@ -20,8 +20,8 @@ This package is **platform-agnostic**. It must never import from `src/adapters/`
 | `cli.py`                  | Top-level Typer app (`mmn`) — `run`, `workflows`, `auth`, `distribute`, `platforms`, `version`, `heal` + hidden adapter CLI groups for web frontend |
 | `core/workflow.py`        | `WorkflowStep` protocol, `WorkflowContext`, `Workflow` runner, `ParamDef` |
 | `core/workflow_registry.py`| `WorkflowRegistry` + `build_workflow_registry()` — auto-discovers workflows |
-| `steps/*.py`              | Reusable workflow steps (generate_reel, post_to_platform, discover_posts, discover_prospects, enrich_profiles, score_prospects, generate_messages, send_messages, etc.) |
-| `workflows/*.py`          | Built-in workflow definitions (instagram_reel, twitter_engage, twitter_outreach, tiktok_reel, etc.) |
+| `steps/*.py`              | Reusable workflow steps (generate_reel, post_to_platform, package_capsule, post_from_capsule, discover_posts, discover_prospects, enrich_profiles, score_prospects, generate_messages, send_messages, etc.) |
+| `workflows/*.py`          | Built-in workflow definitions (instagram_reel, twitter_engage, twitter_outreach, tiktok_reel, post_capsule, etc.) |
 | `outreach/models.py`      | `CustomerProfile`, `UserProfile`, `ScoredProspect`, `OutreachMessage`, rubric models |
 | `outreach/ports.py`       | `DiscoveryVector`, `ProfileEnricher`, `MessageSender` protocols |
 | `outreach/scorer.py`      | `ProspectScorer` — Gemini rubric evaluation (platform-agnostic) |
@@ -33,6 +33,7 @@ This package is **platform-agnostic**. It must never import from `src/adapters/`
 | `core/registry_builder.py`| `build_registry()` — auto-registers adapters (lazy imports, graceful skip on missing config) |
 | `core/text_sanitiser.py`  | `sanitise_text()` — strips em/en-dashes from all text fields (anti-AI-detection) |
 | `core/scheduler.py`       | `Scheduler` — in-process scheduled campaign execution        |
+| `core/capsule.py`         | `ContentCapsule`, `CapsuleManager` — content capsule CRUD, media management, publication tracking, conversion to content models |
 | `core/distribute_cli.py`  | Shared async helper for CLI `distribute` command             |
 | `core/prompt_builder.py`  | `PromptBuilder` — composable prompt assembly from persona + function + ICL blocks |
 | `core/embedding_store.py` | `EmbeddingStore` — Gemini text-embedding-004 wrapper with batch embed and cosine distance |

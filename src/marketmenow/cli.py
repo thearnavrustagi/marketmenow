@@ -248,6 +248,102 @@ def persona_list() -> None:
     console.print(table)
 
 
+# ── Capsules ──────────────────────────────────────────────────────────
+
+capsule_app = typer.Typer(name="capsule", help="Manage content capsules.")
+app.add_typer(capsule_app, name="capsule", rich_help_panel="Content")
+
+
+@capsule_app.command("list")
+def capsule_list(
+    slug: str = typer.Argument("", help="Project slug (default: active project)"),
+) -> None:
+    """List all content capsules for a project."""
+    from marketmenow.core.capsule import CapsuleManager
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    slug = slug or pm.get_active_project() or ""
+    if not slug:
+        console.print(
+            "[red]No active project. Run [bold]mmn project use <slug>[/bold] first.[/red]"
+        )
+        raise typer.Exit(1)
+
+    mgr = CapsuleManager()
+    capsules = mgr.list_capsules(slug)
+
+    if not capsules:
+        console.print("[dim]No capsules found.[/dim]")
+        return
+
+    table = Table(title=f"Content Capsules — {slug}", show_header=True, border_style="dim")
+    table.add_column("ID", style="bold cyan", min_width=24)
+    table.add_column("Modality", style="white", width=10)
+    table.add_column("Caption", style="dim", max_width=40)
+    table.add_column("Published", style="green", width=10)
+
+    for c in capsules:
+        caption_preview = c.caption[:37] + "..." if len(c.caption) > 40 else c.caption
+        pub_count = str(len(c.publications)) if c.publications else "-"
+        table.add_row(c.capsule_id, c.modality, caption_preview, pub_count)
+
+    console.print(table)
+
+
+@capsule_app.command("info")
+def capsule_info(
+    capsule_id: str = typer.Argument(help="Capsule ID"),
+    slug: str = typer.Option("", help="Project slug (default: active project)"),
+) -> None:
+    """Show details for a specific content capsule."""
+    from marketmenow.core.capsule import CapsuleManager
+    from marketmenow.core.project_manager import ProjectManager
+
+    pm = ProjectManager()
+    slug = slug or pm.get_active_project() or ""
+    if not slug:
+        console.print(
+            "[red]No active project. Run [bold]mmn project use <slug>[/bold] first.[/red]"
+        )
+        raise typer.Exit(1)
+
+    mgr = CapsuleManager()
+    try:
+        capsule = mgr.load(slug, capsule_id)
+    except FileNotFoundError as exc:
+        console.print(f"[red]Capsule '{capsule_id}' not found in project '{slug}'.[/red]")
+        raise typer.Exit(1) from exc
+
+    lines = [
+        f"[bold]Capsule:[/bold] {capsule.capsule_id}",
+        f"[bold]Modality:[/bold] {capsule.modality}",
+        f"[bold]Created:[/bold] {capsule.created_at}",
+    ]
+    if capsule.template_id:
+        lines.append(f"[bold]Template:[/bold] {capsule.template_id}")
+    if capsule.caption:
+        lines.append(f"[bold]Caption:[/bold] {capsule.caption[:100]}")
+    if capsule.title:
+        lines.append(f"[bold]Title:[/bold] {capsule.title}")
+    if capsule.hashtags:
+        lines.append(f"[bold]Hashtags:[/bold] {', '.join(capsule.hashtags)}")
+
+    if capsule.media:
+        lines.append("")
+        lines.append("[bold]Media:[/bold]")
+        for m in capsule.media:
+            lines.append(f"  {m.role}: {m.path} ({m.mime_type})")
+
+    if capsule.publications:
+        lines.append("")
+        lines.append("[bold]Publications:[/bold]")
+        for pub in capsule.publications:
+            lines.append(f"  {pub.platform}: {pub.remote_url} ({pub.published_at})")
+
+    console.print(Panel("\n".join(lines), title="Capsule Details", border_style="cyan"))
+
+
 # ── Banner ────────────────────────────────────────────────────────────
 
 
@@ -394,7 +490,9 @@ def _print_workflow_help(workflow: object) -> None:
 )
 def run_workflow(
     ctx: typer.Context,
-    name: str = typer.Argument(help="Workflow name (see [bold]mmn workflows[/bold])"),
+    name: str = typer.Argument(
+        "", help="Workflow name (see [bold]mmn workflows[/bold])"
+    ),
     set_param: list[str] | None = typer.Option(
         None,
         "--set",
@@ -405,6 +503,12 @@ def run_workflow(
         False,
         "--info",
         help="Show detailed help for this workflow",
+    ),
+    list_workflows: bool = typer.Option(
+        False,
+        "--list",
+        "-l",
+        help="List all available workflows",
     ),
     project: str = typer.Option(
         "", "--project", "-p", help="Project slug (default: active project)"
@@ -430,6 +534,10 @@ def run_workflow(
     from marketmenow.core.workflow_registry import build_workflow_registry
 
     registry = build_workflow_registry()
+
+    if list_workflows or not name:
+        _show_workflows(registry)
+        raise typer.Exit(0)
 
     try:
         wf = registry.get(name)
@@ -519,17 +627,16 @@ def run_workflow(
 # ── mmn workflows ─────────────────────────────────────────────────────
 
 
-@app.command("workflows", rich_help_panel="Workflows")
-def list_workflows() -> None:
-    """List all available marketing workflows."""
-    from marketmenow.core.workflow_registry import build_workflow_registry
+def _show_workflows(registry: object) -> None:
+    """Print the workflow table from a WorkflowRegistry."""
+    from marketmenow.core.workflow_registry import WorkflowRegistry
 
-    registry = build_workflow_registry()
-    workflows = registry.list_all()
+    reg: WorkflowRegistry = registry  # type: ignore[assignment]
+    all_workflows = reg.list_all()
 
-    if not workflows:
+    if not all_workflows:
         console.print("[yellow]No workflows registered.[/yellow]")
-        raise typer.Exit(0)
+        return
 
     console.print()
     table = Table(
@@ -542,7 +649,7 @@ def list_workflows() -> None:
     table.add_column("Steps", min_width=30)
     table.add_column("Description", min_width=35)
 
-    for wf in workflows:
+    for wf in all_workflows:
         steps_str = " -> ".join(s.name for s in wf.steps)
         table.add_row(wf.name, steps_str, wf.description)
 
@@ -551,6 +658,15 @@ def list_workflows() -> None:
     console.print("[dim]Run a workflow:[/dim]  mmn run [bold]<name>[/bold] [--key value ...]")
     console.print("[dim]Workflow help:[/dim]   mmn run [bold]<name>[/bold] --info")
     console.print()
+
+
+@app.command("workflows", rich_help_panel="Workflows")
+def list_workflows_cmd() -> None:
+    """List all available marketing workflows."""
+    from marketmenow.core.workflow_registry import build_workflow_registry
+
+    registry = build_workflow_registry()
+    _show_workflows(registry)
 
 
 # ── mmn auth ──────────────────────────────────────────────────────────

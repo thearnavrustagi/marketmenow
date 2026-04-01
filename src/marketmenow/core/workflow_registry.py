@@ -50,6 +50,7 @@ def build_workflow_registry() -> WorkflowRegistry:
     _try_register(registry, "marketmenow.workflows.facebook_engage", "workflow")
     _try_register(registry, "marketmenow.workflows.reddit_story_reel", "workflow")
     _try_register(registry, "marketmenow.workflows.youtube_short_generate", "workflow")
+    _try_register(registry, "marketmenow.workflows.post_capsule", "workflow")
 
     _load_custom_workflows(registry)
 

@@ -26,6 +26,7 @@ _SCAFFOLD_DIRS = (
     "templates/reels",
     "templates/email",
     "campaigns",
+    "capsules",
     "vault",
     "output",
 )

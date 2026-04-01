@@ -81,6 +81,7 @@ class TestBuildWorkflowRegistry:
             "tiktok-reel",
             "facebook-engage",
             "youtube-short-generate",
+            "post-capsule",
         }
         assert expected == names
 

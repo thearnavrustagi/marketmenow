@@ -76,7 +76,11 @@ Add a platform with zero changes to core. Ports-and-adapters architecture.
 <h3>Auto-Heal</h3>
 One command runs lint, format, and tests - then hands failures to the Cursor agent to fix automatically.
 </td>
-<td align="center" colspan="2">
+<td align="center">
+<h3>Content Capsules</h3>
+Every generated reel, carousel, and thread is packaged into a self-contained capsule. Cross-post to any platform with one command — no re-generation needed.
+</td>
+<td align="center">
 </td>
 </tr>
 </table>
@@ -181,6 +185,12 @@ mmn tiktok upload video.mp4 --title "caption" --hashtags "fyp,viral"
 
 # Email
 mmn email send -f contacts.csv -t template.html -r 0-100
+
+# Content Capsules — repost any content to any platform
+mmn capsule list                                          # list all capsules
+mmn capsule info <capsule-id>                             # show capsule details
+mmn run post-capsule --capsule <id> --platform youtube    # cross-post to YouTube
+mmn run post-capsule --capsule <id> --platform tiktok     # cross-post to TikTok
 
 # Auto-heal (lint + format + test, then auto-fix via Cursor agent)
 mmn heal              # fix issues automatically
@@ -289,7 +299,7 @@ Checked items are shipped. Unchecked items are planned or in progress.
 
 ### Up Next
 
-- [ ] **Unified PromptBuilder interface** - migrate all adapters to the composable PromptBuilder (persona + function + ICL blocks), replacing legacy direct YAML prompt loading across Instagram Reels, Reddit, Facebook, LinkedIn, email, and outreach
+- [x] **Unified PromptBuilder interface** - migrate all adapters to the composable PromptBuilder (persona + function + ICL blocks), replacing legacy direct YAML prompt loading across Instagram Reels, Reddit, Facebook, LinkedIn, email, and outreach
 - [ ] **Extend ICL to all platforms** - bring epsilon-greedy in-context learning (currently Twitter-only) to Instagram, Reddit, LinkedIn, and other adapters
 - [ ] **A/B testing** - generate content variants, publish them across splits, and measure which performs better to continuously optimise messaging and format
 - [ ] **Cross-platform content repurposing** - adapt a single piece of content across platforms automatically (e.g. LinkedIn post → Twitter thread → Instagram carousel) with better packaging and format-aware transformations
