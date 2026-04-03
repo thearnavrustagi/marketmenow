@@ -10,6 +10,33 @@ from jinja2 import Environment
 
 from ..prompts import load_prompt
 
+
+def _render_prompt_text(template_str: str, variables: dict[str, object]) -> str:
+    """Render a prompt template string with the given variables.
+
+    Tries Jinja2 first (``{{ var }}`` syntax). If the template itself fails
+    to parse (e.g. because it uses ``{{`` / ``}}`` as literal JSON braces in
+    Python ``.format()`` style), falls back to ``str.format_map()``.
+    """
+    from jinja2 import Template
+
+    try:
+        tmpl = Template(template_str)
+        # Escape Jinja2 delimiters in variable *values* (LLM-generated text)
+        safe = {
+            k: v.replace("{{", "{ {").replace("}}", "} }") if isinstance(v, str) else v
+            for k, v in variables.items()
+        }
+        return tmpl.render(**safe)
+    except Exception:
+        # Template uses .format() style {var} / {{ for literal braces
+        str_vars = {k: str(v) for k, v in variables.items()}
+        try:
+            return template_str.format_map(str_vars)
+        except (KeyError, ValueError):
+            return template_str
+
+
 _MD_PATTERNS = re.compile(
     r"\*\*\*(.+?)\*\*\*"  # ***bold italic***
     r"|\*\*(.+?)\*\*"  # **bold**
@@ -264,12 +291,8 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
         user_text = built.user
     else:
         prompt = load_prompt(prompt_name, project_slug=project_slug)
-        if template_vars:
-            format_vars = {k: str(v) for k, v in template_vars.items()}
-            user_text = prompt["user"].format(**format_vars)
-        else:
-            user_text = prompt["user"]
-        system_text = prompt["system"] or None
+        user_text = _render_prompt_text(prompt["user"], template_vars)
+        system_text = _render_prompt_text(prompt["system"], template_vars) if prompt["system"] else None
 
     response = await client.aio.models.generate_content(  # type: ignore[union-attr]
         model=model,

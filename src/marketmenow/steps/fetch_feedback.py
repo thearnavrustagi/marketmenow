@@ -10,7 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class FetchYouTubeFeedbackStep:
-    """Fetch analytics from prior YouTube uploads and load guidelines."""
+    """Fetch analytics from prior YouTube uploads and load guidelines.
+
+    Uses a Neon DB cache when available — already-scored videos are
+    skipped, making subsequent runs complete in seconds rather than
+    minutes.  Falls back to file-based storage when no DB is configured.
+    """
 
     @property
     def name(self) -> str:
@@ -44,12 +49,22 @@ class FetchYouTubeFeedbackStep:
         project_root = Path.cwd()
         feedback_dir = project_root / "projects" / project_slug / "feedback" / "youtube"
 
-        # Load existing guidelines even if we skip the full cycle
         from marketmenow.core.feedback.models import ContentGuideline
 
         guidelines: list[ContentGuideline] = []
 
-        if feedback_dir.exists():
+        # Try loading guidelines from DB cache first
+        try:
+            from marketmenow.core.feedback import db as fdb
+
+            db_guidelines = await fdb.get_guidelines(project_slug)
+            if db_guidelines:
+                guidelines = db_guidelines
+        except Exception:
+            pass
+
+        # Fall back to file-based guidelines
+        if not guidelines and feedback_dir.exists():
             import yaml
 
             guidelines_path = feedback_dir / "guidelines.yaml"

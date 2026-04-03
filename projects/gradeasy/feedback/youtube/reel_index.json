@@ -10,10 +10,10 @@
     "published_at": "2026-04-01T06:11:46Z",
     "metrics": {
       "video_id": "nUu9hnndMws",
-      "view_count": 56,
-      "like_count": 0,
+      "view_count": 90,
+      "like_count": 1,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -29,10 +29,10 @@
     "published_at": "2026-04-01T06:11:46Z",
     "metrics": {
       "video_id": "0U19FZpDqVI",
-      "view_count": 64,
+      "view_count": 107,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -48,10 +48,10 @@
     "published_at": "2026-04-01T06:11:52Z",
     "metrics": {
       "video_id": "SsMWbkkQdnQ",
-      "view_count": 63,
+      "view_count": 69,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -108,7 +108,7 @@
       "view_count": 49,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -127,7 +127,7 @@
       "view_count": 1047,
       "like_count": 6,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -143,10 +143,10 @@
     "published_at": "2026-03-31T10:11:16Z",
     "metrics": {
       "video_id": "svL1k5ymlGo",
-      "view_count": 806,
+      "view_count": 805,
       "like_count": 6,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -162,10 +162,10 @@
     "published_at": "2026-03-31T10:11:11Z",
     "metrics": {
       "video_id": "UFh6eFnT1ks",
-      "view_count": 5,
+      "view_count": 6,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -181,10 +181,10 @@
     "published_at": "2026-03-31T10:11:03Z",
     "metrics": {
       "video_id": "mj6CeKXi02g",
-      "view_count": 21,
+      "view_count": 30,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -200,10 +200,10 @@
     "published_at": "2026-03-31T09:31:05Z",
     "metrics": {
       "video_id": "HctIMcDz59E",
-      "view_count": 15,
+      "view_count": 20,
       "like_count": 1,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -222,7 +222,7 @@
       "view_count": 20,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -238,10 +238,10 @@
     "published_at": "2026-03-31T09:28:31Z",
     "metrics": {
       "video_id": "dBy8Bhmmkus",
-      "view_count": 38,
+      "view_count": 39,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -257,10 +257,10 @@
     "published_at": "2026-03-31T09:28:26Z",
     "metrics": {
       "video_id": "MeWqkvxKbrE",
-      "view_count": 49,
+      "view_count": 50,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -279,7 +279,7 @@
       "view_count": 11,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -295,10 +295,10 @@
     "published_at": "2026-03-30T08:41:12Z",
     "metrics": {
       "video_id": "wOYlhQsSpks",
-      "view_count": 515,
+      "view_count": 689,
       "like_count": 6,
       "comment_count": 2,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [
       {
@@ -333,10 +333,10 @@
     "published_at": "2026-03-30T08:41:07Z",
     "metrics": {
       "video_id": "1G4mhETfX20",
-      "view_count": 947,
+      "view_count": 945,
       "like_count": 10,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -352,10 +352,10 @@
     "published_at": "2026-03-30T06:04:17Z",
     "metrics": {
       "video_id": "IJN7M7AqavI",
-      "view_count": 761,
+      "view_count": 760,
       "like_count": 14,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -374,7 +374,7 @@
       "view_count": 50,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -390,10 +390,10 @@
     "published_at": "2026-03-30T05:33:17Z",
     "metrics": {
       "video_id": "kcVkRS2MulY",
-      "view_count": 457,
+      "view_count": 458,
       "like_count": 1,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -412,7 +412,7 @@
       "view_count": 7,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 08:41:00.827052+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -431,7 +431,7 @@
       "view_count": 98,
       "like_count": 1,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 06:28:36.674207+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -450,7 +450,7 @@
       "view_count": 28,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 06:28:36.674207+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -469,7 +469,7 @@
       "view_count": 6,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-02 04:53:32.035352+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -488,7 +488,7 @@
       "view_count": 1,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-02 04:53:32.035352+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -507,7 +507,7 @@
       "view_count": 0,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-02 04:53:32.035352+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0
@@ -523,10 +523,238 @@
     "published_at": "2026-04-01T10:36:33Z",
     "metrics": {
       "video_id": "ILaBFqu6IFM",
+      "view_count": 21,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "ee0e25c4",
+    "video_id": "YmL7O943fY0",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "AI graded his essay in 60 seconds \u2013 now his mom is furious #Shorts",
+    "description": "AI graded his essay in 60 seconds - now his mom is furious\n\nCheck out Gradeasy at https://gradeasy.ai\n\nWhen a parent claimed I was too overwhelmed to grade her 'genius' kid properly, I let AI give detailed feedback on his essay in 60 seconds. You won't believe what happened next!\n\nIn this short, witness the moment a teacher uses AI to provide unbiased feedback on a student's essay, challenging the parent's perception of their child's 'honors material' status. See how technology like Gradeasy (https://gradeasy.ai) can offer quick, objective assessments.\n\n#shorts #teachers #edtech #gradinglife #teachertok #aitools #studentlife #teacherproblems #Gradeasy #education\n\n#shorts #teachers #edtech #gradinglife #teachertok #aitools #studentlife #teacherproblems #Gradeasy #education\n\nCrafted with walnut bolt cypress wander dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-01T10:56:53Z",
+    "metrics": {
+      "video_id": "YmL7O943fY0",
+      "view_count": 145,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "2c425ef6",
+    "video_id": "WiARMbu1vTo",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "I failed his AI art project \u2014 parents say I crush innovation #Shorts",
+    "description": "I failed his AI art project - parents say I crush innovation\n\nCheck out Gradeasy at https://gradeasy.ai\n\nAfter failing a student's AI-generated art project, I found myself in a heated debate with his parents who accused me of stifling creativity and crushing innovation.\n\nThis video shares my experience navigating the tricky waters of AI in the classroom, from dealing with angry parents to finding a solution with an app that helps create clear rubrics, like Gradeasy (https://gradeasy.ai), so these issues never arise again.\n\n#shorts #Gradeasy #AIart #TeacherLife #ClassroomDilemma #Grading #EdTech #ArtificialIntelligence #Education #ParentTeacher #TeacherProblems #Teachertok\n\nCrafted with dusk glen kindle goldenrod dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-01T11:19:17Z",
+    "metrics": {
+      "video_id": "WiARMbu1vTo",
+      "view_count": 16,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "f14999ff",
+    "video_id": "IN1iX9oWQVE",
+    "template_id": "",
+    "template_type_id": "e656942e",
+    "title": "AI graded this essay a 35 \u2014 its feedback is savage #Shorts",
+    "description": "AI graded this essay a 35 - its feedback is savage\n\nCheck out Gradeasy at https://gradeasy.ai\n\nThis AI grading tool didn't hold back, assigning a shockingly low score of 35 to an essay and delivering feedback so blunt, it's hilarious.\n\nWatch as our AI dissects a student's work, comparing it to something written by a 'sentient meme.' See firsthand how Gradeasy (https://gradeasy.ai) provides candid and insightful evaluations, helping students improve with direct feedback. Want to see what Gradeasy thinks of your work? Drop your assignments in the comments!\n\n#shorts #AIGrading #TeacherLife #EdTech #StudentStruggles #EssayFeedback #SchoolHumor #GradingLife #AItools #EducationalAI #Gradeasy\n\nCrafted with birdsong hawk root primrose peony ivory reef echo",
+    "script": "",
+    "published_at": "2026-04-02T07:04:21Z",
+    "metrics": {
+      "video_id": "IN1iX9oWQVE",
+      "view_count": 64,
+      "like_count": 1,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "5c84f65b",
+    "video_id": "T6QtAoXZ_sI",
+    "template_id": "",
+    "template_type_id": "e656942e",
+    "title": "This AI gave my assignment a 47%... and roasted it #Shorts",
+    "description": "This AI gave my assignment a 47%... and roasted it\n\nCheck out Gradeasy at https://gradeasy.ai\n\nWatch as our AI takes on a student's assignment, delivering a surprising 47% and some hilariously savage feedback. Ever wonder if AI can truly grade like a human? This video puts it to the test! See the AI's detailed (and brutally honest) assessment, then drop your own assignments in the comments to see what our AI, Gradeasy, thinks. Try it yourself at https://gradeasy.ai.\n\n#shorts #aigrading #gradeasy #edtech #teachers #students #homework #grading #aiforstudents #teachertok #schoollife #aiscore\n\nCrafted with keen pebble goldenrod juniper peony ivory reef echo",
+    "script": "",
+    "published_at": "2026-04-02T07:04:19Z",
+    "metrics": {
+      "video_id": "T6QtAoXZ_sI",
+      "view_count": 41,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "48b7ebc5",
+    "video_id": "54VbJEvmhXg",
+    "template_id": "",
+    "template_type_id": "e656942e",
+    "title": "Can AI grade your homework? This got a 51! #Shorts",
+    "description": "Can AI grade your homework? This got a 51!\n\nCheck out Gradeasy at https://gradeasy.ai\n\nSee what happens when we let AI grade a real assignment - the result was a shocking 51%! \n\nWatch as we put our AI to the test, evaluating an assignment that's \"cooked.\" Think your work can beat the AI's grading? Drop your assignments in the comments for a chance to get them graded too! Try Gradeasy now at https://gradeasy.ai to see how your work stacks up. \n\n#shorts #Gradeasy #AIgrading #teachers #students #homework #edtech #schoollife #AItools #gradingtips\n\n#shorts #Gradeasy #AIgrading #teachers #students #homework #edtech #schoollife #AItools #gradingtips\n\nCrafted with haven tide tansy wave peony ivory reef echo",
+    "script": "",
+    "published_at": "2026-04-03T04:44:26Z",
+    "metrics": {
+      "video_id": "54VbJEvmhXg",
+      "view_count": 977,
+      "like_count": 4,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "01839126",
+    "video_id": "EoYTn_vtO6M",
+    "template_id": "",
+    "template_type_id": "e656942e",
+    "title": "AI graded this assignment: it's cooked! #Shorts",
+    "description": "AI graded this assignment: it's cooked!\n\nCheck out Gradeasy at https://gradeasy.ai\n\nSee what happens when AI takes on an assignment and delivers a verdict so harsh, it's hilarious.\n\nCan artificial intelligence truly grade with precision? We challenged our AI with a student's work, and the feedback was brutally honest. Discover how AI can pinpoint exactly where an assignment went wrong, from minor errors to being 'burnt to a crisp.' Drop your assignments below if you dare - our AI might just grade them next! Experience instant, unbiased feedback for yourself at https://gradeasy.ai.\n\n\n\n#shorts #Gradeasy #AIGrading #EdTech #StudentLife #HomeworkHelp #AItools #TeacherLife #SchoolHacks #Grading\n\nCrafted with anchor pearl rapid dapple peony ivory reef echo",
+    "script": "",
+    "published_at": "2026-04-03T04:44:25Z",
+    "metrics": {
+      "video_id": "EoYTn_vtO6M",
+      "view_count": 67,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "9a9487e0",
+    "video_id": "3OlSirxwI2s",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "AITA for banning fidget toys after class became a black market? #Shorts",
+    "description": "AITA for banning fidget toys after class became a black market?\n\nCheck out Gradeasy at https://gradeasy.ai\n\nI was called 'the fun police' by parents for banning fidget toys, but my classroom had turned into a full-blown black market. Was I in the wrong?\n\nThis whole situation left me rethinking my classroom management, but at least Gradeasy's AI saved my weekend by grading all the make-up quizzes in minutes. It gave me the breathing room to actually strategize instead of drowning in paperwork. See how Gradeasy can help you at https://gradeasy.ai.\n\n#shorts #teachers #classroommanagement #fidgettoys #teachertok #AITA #schoollife #edtech #gradinghacks #Gradeasy\n\nCrafted with rose reef plume jasmine dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T08:15:33Z",
+    "metrics": {
+      "video_id": "3OlSirxwI2s",
+      "view_count": 27,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "8fa1dd68",
+    "video_id": "_lOKYXJEPas",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "Mom called me 'outdated' for rejecting a 10-min essay podcast #Shorts",
+    "description": "Mom called me 'outdated' for rejecting a 10-min essay podcast\n\nCheck out Gradeasy at https://gradeasy.ai\n\nMy student's mom called me 'outdated' for refusing to grade a 10-minute voice memo instead of an essay, and now I'm caught in an email storm.\n\nThis AITA story dives into the evolving landscape of student submissions and how I'm navigating parent complaints while still managing a heavy grading workload. Learn how to maintain your standards and efficiency, even with unexpected challenges, with tools like Gradeasy.ai.\n\n#shorts #teacherproblems #grading #edtech #teachertok #aita #essay #voicememo #parentteacher #schoollife #Gradeasy\n\n#shorts #teacherproblems #grading #edtech #teachertok #aita #essay #voicememo #parentteacher #schoollife #Gradeasy\n\nCrafted with quill sea glacier lily dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T08:15:39Z",
+    "metrics": {
+      "video_id": "_lOKYXJEPas",
+      "view_count": 47,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "d7b43566",
+    "video_id": "iOcPhE9hzBY",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "AI graded 10 hours of papers, now principal wants me to coach #Shorts",
+    "description": "AI graded 10 hours of papers, now principal wants me to coach\n\nCheck out Gradeasy at https://gradeasy.ai\n\nMy principal volunteered me for a new coaching gig, but I had to turn it down because I was drowning in 10+ hours of grading - until an AI tool changed everything.\n\nFollow this teacher's dilemma: after an AI tool effortlessly handled hours of grading, should they reconsider the principal's request? Discover how this technology is reshaping teacher workloads and what it means for extracurriculars. You can try Gradeasy free at https://gradeasy.ai.\n\n#shorts #Gradeasy #teacherlife #edtech #AIinEducation #grading #teachertok #schoollife #worklifebalance #AITA #teachers\n\n#shorts #Gradeasy #teacherlife #edtech #AIinEducation #grading #teachertok #schoollife #worklifebalance #AITA #teachers\n\nCrafted with copper sun field leaf dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T08:15:29Z",
+    "metrics": {
+      "video_id": "iOcPhE9hzBY",
+      "view_count": 34,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "6b27a11a",
+    "video_id": "yaUHUwxhz54",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "Reported for parent drama, now AI grades my homework #Shorts",
+    "description": "Reported for parent drama, now AI grades my homework\n\nCheck out Gradeasy at https://gradeasy.ai\n\nMy 'job ends at the school doors' comment didn't go over well with a parent, leading to a report to the principal, but it also led me to a game-changing solution.\n\nIn this short, I share the drama that ended my parent-teacher confrontations about homework rules. Now, instead of spending hours grading, an AI assistant handles all my homework, saving me over 10 hours a week and eliminating parent-induced stress. See how AI can transform your teaching life. Try Gradeasy free today at https://gradeasy.ai\n\n#shorts #teacherlife #parentdrama #edtech #grading #AIinteaching #teachertok #schoolproblems #classroommanagement #teacherhumor #Gradeasy #AITA\n\n#shorts #teacherlife #parentdrama #edtech #grading #AIinteaching #teachertok #schoolproblems #classroommanagement #teacherhumor #Gradeasy #AITA\n\nCrafted with lunar dawn sea chime dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T09:22:45Z",
+    "metrics": {
+      "video_id": "yaUHUwxhz54",
       "view_count": 0,
       "like_count": 0,
       "comment_count": 0,
-      "collected_at": "2026-04-01 10:44:12.307809+00:00"
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "191b2ebc",
+    "video_id": "f8n_eBF-qSo",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "I gave a C to a student who wrote 'It's in my head' on his test #Shorts",
+    "description": "I gave a C to a student who wrote 'It's in my head' on his test\n\nCheck out Gradeasy at https://gradeasy.ai\n\nI'm questioning if I'm the bad guy for giving a student a C on a test even though he technically knew all the answers - he just refused to write them down.\n\nMy student's dad is furious after I gave his son a C for writing \"It's in my head\" on every answer of his test. He claims my grading policy is \"pedagogically unsound\" for not acknowledging his son's knowledge, but I believe students need to demonstrate their understanding in writing. What would you have done in this situation? Let me know in the comments!\n\nThis scenario highlights the complexities of traditional grading. For clear, consistent, and fair grading, try Gradeasy free at https://gradeasy.ai.\n#shorts #teachers #AITA #grading #teachertok #education #classroomdilemmas #studentlife #parentteacherconference #Gradeasy\n\n#shorts #teachers #AITA #grading #teachertok #education #classroomdilemmas #studentlife #parentteacherconference #Gradeasy\n\nCrafted with chalk cliff echo vale dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T10:12:26Z",
+    "metrics": {
+      "video_id": "f8n_eBF-qSo",
+      "view_count": 0,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
+    },
+    "comments": [],
+    "avg_sentiment": 5.0
+  },
+  {
+    "reel_id": "1ec1c563",
+    "video_id": "ygwsHQ9xZVw",
+    "template_id": "",
+    "template_type_id": "2b38fb1c",
+    "title": "Replaced 15-year-old textbooks with AI \u2014 my principal found out. #Shorts",
+    "description": "Replaced 15-year-old textbooks with AI - my principal found out.\n\nCheck out Gradeasy at https://gradeasy.ai\n\nMy school insists on using a 15-year-old history textbook, but I found a way to modernize my classroom and grade custom assignments in minutes with AI.\n\nWatch as I explain why I decided to ditch outdated materials and embrace new technology. The results are undeniable, but my principal isn't happy. What would you do in my situation? Discover how you can streamline your teaching with Gradeasy at https://gradeasy.ai.\n\n#shorts #Gradeasy #teachers #edtech #gradinglife #teachertok #historyteacher #schoollife #aitools #teacherproblems #controversy #educator\n\n#shorts #Gradeasy #teachers #edtech #gradinglife #teachertok #historyteacher #schoollife #aitools #teacherproblems #controversy #educator\n\nCrafted with coast violet wave lark dune flint lavender cloud",
+    "script": "",
+    "published_at": "2026-04-03T09:50:24Z",
+    "metrics": {
+      "video_id": "ygwsHQ9xZVw",
+      "view_count": 0,
+      "like_count": 0,
+      "comment_count": 0,
+      "collected_at": "2026-04-03 10:17:49.596348+00:00"
     },
     "comments": [],
     "avg_sentiment": 5.0

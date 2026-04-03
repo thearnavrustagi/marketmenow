@@ -79,6 +79,52 @@ VALUES
     ('facebook', 2, 8, 600),
     ('email', 10, 50, 60)
 ON CONFLICT (platform) DO NOTHING;
+
+-- Feedback cache tables (shared with CLI feedback system)
+CREATE TABLE IF NOT EXISTS feedback_videos (
+    video_id TEXT PRIMARY KEY,
+    project_slug TEXT NOT NULL,
+    reel_id TEXT,
+    template_id TEXT,
+    template_type_id TEXT,
+    title TEXT,
+    description TEXT,
+    published_at TEXT,
+    view_count INT DEFAULT 0,
+    like_count INT DEFAULT 0,
+    comment_count INT DEFAULT 0,
+    avg_sentiment FLOAT DEFAULT 5.0,
+    metrics_collected_at TIMESTAMPTZ,
+    comments_scored_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_videos_project ON feedback_videos(project_slug);
+
+CREATE TABLE IF NOT EXISTS feedback_comments (
+    id SERIAL PRIMARY KEY,
+    video_id TEXT NOT NULL REFERENCES feedback_videos(video_id) ON DELETE CASCADE,
+    comment_id TEXT NOT NULL,
+    author TEXT,
+    text TEXT,
+    like_count INT DEFAULT 0,
+    published_at TEXT,
+    sentiment_score FLOAT DEFAULT 5.0,
+    sentiment_label TEXT DEFAULT 'neutral',
+    UNIQUE(video_id, comment_id)
+);
+
+CREATE TABLE IF NOT EXISTS feedback_guidelines (
+    id TEXT PRIMARY KEY,
+    project_slug TEXT NOT NULL,
+    source_video_id TEXT,
+    source_template_id TEXT,
+    guideline_type TEXT NOT NULL,
+    rule TEXT NOT NULL,
+    evidence TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_guidelines_project ON feedback_guidelines(project_slug);
 """
 
 

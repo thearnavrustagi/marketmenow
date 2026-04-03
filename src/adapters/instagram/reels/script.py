@@ -23,6 +23,24 @@ from .pipeline_steps import (
 if TYPE_CHECKING:
     from marketmenow.models.project import BrandConfig, PersonaConfig
 
+
+def _safe_render(template_str: str, variables: dict[str, object]) -> str:
+    """Render a prompt template, trying Jinja2 first then .format_map() fallback."""
+    from jinja2 import Template
+
+    try:
+        safe = {
+            k: v.replace("{{", "{ {").replace("}}", "} }") if isinstance(v, str) else v
+            for k, v in variables.items()
+        }
+        return Template(template_str).render(**safe)
+    except Exception:
+        str_vars = {k: str(v) for k, v in variables.items()}
+        try:
+            return template_str.format_map(str_vars)
+        except (KeyError, ValueError):
+            return template_str
+
 _JINJA_ENV = Environment()
 logger = logging.getLogger(__name__)
 
@@ -225,7 +243,6 @@ class ReelScriptGenerator:
             system_text = built.system
             user_text = built.user
         else:
-            from jinja2 import Template
 
             prompt = load_prompt("script_generation", project_slug=self._project_slug)
 
@@ -235,14 +252,9 @@ class ReelScriptGenerator:
             if self._persona:
                 jinja_vars["persona"] = self._persona.model_dump()
 
-            system_text = prompt["system"]
-            if jinja_vars:
-                try:
-                    system_text = Template(system_text).render(**jinja_vars)
-                except Exception as exc:
-                    logger.warning("Failed to render script_generation system prompt: %s", exc)
-
-            user_text = Template(prompt["user"]).render(**{**jinja_vars, **template_vars})
+            all_vars = {**jinja_vars, **template_vars}
+            system_text = _safe_render(prompt["system"], all_vars)
+            user_text = _safe_render(prompt["user"], all_vars)
 
         response = await self._client.aio.models.generate_content(
             model=self._model,
