@@ -41,6 +41,7 @@ def _safe_render(template_str: str, variables: dict[str, object]) -> str:
         except (KeyError, ValueError):
             return template_str
 
+
 _JINJA_ENV = Environment()
 logger = logging.getLogger(__name__)
 
@@ -243,7 +244,6 @@ class ReelScriptGenerator:
             system_text = built.system
             user_text = built.user
         else:
-
             prompt = load_prompt("script_generation", project_slug=self._project_slug)
 
             jinja_vars: dict[str, object] = {}

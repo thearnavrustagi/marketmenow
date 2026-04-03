@@ -292,7 +292,9 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
     else:
         prompt = load_prompt(prompt_name, project_slug=project_slug)
         user_text = _render_prompt_text(prompt["user"], template_vars)
-        system_text = _render_prompt_text(prompt["system"], template_vars) if prompt["system"] else None
+        system_text = (
+            _render_prompt_text(prompt["system"], template_vars) if prompt["system"] else None
+        )
 
     response = await client.aio.models.generate_content(  # type: ignore[union-attr]
         model=model,

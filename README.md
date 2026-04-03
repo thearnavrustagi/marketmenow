@@ -313,6 +313,10 @@ Checked items are shipped. Unchecked items are planned or in progress.
 - [x] **Cross-platform content repurposing** - adapt a single piece of content across platforms automatically (e.g. LinkedIn post → Twitter thread → Instagram carousel) with LLM-powered format-aware transformations via the `repurpose-capsule` workflow
 - [ ] **Analytics dashboard** - unified cross-platform analytics view to track performance, compare content types, and surface actionable insights across all platforms
 - [ ] **Analytics feedback loop** - auto-collect post performance metrics and feed them back to rank ICL examples, so the system improves with every publish
+- [ ] **Full Autonomous Campaign** - user types "Run a 30-day lead-gen campaign for my AI tool" and the agent does everything: researches audience, plans 12+ posts + repurposing chain, generates capsules, schedules, monitors, optimizes, sends weekly report. Record a 90-second demo video of end-to-end autonomous marketing
+- [ ] **Smart scheduling + best-time posting** - auto-schedule capsules at optimal posting times based on historical engagement data. Add "Smart Schedule" button in dashboard
+- [ ] **Content calendar** - visual calendar view showing planned, scheduled, and published content across all platforms. Drag-and-drop rescheduling
+- [ ] **Dashboard reel template builder** - visual UI in the web dashboard to create and edit reel templates (scenes, beats, transitions) without touching YAML
 - [ ] **An evolving system** - the system evolves with code repositories automatically
 
 

@@ -261,9 +261,7 @@ async def get_guidelines(project_slug: str) -> list[ContentGuideline]:
     ]
 
 
-async def upsert_guidelines(
-    project_slug: str, guidelines: list[ContentGuideline]
-) -> None:
+async def upsert_guidelines(project_slug: str, guidelines: list[ContentGuideline]) -> None:
     pool = await get_pool()
     if pool is None:
         return
