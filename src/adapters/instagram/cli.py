@@ -226,6 +226,9 @@ async def _carousel_generate_async(
         persona=persona_cfg,
         brand=brand_cfg,
         project_slug=slug,
+        top_examples_path=settings.top_examples_path,
+        max_examples=settings.max_examples_in_prompt,
+        epsilon=settings.epsilon,
     )
 
     with console.status("[bold green]Generating carousel (Gemini + Imagen)..."):

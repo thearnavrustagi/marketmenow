@@ -80,6 +80,9 @@ class ReelOrchestrator:
             brand=brand,
             persona=persona,
             project_slug=project_slug,
+            top_examples_path=settings.top_examples_path,
+            max_examples=settings.max_examples_in_prompt,
+            epsilon=settings.epsilon,
         )
         kokoro_voice_overrides: dict[str, str] | None = None
         kokoro_pitch_shift: dict[str, float] | None = None

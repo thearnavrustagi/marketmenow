@@ -32,3 +32,11 @@ class RedditSettings(BaseSettings):
     targets_path: Path = Path("src/adapters/reddit/targets.yaml")
     audit_log_path: Path = Path("output/reddit/audit.jsonl")
     comment_history_path: Path = Path("output/reddit/comment_history.json")
+
+    # In-context learning from top-performing comments
+    top_examples_path: Path = Path("output/reddit/.reddit_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly
+
+    # Epsilon-greedy exploration vs exploitation for ICL.
+    epsilon: float = 0.3

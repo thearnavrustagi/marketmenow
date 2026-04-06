@@ -271,6 +271,18 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
     if persona_dict and isinstance(persona_dict, dict):
         template_vars["persona"] = persona_dict
 
+    # Epsilon-greedy ICL if settings are available in the pipeline context.
+    icl_examples: list[dict[str, object]] | None = None
+    top_examples_path = ctx.services.get("top_examples_path")
+    if top_examples_path is not None:
+        from marketmenow.core.icl import select_icl_examples
+
+        icl_examples, _exploring = select_icl_examples(
+            top_examples_path,  # type: ignore[arg-type]
+            int(ctx.services.get("max_examples", 5)),  # type: ignore[arg-type]
+            float(ctx.services.get("epsilon", 0.3)),  # type: ignore[arg-type]
+        )
+
     # Use PromptBuilder when a decomposed functions/ YAML exists, otherwise
     # fall back to legacy load_prompt + .format() for older pipeline prompts.
     from marketmenow.core.prompt_builder import PromptBuilder
@@ -284,6 +296,7 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
         built = builder.build(
             platform="instagram",
             function=prompt_name,
+            icl_examples=icl_examples,
             template_vars=template_vars,
             project_slug=project_slug,
         )

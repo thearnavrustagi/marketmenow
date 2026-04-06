@@ -65,3 +65,11 @@ class InstagramSettings(BaseSettings):
     # Paths
     output_dir: Path = Path("output")
     remotion_project_dir: Path = _PACKAGE_DIR / "reels" / "remotion"
+
+    # In-context learning from top-performing content
+    top_examples_path: Path = Path(".instagram_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly
+
+    # Epsilon-greedy exploration vs exploitation for ICL.
+    epsilon: float = 0.3

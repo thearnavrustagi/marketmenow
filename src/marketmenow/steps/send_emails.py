@@ -42,6 +42,9 @@ class SendEmailsStep:
             paraphraser = EmailParaphraser(
                 vertex_project=settings.vertex_ai_project,
                 vertex_location=settings.vertex_ai_location,
+                top_examples_path=settings.top_examples_path,
+                max_examples=settings.max_examples_in_prompt,
+                epsilon=settings.epsilon,
             )
 
         to = str(ctx.get_param("to", "") or "")

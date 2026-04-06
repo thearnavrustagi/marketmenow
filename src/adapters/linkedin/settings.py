@@ -47,6 +47,14 @@ class LinkedInSettings(BaseSettings):
     viewport_width: int = 1280
     viewport_height: int = 900
 
+    # In-context learning from top-performing posts
+    top_examples_path: Path = Path(".linkedin_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly
+
+    # Epsilon-greedy exploration vs exploitation for ICL.
+    epsilon: float = 0.3
+
     @property
     def use_api(self) -> bool:
         """True when we have enough credentials to use the REST API."""

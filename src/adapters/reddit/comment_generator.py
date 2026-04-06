@@ -3,11 +3,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import create_genai_client
 
 from .discovery import DiscoveredPost
@@ -34,6 +36,9 @@ class CommentGenerator:
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         self._client = create_genai_client(
             vertex_project=vertex_project,
@@ -44,6 +49,9 @@ class CommentGenerator:
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
     async def generate_comment(
         self,
@@ -58,6 +66,15 @@ class CommentGenerator:
             else "DO NOT mention any product. Just be genuinely helpful."
         )
 
+        icl_examples: list[dict[str, object]] | None = None
+        exploring = False
+        if self._top_examples_path is not None:
+            icl_examples, exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+
         if self._persona and self._brand:
             from marketmenow.core.prompt_builder import PromptBuilder
 
@@ -66,6 +83,7 @@ class CommentGenerator:
                 function="comment",
                 persona=self._persona,
                 brand=self._brand,
+                icl_examples=icl_examples,
                 template_vars={
                     "subreddit": post.subreddit,
                     "post_title": post.post_title,
@@ -131,11 +149,15 @@ class CommentGenerator:
                 f"r/{post.subreddit} post {post.post_id}"
             ) from last_exc
 
+        mode = "explore" if exploring else "exploit"
+        n_examples = 0 if icl_examples is None else len(icl_examples)
         logger.info(
-            "Generated comment for r/%s post %s (mention=%s): %s",
+            "Generated comment for r/%s post %s (mention=%s, mode=%s, examples=%d): %s",
             post.subreddit,
             post.post_id,
             should_mention,
+            mode,
+            n_examples,
             comment_text[:80],
         )
         return comment_text

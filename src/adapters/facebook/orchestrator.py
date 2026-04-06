@@ -119,6 +119,9 @@ class EngagementOrchestrator:
             vertex_project=self._settings.vertex_ai_project,
             vertex_location=self._settings.vertex_ai_location,
             project_slug=self._project_slug,
+            top_examples_path=self._settings.top_examples_path,
+            max_examples=self._settings.max_examples_in_prompt,
+            epsilon=self._settings.epsilon,
         )
 
         targets = self._load_targets()

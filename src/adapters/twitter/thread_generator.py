@@ -12,10 +12,9 @@ import yaml
 from google.genai.types import GenerateContentConfig
 from pydantic import BaseModel, Field
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.core.prompt_builder import PromptBuilder
 from marketmenow.integrations.genai import create_genai_client
-
-from .performance_tracker import WinningPost, load_examples_cache
 
 if TYPE_CHECKING:
     from marketmenow.models.project import BrandConfig, PersonaConfig
@@ -80,6 +79,7 @@ class ThreadGenerator:
         vertex_location: str = "us-central1",
         top_examples_path: Path | None = None,
         max_examples: int = 5,
+        epsilon: float = 0.3,
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
@@ -91,23 +91,11 @@ class ThreadGenerator:
         self._model = gemini_model
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
+        self._epsilon = epsilon
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
         self._prompt_builder = PromptBuilder()
-
-    def _load_winning_posts(self) -> list[WinningPost]:
-        if self._top_examples_path is None:
-            return []
-        cache = load_examples_cache(self._top_examples_path)
-        if not cache.posts:
-            return []
-        ranked = sorted(
-            cache.posts,
-            key=lambda p: p.likes + p.retweets,
-            reverse=True,
-        )
-        return ranked[: self._max_examples]
 
     async def generate_thread(
         self,
@@ -118,11 +106,18 @@ class ThreadGenerator:
             if hints:
                 topic_hint = random.choice(hints)
 
-        winning_posts = self._load_winning_posts()
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+            if exploring:
+                logger.info("ICL explore mode — no examples for this thread")
 
         template_vars: dict[str, object] = {
             "topic_hint": topic_hint,
-            "winning_posts": [p.model_dump() for p in winning_posts],
         }
 
         if self._persona and self._brand:
@@ -131,7 +126,7 @@ class ThreadGenerator:
                 function="thread",
                 persona=self._persona,
                 brand=self._brand,
-                icl_examples=None,
+                icl_examples=icl_examples,
                 template_vars=template_vars,
                 project_slug=self._project_slug,
             )

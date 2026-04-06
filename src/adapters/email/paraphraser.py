@@ -3,9 +3,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from pathlib import Path
 
 from google.genai.types import GenerateContentConfig
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import create_genai_client
 
 logger = logging.getLogger(__name__)
@@ -30,18 +32,35 @@ class EmailParaphraser:
         vertex_project: str,
         vertex_location: str = "us-central1",
         model: str = "gemini-2.5-flash",
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         self._client = create_genai_client(
             vertex_project=vertex_project,
             vertex_location=vertex_location,
         )
         self._model = model
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
         from marketmenow.core.prompt_builder import PromptBuilder
+
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+            if exploring:
+                logger.info("ICL explore mode — no examples for email paraphrase")
 
         built = PromptBuilder().build(
             platform="email",
             function="paraphrase",
+            icl_examples=icl_examples,
         )
         self._system_prompt = built.system
 

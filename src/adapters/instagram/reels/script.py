@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Environment
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import create_genai_client
 
 from ..grading.models import GradingResult, RubricItem
@@ -63,12 +64,18 @@ class ReelScriptGenerator:
         brand: BrandConfig | None = None,
         persona: PersonaConfig | None = None,
         project_slug: str | None = None,
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         self._grader = grading_service
         self._registry = step_registry or default_registry
         self._brand = brand
         self._persona = persona
         self._project_slug = project_slug
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
         self._client = create_genai_client(
             vertex_project=vertex_project,
@@ -142,6 +149,10 @@ class ReelScriptGenerator:
         }
         if self._project_slug:
             services["project_slug"] = self._project_slug
+        if self._top_examples_path is not None:
+            services["top_examples_path"] = self._top_examples_path
+            services["max_examples"] = self._max_examples
+            services["epsilon"] = self._epsilon
         if extra_services:
             services.update(extra_services)
 
@@ -230,6 +241,14 @@ class ReelScriptGenerator:
             "rubric_eval_text": rubric_eval_text,
         }
 
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, _exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+
         if self._brand and self._persona:
             from marketmenow.core.prompt_builder import PromptBuilder
 
@@ -238,6 +257,7 @@ class ReelScriptGenerator:
                 function="script",
                 persona=self._persona,
                 brand=self._brand,
+                icl_examples=icl_examples,
                 template_vars=template_vars,
                 project_slug=self._project_slug,
             )

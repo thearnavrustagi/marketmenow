@@ -50,3 +50,11 @@ class FacebookSettings(BaseSettings):
     targets_path: Path = Path("src/adapters/facebook/targets.yaml")
     audit_log_path: Path = Path("output/facebook/audit.jsonl")
     comment_history_path: Path = Path("output/facebook/comment_history.json")
+
+    # In-context learning from top-performing comments
+    top_examples_path: Path = Path("output/facebook/.facebook_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly
+
+    # Epsilon-greedy exploration vs exploitation for ICL.
+    epsilon: float = 0.3

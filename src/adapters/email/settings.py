@@ -27,6 +27,14 @@ class EmailSettings(BaseSettings):
     smtp_send_delay: float = 2.0
     smtp_reconnect_every: int = 25
 
+    # In-context learning from top-performing emails
+    top_examples_path: Path = Path("output/email/.email_top_examples.json")
+    max_examples_in_prompt: int = 5
+    examples_max_age_hours: int = 168  # re-collect weekly
+
+    # Epsilon-greedy exploration vs exploitation for ICL.
+    epsilon: float = 0.3
+
     @property
     def sender_address(self) -> str:
         return self.smtp_from or self.smtp_username

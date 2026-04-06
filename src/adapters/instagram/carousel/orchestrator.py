@@ -4,11 +4,13 @@ import asyncio
 import json
 import logging
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from google.genai import types as genai_types
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import create_genai_client
 from marketmenow.models.content import ImagePost, MediaAsset
 
@@ -42,6 +44,9 @@ class CarouselOrchestrator:
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         self._settings = settings
         self._output_dir = settings.output_dir / "carousel"
@@ -49,6 +54,9 @@ class CarouselOrchestrator:
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
         _ensure_vertex_credentials(settings)
 
@@ -134,6 +142,14 @@ class CarouselOrchestrator:
 
     def _build_prompt(self) -> tuple[str, str]:
         """Build the carousel prompt, rendering Jinja2 variables with project context."""
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, _exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+
         if self._persona and self._brand:
             from marketmenow.core.prompt_builder import PromptBuilder
 
@@ -142,6 +158,7 @@ class CarouselOrchestrator:
                 function="carousel_top5",
                 persona=self._persona,
                 brand=self._brand,
+                icl_examples=icl_examples,
                 template_vars={},
                 project_slug=self._project_slug,
             )

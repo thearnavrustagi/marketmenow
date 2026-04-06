@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from google import genai
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
+
+from marketmenow.core.icl import select_icl_examples
 
 from .prompts import load_prompt
 
@@ -34,6 +37,9 @@ class RedditPostGenerator:
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         self._client = genai.Client(
             vertexai=True,
@@ -44,6 +50,9 @@ class RedditPostGenerator:
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
     async def generate_post(
         self,
@@ -54,6 +63,16 @@ class RedditPostGenerator:
         post_type: str = "update",
         context: str = "",
     ) -> GeneratedRedditPost:
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+            if exploring:
+                logger.info("ICL explore mode — no examples for this Reddit post")
+
         if self._persona and self._brand:
             from marketmenow.core.prompt_builder import PromptBuilder
 
@@ -62,6 +81,7 @@ class RedditPostGenerator:
                 function="post",
                 persona=self._persona,
                 brand=self._brand,
+                icl_examples=icl_examples,
                 template_vars={
                     "subreddit": subreddit,
                     "product_name": product_name or self._brand.name,

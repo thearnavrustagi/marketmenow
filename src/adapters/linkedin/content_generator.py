@@ -3,11 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from pathlib import Path
 
 from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel, Field
 
+from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import (
     configure_google_application_credentials,
     create_genai_client,
@@ -48,6 +50,9 @@ class LinkedInContentGenerator:
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        top_examples_path: Path | None = None,
+        max_examples: int = 5,
+        epsilon: float = 0.3,
     ) -> None:
         _ensure_vertex_credentials(settings)
         self._client = create_genai_client(
@@ -58,6 +63,9 @@ class LinkedInContentGenerator:
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
+        self._top_examples_path = top_examples_path
+        self._max_examples = max_examples
+        self._epsilon = epsilon
 
     async def generate_batch(
         self,
@@ -68,6 +76,14 @@ class LinkedInContentGenerator:
         effective_persona = persona or self._persona
         effective_brand = brand or self._brand
 
+        icl_examples: list[dict[str, object]] | None = None
+        if self._top_examples_path is not None:
+            icl_examples, _exploring = select_icl_examples(
+                self._top_examples_path,
+                self._max_examples,
+                self._epsilon,
+            )
+
         if effective_persona and effective_brand:
             from marketmenow.core.prompt_builder import PromptBuilder
 
@@ -76,6 +92,7 @@ class LinkedInContentGenerator:
                 function="batch",
                 persona=effective_persona,
                 brand=effective_brand,
+                icl_examples=icl_examples,
                 template_vars={"count": count},
                 project_slug=self._project_slug,
             )

@@ -32,6 +32,7 @@ class GenerateThreadStep:
             vertex_location=settings.vertex_ai_location,
             top_examples_path=settings.top_examples_path,
             max_examples=settings.max_examples_in_prompt,
+            epsilon=settings.epsilon,
             persona=ctx.persona,
             brand=ctx.project.brand if ctx.project else None,
             project_slug=ctx.project.slug if ctx.project else None,

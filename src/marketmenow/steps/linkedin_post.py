@@ -36,7 +36,12 @@ class LinkedInPostStep:
         max_delay = int(ctx.get_param("max_delay", 600) or 600)
         dry_run = bool(ctx.get_param("dry_run", False))
 
-        generator = LinkedInContentGenerator(settings)
+        generator = LinkedInContentGenerator(
+            settings,
+            top_examples_path=settings.top_examples_path,
+            max_examples=settings.max_examples_in_prompt,
+            epsilon=settings.epsilon,
+        )
 
         with ctx.console.status("[bold blue]Generating LinkedIn content with Gemini..."):
             posts = await generator.generate_batch(count)

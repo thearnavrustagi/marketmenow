@@ -725,7 +725,12 @@ def batch_post(
             brand_cfg = proj.brand
             persona_cfg = pm.load_persona(slug, proj.default_persona)
 
-        generator = LinkedInContentGenerator(settings)
+        generator = LinkedInContentGenerator(
+            settings,
+            top_examples_path=settings.top_examples_path,
+            max_examples=settings.max_examples_in_prompt,
+            epsilon=settings.epsilon,
+        )
         posts = await generator.generate_batch(count, brand=brand_cfg, persona=persona_cfg)
 
         console.print(_build_plan_table(posts))
@@ -753,6 +758,9 @@ def batch_post(
                 persona=persona_cfg,
                 brand=brand_cfg,
                 project_slug=slug,
+                top_examples_path=ig_settings.top_examples_path,
+                max_examples=ig_settings.max_examples_in_prompt,
+                epsilon=ig_settings.epsilon,
             )
             carousel_post = await orch.create_carousel()
             console.print(
