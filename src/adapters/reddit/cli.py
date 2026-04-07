@@ -649,10 +649,8 @@ def test_comment(
                 console.print(f"  [dim]{post.post_text[:300]}[/dim]")
 
             generator = CommentGenerator(
-                gemini_model=settings.gemini_model,
+                model=settings.gemini_model,
                 mention_rate=settings.mention_rate,
-                vertex_project=settings.vertex_ai_project,
-                vertex_location=settings.vertex_ai_location,
             )
 
             with console.status("[bold cyan]Generating comment...[/bold cyan]"):

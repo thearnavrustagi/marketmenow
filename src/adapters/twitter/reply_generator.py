@@ -1,17 +1,13 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import random
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from google.genai import types as genai_types
-from google.genai.types import GenerateContentConfig
-
 from marketmenow.core.diversity_selector import select_diverse_examples
 from marketmenow.core.prompt_builder import PromptBuilder
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, MultimodalPart, create_llm_provider
 
 from .discovery import DiscoveredPost
 from .performance_tracker import WinningReply, load_examples_cache
@@ -21,31 +17,24 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
-
 
 class ReplyGenerator:
-    """Generates persona-driven replies using Gemini with epsilon-greedy ICL."""
+    """Generates persona-driven replies with epsilon-greedy ICL."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
+        model: str = "gemini-2.5-flash",
         mention_rate: int = 25,
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
         self._mention_rate = mention_rate
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
@@ -144,39 +133,13 @@ class ReplyGenerator:
 
         contents = self._build_contents(user_prompt, post.media_screenshot)
 
-        reply_text: str | None = None
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=contents,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=1.0,
-                    ),
-                )
-                reply_text = (response.text or "").strip().strip('"').strip("'")
-                break
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Gemini attempt %d/%d failed for @%s, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        post.author_handle,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        if reply_text is None:
-            raise RuntimeError(
-                f"All {_MAX_RETRIES} Gemini attempts failed for @{post.author_handle}"
-            ) from last_exc
+        response = await self._provider.generate_text(
+            model=self._model,
+            system=system_prompt,
+            contents=contents,
+            temperature=1.0,
+        )
+        reply_text = response.text.strip().strip('"').strip("'")
 
         mode = "explore" if exploring else "exploit"
         n_examples = 0 if icl_examples is None else len(icl_examples)
@@ -207,19 +170,11 @@ class ReplyGenerator:
     def _build_contents(
         user_prompt: str,
         screenshot: bytes | None,
-    ) -> list[genai_types.Content] | str:
-        """Build text-only or multimodal contents for Gemini."""
+    ) -> str | list[MultimodalPart]:
+        """Build text-only or multimodal contents."""
         if not screenshot:
             return user_prompt
         return [
-            genai_types.Content(
-                role="user",
-                parts=[
-                    genai_types.Part.from_bytes(
-                        data=screenshot,
-                        mime_type="image/jpeg",
-                    ),
-                    genai_types.Part.from_text(text=user_prompt),
-                ],
-            ),
+            MultimodalPart(image_bytes=screenshot, mime_type="image/jpeg"),
+            MultimodalPart(text=user_prompt),
         ]

@@ -93,12 +93,14 @@ async def generate_worksheet_content(
     subject: str,
     model: str = "gemini-2.5-flash",
 ) -> dict[str, object]:
-    """Call Gemini to produce worksheet content.
+    """Call LLM to produce worksheet content.
 
     Returns a dict with keys: ``latex``, ``title``, ``subject``,
     ``questions`` (list of dicts), and ``labeling_image_prompt``.
+
+    *client* can be an ``LLMProvider`` (new path) or a legacy ``genai.Client``
+    (backward compat via pipeline services).
     """
-    from google.genai import types as genai_types
     from jinja2 import Template
 
     from ..prompts import load_prompt
@@ -126,22 +128,36 @@ async def generate_worksheet_content(
     system_prompt = Template(prompt_data["system"]).render(**render_vars)
     user_prompt = Template(prompt_data["user"]).render(**render_vars)
 
-    response = await client.aio.models.generate_content(  # type: ignore[union-attr]
-        model=model,
-        contents=[
-            genai_types.Content(
-                role="user",
-                parts=[genai_types.Part.from_text(text=user_prompt)],
-            ),
-        ],
-        config=genai_types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            response_mime_type="application/json",
-            temperature=0.9,
-        ),
-    )
+    from marketmenow.integrations.llm import LLMProvider
 
-    data = json.loads(response.text)
+    if isinstance(client, LLMProvider):
+        response = await client.generate_json(
+            model=model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=0.9,
+        )
+        data = json.loads(response.text)
+    else:
+        # Legacy path for genai.Client passed via pipeline services
+        from google.genai import types as genai_types
+
+        response = await client.aio.models.generate_content(  # type: ignore[union-attr]
+            model=model,
+            contents=[
+                genai_types.Content(
+                    role="user",
+                    parts=[genai_types.Part.from_text(text=user_prompt)],
+                ),
+            ],
+            config=genai_types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                response_mime_type="application/json",
+                temperature=0.9,
+            ),
+        )
+        data = json.loads(response.text)
+
     if isinstance(data, list):
         data = data[0]
     return data
@@ -429,16 +445,18 @@ async def _worksheet_step(ctx: PipelineContext, inputs: dict[str, object]) -> ob
     if config is None:
         config = WorksheetConfig()
 
-    client = ctx.services.get("genai_client")
-    if client is None:
-        raise RuntimeError("genai_client not found in pipeline services")
+    provider = ctx.services.get("llm_provider")
+    if provider is None:
+        from marketmenow.integrations.llm import create_llm_provider
+
+        provider = create_llm_provider()
 
     output_dir = Path(str(ctx.services.get("output_dir", "/tmp")))
 
     question_types, subject = pick_questions(config)
 
     content = await generate_worksheet_content(
-        client=client,
+        client=provider,
         question_types=question_types,
         subject=subject,
     )
@@ -456,10 +474,17 @@ async def _worksheet_step(ctx: PipelineContext, inputs: dict[str, object]) -> ob
 
 
 async def _fill_worksheet_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
-    """Fill a clean worksheet with funny wrong answers using Gemini image editing."""
-    client = ctx.services.get("genai_client")
+    """Fill a clean worksheet with funny wrong answers using Gemini image editing.
+
+    This step is Gemini-specific — it uses the image editing model which
+    only exists in the Gemini API.
+    """
+    provider = ctx.services.get("llm_provider")
+    client = getattr(provider, "client", None) if provider else None
     if client is None:
-        raise RuntimeError("genai_client not found in pipeline services")
+        from marketmenow.integrations.genai import create_genai_client
+
+        client = create_genai_client()
 
     worksheet_image = Path(str(inputs.get("worksheet_image", "")))
     if not worksheet_image.exists():

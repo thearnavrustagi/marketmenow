@@ -46,6 +46,8 @@ dependencies = [
 
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.3"]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.40"]
 dev = [
     "pre-commit>=4.5.1",
     "pytest>=8.0",

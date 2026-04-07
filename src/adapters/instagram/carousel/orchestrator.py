@@ -12,6 +12,7 @@ from google.genai import types as genai_types
 
 from marketmenow.core.icl import select_icl_examples
 from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 from marketmenow.models.content import ImagePost, MediaAsset
 
 from ..prompts import load_prompt
@@ -47,6 +48,7 @@ class CarouselOrchestrator:
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
         self._settings = settings
         self._output_dir = settings.output_dir / "carousel"
@@ -57,10 +59,12 @@ class CarouselOrchestrator:
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
         self._epsilon = epsilon
+        self._provider = provider or create_llm_provider()
 
         _ensure_vertex_credentials(settings)
 
-        self._client = create_genai_client(
+        # Imagen image generation stays Gemini-specific
+        self._imagen_client = create_genai_client(
             vertex_project=settings.vertex_ai_project,
             vertex_location=settings.vertex_ai_location,
         )
@@ -115,19 +119,11 @@ class CarouselOrchestrator:
     async def _generate_content(self) -> dict[str, object]:
         system_prompt, user_prompt = self._build_prompt()
 
-        response = await self._client.aio.models.generate_content(
+        response = await self._provider.generate_json(
             model=self.GEMINI_MODEL,
-            contents=[
-                genai_types.Content(
-                    role="user",
-                    parts=[genai_types.Part.from_text(text=user_prompt)],
-                ),
-            ],
-            config=genai_types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                temperature=1.0,
-            ),
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=1.0,
         )
 
         data = json.loads(response.text)
@@ -196,7 +192,7 @@ class CarouselOrchestrator:
         for attempt, current_prompt in enumerate(prompts):
             for retry in range(_MAX_IMAGE_RETRIES):
                 try:
-                    response = await self._client.aio.models.generate_images(
+                    response = await self._imagen_client.aio.models.generate_images(
                         model=self.IMAGEN_MODEL,
                         prompt=current_prompt,
                         config=genai_types.GenerateImagesConfig(

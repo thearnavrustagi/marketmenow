@@ -55,10 +55,7 @@ class TestLinkedInContentGeneratorTemplateRendering:
 
     async def test_generate_batch_without_brand_raises(self) -> None:
         """Reproduces the 'brand' is undefined Jinja2 error."""
-        with (
-            patch("adapters.linkedin.content_generator.configure_google_application_credentials"),
-            patch("adapters.linkedin.content_generator.create_genai_client"),
-        ):
+        with patch("adapters.linkedin.content_generator.create_llm_provider"):
             gen = LinkedInContentGenerator(_fake_settings())
 
         with pytest.raises(UndefinedError, match="brand"):
@@ -68,13 +65,12 @@ class TestLinkedInContentGeneratorTemplateRendering:
         mock_response = MagicMock()
         mock_response.text = _SAMPLE_RESPONSE
 
-        with (
-            patch("adapters.linkedin.content_generator.configure_google_application_credentials"),
-            patch("adapters.linkedin.content_generator.create_genai_client") as mock_client_factory,
-        ):
-            mock_client = MagicMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_client_factory.return_value = mock_client
+        with patch(
+            "adapters.linkedin.content_generator.create_llm_provider"
+        ) as mock_provider_factory:
+            mock_provider = MagicMock()
+            mock_provider.generate_json = AsyncMock(return_value=mock_response)
+            mock_provider_factory.return_value = mock_provider
             gen = LinkedInContentGenerator(_fake_settings())
 
         posts = await gen.generate_batch(count=2, brand=_BRAND, persona=_PERSONA)
@@ -82,32 +78,31 @@ class TestLinkedInContentGeneratorTemplateRendering:
         assert len(posts) == 2
         assert all(isinstance(p, GeneratedPost) for p in posts)
 
-        call_kwargs = mock_client.aio.models.generate_content.call_args
+        call_kwargs = mock_provider.generate_json.call_args
         user_prompt = call_kwargs.kwargs["contents"]
-        system_instruction = call_kwargs.kwargs["config"].system_instruction
+        system_prompt = call_kwargs.kwargs["system"]
 
         assert "Acme" in user_prompt
-        assert "Acme" in system_instruction
-        assert "Direct and practical" in system_instruction
+        assert "Acme" in system_prompt
+        assert "Direct and practical" in system_prompt
 
     async def test_generate_batch_renders_brand_features_in_system(self) -> None:
         mock_response = MagicMock()
         mock_response.text = _SAMPLE_RESPONSE
 
-        with (
-            patch("adapters.linkedin.content_generator.configure_google_application_credentials"),
-            patch("adapters.linkedin.content_generator.create_genai_client") as mock_client_factory,
-        ):
-            mock_client = MagicMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_client_factory.return_value = mock_client
+        with patch(
+            "adapters.linkedin.content_generator.create_llm_provider"
+        ) as mock_provider_factory:
+            mock_provider = MagicMock()
+            mock_provider.generate_json = AsyncMock(return_value=mock_response)
+            mock_provider_factory.return_value = mock_provider
             gen = LinkedInContentGenerator(_fake_settings())
 
         await gen.generate_batch(count=2, brand=_BRAND, persona=_PERSONA)
 
-        call_kwargs = mock_client.aio.models.generate_content.call_args
-        system_instruction = call_kwargs.kwargs["config"].system_instruction
+        call_kwargs = mock_provider.generate_json.call_args
+        system_prompt = call_kwargs.kwargs["system"]
 
-        assert "CI/CD" in system_instruction
-        assert "Auto-deploy" in system_instruction
-        assert "Launch in days, not months" in system_instruction
+        assert "CI/CD" in system_prompt
+        assert "Auto-deploy" in system_prompt
+        assert "Launch in days, not months" in system_prompt

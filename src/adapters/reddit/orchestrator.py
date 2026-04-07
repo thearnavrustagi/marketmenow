@@ -150,10 +150,8 @@ class EngagementOrchestrator:
                 own_username=self._settings.reddit_username,
             )
             generator = CommentGenerator(
-                gemini_model=self._settings.gemini_model,
+                model=self._settings.gemini_model,
                 mention_rate=self._settings.mention_rate,
-                vertex_project=self._settings.vertex_ai_project,
-                vertex_location=self._settings.vertex_ai_location,
                 top_examples_path=self._settings.top_examples_path,
                 max_examples=self._settings.max_examples_in_prompt,
                 epsilon=self._settings.epsilon,
@@ -336,10 +334,8 @@ class EngagementOrchestrator:
                 own_username=self._settings.reddit_username,
             )
             generator = CommentGenerator(
-                gemini_model=self._settings.gemini_model,
+                model=self._settings.gemini_model,
                 mention_rate=self._settings.mention_rate,
-                vertex_project=self._settings.vertex_ai_project,
-                vertex_location=self._settings.vertex_ai_location,
                 top_examples_path=self._settings.top_examples_path,
                 max_examples=self._settings.max_examples_in_prompt,
                 epsilon=self._settings.epsilon,

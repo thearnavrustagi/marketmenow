@@ -759,9 +759,7 @@ def test_reply(
             )
 
             generator = ReplyGenerator(
-                gemini_model=settings.gemini_model,
-                vertex_project=settings.vertex_ai_project,
-                vertex_location=settings.vertex_ai_location,
+                model=settings.gemini_model,
                 top_examples_path=settings.top_examples_path,
                 max_examples=settings.max_examples_in_prompt,
             )
@@ -816,9 +814,7 @@ def thread(
         _ensure_vertex_credentials(settings)
 
         generator = ThreadGenerator(
-            gemini_model=settings.gemini_model,
-            vertex_project=settings.vertex_ai_project,
-            vertex_location=settings.vertex_ai_location,
+            model=settings.gemini_model,
             top_examples_path=settings.top_examples_path,
             max_examples=settings.max_examples_in_prompt,
         )

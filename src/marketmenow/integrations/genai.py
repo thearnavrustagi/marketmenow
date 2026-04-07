@@ -1,3 +1,11 @@
+"""Legacy Gemini client factory.
+
+.. deprecated::
+    Use :func:`marketmenow.integrations.llm.create_llm_provider` instead.
+    This module is retained only for Gemini-specific features (Imagen image
+    generation, Gemini image editing) that have no provider-agnostic equivalent.
+"""
+
 from __future__ import annotations
 
 import os

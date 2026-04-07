@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 
-from google import genai
-from google.genai.types import GenerateContentConfig
-
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 from marketmenow.outreach.models import (
     CustomerProfile,
     RubricEvaluation,
@@ -16,25 +13,17 @@ from marketmenow.outreach.models import (
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
-
 
 class ProspectScorer:
-    """Evaluates a user profile against a rubric using Gemini. Platform-agnostic."""
+    """Evaluates a user profile against a rubric. Platform-agnostic."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
+        model: str = "gemini-2.5-flash",
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
 
     async def score(
         self,
@@ -66,47 +55,22 @@ class ProspectScorer:
             },
         )
 
-        raw_json = await self._call_gemini(built.system, built.user, profile.handle)
+        raw_json = await self._call_llm(built.system, built.user, profile.handle)
         return self._parse_response(raw_json, profile, max_score)
 
-    async def _call_gemini(
+    async def _call_llm(
         self,
         system_prompt: str,
         user_prompt: str,
         handle: str,
     ) -> dict[str, object]:
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        response_mime_type="application/json",
-                        temperature=0.3,
-                    ),
-                )
-                text = (response.text or "").strip()
-                return json.loads(text)  # type: ignore[no-any-return]
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Scorer attempt %d/%d failed for @%s, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        handle,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        raise RuntimeError(
-            f"All {_MAX_RETRIES} Gemini scoring attempts failed for @{handle}"
-        ) from last_exc
+        response = await self._provider.generate_json(
+            model=self._model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=0.3,
+        )
+        return json.loads(response.text)  # type: ignore[no-any-return]
 
     @staticmethod
     def _parse_response(

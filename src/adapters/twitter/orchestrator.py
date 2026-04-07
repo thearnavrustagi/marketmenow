@@ -187,9 +187,7 @@ class EngagementOrchestrator:
                 self._settings.reply_history_path,
             )
             generator = ReplyGenerator(
-                gemini_model=self._settings.gemini_model,
-                vertex_project=self._settings.vertex_ai_project,
-                vertex_location=self._settings.vertex_ai_location,
+                model=self._settings.gemini_model,
                 top_examples_path=self._settings.top_examples_path,
                 max_examples=self._settings.max_examples_in_prompt,
                 epsilon=self._settings.epsilon,
@@ -361,9 +359,7 @@ class EngagementOrchestrator:
                 self._settings.reply_history_path,
             )
             generator = ReplyGenerator(
-                gemini_model=self._settings.gemini_model,
-                vertex_project=self._settings.vertex_ai_project,
-                vertex_location=self._settings.vertex_ai_location,
+                model=self._settings.gemini_model,
                 top_examples_path=self._settings.top_examples_path,
                 max_examples=self._settings.max_examples_in_prompt,
                 epsilon=self._settings.epsilon,
@@ -553,9 +549,7 @@ class EngagementOrchestrator:
             await self._maybe_collect_examples(browser)
 
             generator = ThreadGenerator(
-                gemini_model=self._settings.gemini_model,
-                vertex_project=self._settings.vertex_ai_project,
-                vertex_location=self._settings.vertex_ai_location,
+                model=self._settings.gemini_model,
                 top_examples_path=self._settings.top_examples_path,
                 max_examples=self._settings.max_examples_in_prompt,
                 persona=self._persona,

@@ -69,14 +69,9 @@ class ReelOrchestrator:
         _ensure_vertex_credentials(settings)
 
         self._loader = ReelTemplateLoader(templates_dir)
-        self._grader = SimpleGradingService(
-            project=settings.vertex_ai_project,
-            location=settings.vertex_ai_location,
-        )
+        self._grader = SimpleGradingService()
         self._script_gen = ReelScriptGenerator(
             grading_service=self._grader,
-            vertex_project=settings.vertex_ai_project,
-            vertex_location=settings.vertex_ai_location,
             brand=brand,
             persona=persona,
             project_slug=project_slug,

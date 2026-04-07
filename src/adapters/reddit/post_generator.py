@@ -5,11 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from google import genai
-from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 
 from marketmenow.core.icl import select_icl_examples
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 from .prompts import load_prompt
 
@@ -27,26 +26,21 @@ class GeneratedRedditPost:
 
 
 class RedditPostGenerator:
-    """Generates Reddit text posts (update / milestone / launch) via Gemini."""
+    """Generates Reddit text posts (update / milestone / launch)."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
+        model: str = "gemini-2.5-flash",
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
@@ -108,19 +102,14 @@ class RedditPostGenerator:
                 context=context,
             )
 
-        config = GenerateContentConfig(
-            system_instruction=system_prompt,
-            temperature=0.9,
-            max_output_tokens=1024,
-        )
-
-        response = await self._client.aio.models.generate_content(
+        response = await self._provider.generate_text(
             model=self._model,
+            system=system_prompt,
             contents=user_prompt,
-            config=config,
+            temperature=0.9,
         )
 
-        raw = response.text or ""
+        raw = response.text
         title, body = _parse_post(raw)
 
         return GeneratedRedditPost(

@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 
-from google import genai
-from google.genai.types import GenerateContentConfig
-
 from marketmenow.core.workflow import WorkflowContext, WorkflowError
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 logger = logging.getLogger(__name__)
-
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
 
 # Platform -> default target modality for text-based repurposing.
 PLATFORM_DEFAULTS: dict[str, str] = {
@@ -169,9 +163,12 @@ def parse_repurpose_result(
 class RepurposeContentStep:
     """Repurpose an existing capsule's content for a different platform/modality.
 
-    Loads the source capsule, extracts text, calls Gemini to reformat,
+    Loads the source capsule, extracts text, calls the LLM to reformat,
     and creates a new derived capsule.
     """
+
+    def __init__(self, provider: LLMProvider | None = None) -> None:
+        self._provider = provider or create_llm_provider()
 
     @property
     def name(self) -> str:
@@ -182,8 +179,6 @@ class RepurposeContentStep:
         return "Repurpose capsule content for a different platform and format"
 
     async def execute(self, ctx: WorkflowContext) -> None:
-        import os
-
         from marketmenow.core.capsule import CapsuleManager
 
         capsule_id = str(ctx.get_param("capsule", "") or "")
@@ -225,16 +220,13 @@ class RepurposeContentStep:
             schema=schema,
         )
 
-        vertex_project = os.environ.get("VERTEX_PROJECT", "")
-        vertex_location = os.environ.get("VERTEX_LOCATION", "us-central1")
-        client = genai.Client(
-            vertexai=True,
-            project=vertex_project,
-            location=vertex_location,
+        response = await self._provider.generate_text(
+            model="",
+            system=_SYSTEM_PROMPT,
+            contents=user_prompt,
+            temperature=0.8,
         )
-
-        raw_text = await self._call_gemini(client, _SYSTEM_PROMPT, user_prompt)
-        fields = parse_repurpose_result(raw_text, target_modality)
+        fields = parse_repurpose_result(response.text, target_modality)
 
         new_capsule = mgr.create(
             project_slug,
@@ -251,40 +243,3 @@ class RepurposeContentStep:
         )
         ctx.set_artifact("capsule_id", new_capsule.capsule_id)
         ctx.set_artifact("derived_from", capsule_id)
-
-    @staticmethod
-    async def _call_gemini(
-        client: genai.Client,
-        system_prompt: str,
-        user_prompt: str,
-    ) -> str:
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await client.aio.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=0.8,
-                    ),
-                )
-                text = (response.text or "").strip()
-                if not text:
-                    raise ValueError("Gemini returned empty response")
-                return text
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Repurpose attempt %d/%d failed, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        raise RuntimeError(f"All {_MAX_RETRIES} Gemini repurpose attempts failed") from last_exc

@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
+from marketmenow.integrations.llm import LLMResponse
 from marketmenow.models.content import (
     Article,
     ContentModality,
@@ -246,3 +247,54 @@ def make_poll(**overrides: object) -> Poll:
         "duration_days": 3,
     }
     return Poll(**(defaults | overrides))
+
+
+# ---------------------------------------------------------------------------
+# Mock LLM provider
+# ---------------------------------------------------------------------------
+
+
+class MockLLMProvider:
+    def __init__(self, text_response: str = "", json_response: str = "{}"):
+        self.text_response = text_response
+        self.json_response = json_response
+        self.calls: list[dict[str, object]] = []
+
+    async def generate_text(
+        self,
+        *,
+        model: str,
+        system: str,
+        contents: str | list[object],
+        temperature: float = 1.0,
+        max_retries: int = 3,
+        initial_backoff: float = 5.0,
+    ) -> LLMResponse:
+        self.calls.append(
+            {"method": "generate_text", "model": model, "system": system, "contents": contents}
+        )
+        return LLMResponse(text=self.text_response, raw=None)
+
+    async def generate_json(
+        self,
+        *,
+        model: str,
+        system: str,
+        contents: str | list[object],
+        temperature: float = 0.3,
+        max_retries: int = 3,
+        initial_backoff: float = 5.0,
+    ) -> LLMResponse:
+        self.calls.append(
+            {"method": "generate_json", "model": model, "system": system, "contents": contents}
+        )
+        return LLMResponse(text=self.json_response, raw=None)
+
+    async def embed(self, *, texts: list[str], model: str = "") -> list[list[float]]:
+        self.calls.append({"method": "embed", "texts": texts})
+        return [[0.1] * 768 for _ in texts]
+
+
+@pytest.fixture
+def mock_provider() -> MockLLMProvider:
+    return MockLLMProvider()

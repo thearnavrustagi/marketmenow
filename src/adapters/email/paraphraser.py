@@ -5,15 +5,10 @@ import logging
 import re
 from pathlib import Path
 
-from google.genai.types import GenerateContentConfig
-
 from marketmenow.core.icl import select_icl_examples
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 logger = logging.getLogger(__name__)
-
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
 
 
 _EM_DASH_RE = re.compile(r"\u2014|\u2013|&mdash;|&ndash;")
@@ -25,21 +20,17 @@ def _sanitize(html: str) -> str:
 
 
 class EmailParaphraser:
-    """Rewrites email HTML body text using Gemini while preserving structure."""
+    """Rewrites email HTML body text while preserving structure."""
 
     def __init__(
         self,
-        vertex_project: str,
-        vertex_location: str = "us-central1",
         model: str = "gemini-2.5-flash",
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
+        self._provider = provider or create_llm_provider()
         self._model = model
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
@@ -65,41 +56,21 @@ class EmailParaphraser:
         self._system_prompt = built.system
 
     async def paraphrase(self, html: str) -> str:
-        """Return a paraphrased version of *html* (single call with retries)."""
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=html,
-                    config=GenerateContentConfig(
-                        system_instruction=self._system_prompt,
-                        temperature=1.0,
-                    ),
-                )
-                result = (response.text or "").strip()
-                if result.startswith("```"):
-                    result = result.split("\n", 1)[1]
-                if result.endswith("```"):
-                    result = result.rsplit("```", 1)[0]
-                result = _sanitize(result.strip())
-                logger.debug("Paraphrased email (%d chars)", len(result))
-                return result
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Paraphrase attempt %d/%d failed, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        raise RuntimeError(f"All {_MAX_RETRIES} paraphrase attempts failed") from last_exc
+        """Return a paraphrased version of *html*."""
+        response = await self._provider.generate_text(
+            model=self._model,
+            system=self._system_prompt,
+            contents=html,
+            temperature=1.0,
+        )
+        result = response.text
+        if result.startswith("```"):
+            result = result.split("\n", 1)[1]
+        if result.endswith("```"):
+            result = result.rsplit("```", 1)[0]
+        result = _sanitize(result.strip())
+        logger.debug("Paraphrased email (%d chars)", len(result))
+        return result
 
     async def paraphrase_many(
         self,

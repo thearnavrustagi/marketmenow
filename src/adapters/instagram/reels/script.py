@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from jinja2 import Environment
 
 from marketmenow.core.icl import select_icl_examples
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 from ..grading.models import GradingResult, RubricItem
 from ..grading.service import SimpleGradingService
@@ -58,8 +58,6 @@ class ReelScriptGenerator:
     def __init__(
         self,
         grading_service: SimpleGradingService,
-        vertex_project: str | None,
-        vertex_location: str = "us-central1",
         step_registry: StepRegistry | None = None,
         brand: BrandConfig | None = None,
         persona: PersonaConfig | None = None,
@@ -67,6 +65,7 @@ class ReelScriptGenerator:
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
         self._grader = grading_service
         self._registry = step_registry or default_registry
@@ -76,11 +75,7 @@ class ReelScriptGenerator:
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
         self._epsilon = epsilon
-
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
+        self._provider = provider or create_llm_provider()
         self._model = "gemini-2.5-flash"
 
     async def generate(
@@ -145,7 +140,7 @@ class ReelScriptGenerator:
 
         services: dict[str, object] = {
             "grader": self._grader,
-            "genai_client": self._client,
+            "llm_provider": self._provider,
         }
         if self._project_slug:
             services["project_slug"] = self._project_slug
@@ -226,8 +221,6 @@ class ReelScriptGenerator:
         template: ReelTemplate,
         grading_result: GradingResult,
     ) -> dict[str, str]:
-        from google.genai import types as genai_types
-
         rubric_eval_text = "\n".join(
             f"  - {ev.rubric_item_name}: {ev.points_awarded}/{ev.max_points} -- {ev.feedback}"
             for ev in grading_result.rubric_evaluations
@@ -276,19 +269,11 @@ class ReelScriptGenerator:
             system_text = _safe_render(prompt["system"], all_vars)
             user_text = _safe_render(prompt["user"], all_vars)
 
-        response = await self._client.aio.models.generate_content(
+        response = await self._provider.generate_json(
             model=self._model,
-            contents=[
-                genai_types.Content(
-                    role="user",
-                    parts=[genai_types.Part.from_text(text=user_text)],
-                ),
-            ],
-            config=genai_types.GenerateContentConfig(
-                system_instruction=system_text,
-                response_mime_type="application/json",
-                temperature=0.8,
-            ),
+            system=system_text,
+            contents=user_text,
+            temperature=0.8,
         )
 
         data = json.loads(response.text)

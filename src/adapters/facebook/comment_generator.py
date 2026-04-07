@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import random
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 
 from marketmenow.core.icl import select_icl_examples
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 from .discovery import DiscoveredGroupPost
 from .prompts import load_prompt
@@ -20,31 +18,24 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
-
 
 class CommentGenerator:
-    """Generates helpful, persona-driven Facebook group comments using Gemini."""
+    """Generates helpful, persona-driven Facebook group comments."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
+        model: str = "gemini-2.5-flash",
         mention_rate: int = 10,
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
         project_slug: str | None = None,
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
         self._mention_rate = mention_rate
         self._project_slug = project_slug
         self._persona = persona
@@ -113,40 +104,13 @@ class CommentGenerator:
                 should_mention=should_mention,
             )
 
-        comment_text: str | None = None
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=0.9,
-                    ),
-                )
-                comment_text = (response.text or "").strip().strip('"').strip("'")
-                break
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Gemini attempt %d/%d failed for group %s, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        post.group_name,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        if comment_text is None:
-            raise RuntimeError(
-                f"All {_MAX_RETRIES} Gemini attempts failed for "
-                f"group {post.group_name} post {post.post_url}"
-            ) from last_exc
+        response = await self._provider.generate_text(
+            model=self._model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=0.9,
+        )
+        comment_text = response.text.strip().strip('"').strip("'")
 
         mode = "explore" if exploring else "exploit"
         n_examples = 0 if icl_examples is None else len(icl_examples)

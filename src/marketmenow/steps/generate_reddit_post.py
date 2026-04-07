@@ -118,9 +118,7 @@ class GenerateRedditPostStep:
                 ctx.params["max_delay"] = int(posting_cfg["max_delay"])  # type: ignore[arg-type]
 
         generator = RedditPostGenerator(
-            gemini_model=settings.gemini_model,
-            vertex_project=settings.vertex_ai_project,
-            vertex_location=settings.vertex_ai_location,
+            model=settings.gemini_model,
             persona=ctx.persona,
             brand=ctx.project.brand if ctx.project else None,
             project_slug=ctx.project.slug if ctx.project else None,

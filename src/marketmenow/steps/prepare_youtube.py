@@ -4,12 +4,16 @@ import json
 import logging
 
 from marketmenow.core.workflow import WorkflowContext
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 logger = logging.getLogger(__name__)
 
 
 class PrepareYouTubeStep:
     """Generate YouTube-optimized title, description, and hashtags from reel content."""
+
+    def __init__(self, provider: LLMProvider | None = None) -> None:
+        self._provider = provider or create_llm_provider()
 
     @property
     def name(self) -> str:
@@ -20,14 +24,6 @@ class PrepareYouTubeStep:
         return "Generate YouTube title and description from reel content"
 
     async def execute(self, ctx: WorkflowContext) -> None:
-        from google.genai.types import GenerateContentConfig
-
-        from adapters.instagram.settings import InstagramSettings
-        from marketmenow.integrations.genai import (
-            configure_google_application_credentials,
-            create_genai_client,
-        )
-
         content = ctx.artifacts.get("content")
         if content is None:
             logger.warning("No content artifact found, skipping YouTube metadata generation")
@@ -58,24 +54,12 @@ class PrepareYouTubeStep:
             },
             project_slug=ctx.project.slug if ctx.project else None,
         )
-        system_prompt = built.system
-        user_prompt = built.user
 
-        # Use Vertex AI credentials from Instagram settings (same as reel generation)
-        ig_settings = InstagramSettings()
-        configure_google_application_credentials(ig_settings.google_application_credentials)
-        client = create_genai_client(
-            vertex_project=ig_settings.vertex_ai_project,
-            vertex_location=ig_settings.vertex_ai_location,
-        )
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=user_prompt,
-            config=GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                temperature=0.8,
-            ),
+        response = await self._provider.generate_json(
+            model="",
+            system=built.system,
+            contents=built.user,
+            temperature=0.8,
         )
 
         try:
@@ -91,7 +75,7 @@ class PrepareYouTubeStep:
 
             ctx.console.print(f"[cyan]YouTube title:[/cyan] {yt_title}")
         except (json.JSONDecodeError, Exception):
-            logger.exception("Failed to parse YouTube metadata from Gemini")
+            logger.exception("Failed to parse YouTube metadata from LLM response")
             ctx.set_artifact("_yt_title", "")
             ctx.set_artifact("_yt_description", "")
             ctx.set_artifact("_yt_hashtags", "")

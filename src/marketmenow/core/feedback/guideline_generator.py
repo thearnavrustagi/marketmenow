@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from datetime import UTC, datetime
@@ -8,16 +7,13 @@ from functools import lru_cache
 from pathlib import Path
 from uuid import uuid4
 
-from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 
 from marketmenow.core.feedback.models import ContentGuideline, ReelIndexEntry
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
 _PROMPTS_DIR = Path(__file__).resolve().parents[4] / "prompts" / "feedback"
 
 
@@ -57,19 +53,15 @@ def should_generate_guidelines(entry: ReelIndexEntry) -> str | None:
 
 
 class GuidelineGenerator:
-    """Generates content guidelines from reel performance analysis using Gemini."""
+    """Generates content guidelines from reel performance analysis."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
+        model: str = "gemini-2.5-flash",
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
 
     async def analyze_reel(
         self,
@@ -101,7 +93,7 @@ class GuidelineGenerator:
             existing_guidelines=existing_guidelines,
         )
 
-        raw_guidelines = await self._call_gemini(system_prompt, user_prompt)
+        raw_guidelines = await self._call_llm(system_prompt, user_prompt)
         now = datetime.now(UTC).isoformat()
 
         guidelines: list[ContentGuideline] = []
@@ -125,42 +117,20 @@ class GuidelineGenerator:
 
         return guidelines
 
-    async def _call_gemini(
+    async def _call_llm(
         self,
         system_prompt: str,
         user_prompt: str,
     ) -> list[dict[str, object]]:
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        response_mime_type="application/json",
-                        temperature=0.3,
-                    ),
-                )
-                text = (response.text or "").strip()
-                parsed = json.loads(text)
-                if isinstance(parsed, dict):
-                    return parsed.get("guidelines", [])  # type: ignore[no-any-return]
-                if isinstance(parsed, list):
-                    return parsed  # type: ignore[no-any-return]
-                return []
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Guideline generation attempt %d/%d failed, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        raise RuntimeError(f"All {_MAX_RETRIES} guideline generation attempts failed") from last_exc
+        response = await self._provider.generate_json(
+            model=self._model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=0.3,
+        )
+        parsed = json.loads(response.text)
+        if isinstance(parsed, dict):
+            return parsed.get("guidelines", [])  # type: ignore[no-any-return]
+        if isinstance(parsed, list):
+            return parsed  # type: ignore[no-any-return]
+        return []

@@ -225,11 +225,11 @@ async def _load_product_step(ctx: PipelineContext, inputs: dict[str, object]) ->
 
 async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
     """Run an LLM call using a named prompt file and return parsed JSON fields."""
-    from google.genai import types as genai_types
+    from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
-    client = ctx.services.get("genai_client")
-    if client is None:
-        raise RuntimeError("genai_client not found in pipeline services")
+    provider: LLMProvider | None = ctx.services.get("llm_provider")  # type: ignore[assignment]
+    if provider is None:
+        provider = create_llm_provider()
 
     prompt_name = str(inputs.get("prompt", ""))
     model = str(inputs.get("model", "gemini-2.5-flash"))
@@ -309,19 +309,11 @@ async def _llm_step(ctx: PipelineContext, inputs: dict[str, object]) -> object:
             _render_prompt_text(prompt["system"], template_vars) if prompt["system"] else None
         )
 
-    response = await client.aio.models.generate_content(  # type: ignore[union-attr]
+    response = await provider.generate_json(
         model=model,
-        contents=[
-            genai_types.Content(
-                role="user",
-                parts=[genai_types.Part.from_text(text=user_text)],
-            ),
-        ],
-        config=genai_types.GenerateContentConfig(
-            system_instruction=system_text,
-            response_mime_type="application/json",
-            temperature=temperature,
-        ),
+        system=system_text or "",
+        contents=user_text,
+        temperature=temperature,
     )
 
     data = json.loads(response.text)

@@ -248,6 +248,12 @@ def persona_list() -> None:
     console.print(table)
 
 
+# ── Campaigns ─────────────────────────────────────────────────────────
+
+from marketmenow.core.campaign_cli import campaign_app  # noqa: E402
+
+app.add_typer(campaign_app, name="campaign", rich_help_panel="Campaigns")
+
 # ── Capsules ──────────────────────────────────────────────────────────
 
 capsule_app = typer.Typer(name="capsule", help="Manage content capsules.")

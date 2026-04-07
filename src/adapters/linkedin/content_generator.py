@@ -1,28 +1,20 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from pathlib import Path
 
-from google.genai.types import GenerateContentConfig
 from jinja2 import Template
 from pydantic import BaseModel, Field
 
 from marketmenow.core.icl import select_icl_examples
-from marketmenow.integrations.genai import (
-    configure_google_application_credentials,
-    create_genai_client,
-)
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 from marketmenow.models.project import BrandConfig, PersonaConfig
 
 from .prompts import load_prompt
 from .settings import LinkedInSettings
 
 logger = logging.getLogger(__name__)
-
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
 
 
 class GeneratedPost(BaseModel, frozen=True):
@@ -36,30 +28,23 @@ class GeneratedPost(BaseModel, frozen=True):
     article_url: str = ""
 
 
-def _ensure_vertex_credentials(settings: LinkedInSettings) -> None:
-    configure_google_application_credentials(settings.google_application_credentials)
-
-
 class LinkedInContentGenerator:
-    """Generates a batch of varied LinkedIn posts using Gemini."""
+    """Generates a batch of varied LinkedIn posts."""
 
     def __init__(
         self,
         settings: LinkedInSettings,
-        gemini_model: str = "gemini-2.5-flash",
+        model: str = "gemini-2.5-flash",
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
+        provider: LLMProvider | None = None,
     ) -> None:
-        _ensure_vertex_credentials(settings)
-        self._client = create_genai_client(
-            vertex_project=settings.vertex_ai_project,
-            vertex_location=settings.vertex_ai_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
         self._persona = persona
         self._brand = brand
         self._project_slug = project_slug
@@ -110,45 +95,19 @@ class LinkedInContentGenerator:
             system_prompt = Template(prompt_data["system"]).render(**template_vars)
             user_prompt = Template(prompt_data["user"]).render(**template_vars)
 
-        raw_json: str | None = None
-        last_exc: BaseException | None = None
-
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=1.0,
-                        response_mime_type="application/json",
-                    ),
-                )
-                raw_json = (response.text or "").strip()
-                break
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Gemini attempt %d/%d failed, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        if raw_json is None:
-            raise RuntimeError(
-                f"All {_MAX_RETRIES} Gemini attempts failed for batch generation"
-            ) from last_exc
+        response = await self._provider.generate_json(
+            model=self._model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=1.0,
+        )
+        raw_json = response.text
 
         data = json.loads(raw_json)
         if isinstance(data, dict) and "posts" in data:
             data = data["posts"]
         if not isinstance(data, list):
-            raise ValueError(f"Expected JSON array from Gemini, got: {type(data).__name__}")
+            raise ValueError(f"Expected JSON array from LLM, got: {type(data).__name__}")
 
         posts = [GeneratedPost(**item) for item in data]
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import random
@@ -9,26 +8,22 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
-from google.genai.types import GenerateContentConfig
 from pydantic import BaseModel, Field
 
 from marketmenow.core.icl import select_icl_examples
 from marketmenow.core.prompt_builder import PromptBuilder
-from marketmenow.integrations.genai import create_genai_client
+from marketmenow.integrations.llm import LLMProvider, create_llm_provider
 
 if TYPE_CHECKING:
     from marketmenow.models.project import BrandConfig, PersonaConfig
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 3
-_INITIAL_BACKOFF_S = 5.0
-
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _sanitise_json(raw: str) -> str:
-    """Strip markdown fences and trailing commas that Gemini sometimes emits."""
+    """Strip markdown fences and trailing commas that the LLM sometimes emits."""
     raw = re.sub(r"^```(?:json)?\s*\n?", "", raw)
     raw = re.sub(r"\n?```\s*$", "", raw)
     raw = re.sub(r",\s*([}\]])", r"\1", raw)
@@ -70,25 +65,21 @@ GeneratedThread.model_rebuild()
 
 
 class ThreadGenerator:
-    """Generates viral Twitter/X threads using Gemini."""
+    """Generates viral Twitter/X threads."""
 
     def __init__(
         self,
-        gemini_model: str = "gemini-2.5-flash",
-        vertex_project: str = "",
-        vertex_location: str = "us-central1",
+        model: str = "gemini-2.5-flash",
         top_examples_path: Path | None = None,
         max_examples: int = 5,
         epsilon: float = 0.3,
         persona: PersonaConfig | None = None,
         brand: BrandConfig | None = None,
         project_slug: str | None = None,
+        provider: LLMProvider | None = None,
     ) -> None:
-        self._client = create_genai_client(
-            vertex_project=vertex_project,
-            vertex_location=vertex_location,
-        )
-        self._model = gemini_model
+        self._provider = provider or create_llm_provider()
+        self._model = model
         self._top_examples_path = top_examples_path
         self._max_examples = max_examples
         self._epsilon = epsilon
@@ -144,41 +135,15 @@ class ThreadGenerator:
             system_prompt = prompt_data["system"]
             user_prompt = Template(prompt_data["user"]).render(**template_vars)
 
-        data: dict[str, object] | None = None
-        last_exc: BaseException | None = None
+        response = await self._provider.generate_json(
+            model=self._model,
+            system=system_prompt,
+            contents=user_prompt,
+            temperature=1.0,
+        )
+        raw_json = _sanitise_json(response.text)
+        data = json.loads(raw_json)
 
-        for attempt in range(1, _MAX_RETRIES + 1):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=user_prompt,
-                    config=GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=1.0,
-                        response_mime_type="application/json",
-                    ),
-                )
-                raw_json = (response.text or "").strip()
-                raw_json = _sanitise_json(raw_json)
-                data = json.loads(raw_json)
-                break
-            except Exception as exc:
-                last_exc = exc
-                if attempt < _MAX_RETRIES:
-                    backoff = _INITIAL_BACKOFF_S * (2 ** (attempt - 1))
-                    logger.warning(
-                        "Gemini attempt %d/%d failed, retrying in %.0fs: %s",
-                        attempt,
-                        _MAX_RETRIES,
-                        backoff,
-                        exc,
-                    )
-                    await asyncio.sleep(backoff)
-
-        if data is None:
-            raise RuntimeError(
-                f"All {_MAX_RETRIES} Gemini attempts failed for thread generation"
-            ) from last_exc
         cleaned_tweets: list[dict[str, object]] = []
         for t in data["tweets"]:
             t = dict(t)

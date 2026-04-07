@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from marketmenow.core.feedback.guideline_generator import (
     GuidelineGenerator,
@@ -65,31 +65,30 @@ def test_should_generate_none_without_metrics() -> None:
     assert should_generate_guidelines(entry) is None
 
 
-def _mock_genai_response(data: dict[str, object]) -> MagicMock:
-    response = MagicMock()
-    response.text = json.dumps(data)
-    return response
+def _mock_provider(json_data: dict[str, object]) -> MagicMock:
+    from marketmenow.integrations.llm import LLMResponse
 
-
-@patch("marketmenow.core.feedback.guideline_generator.create_genai_client")
-async def test_analyze_reel_generates_guidelines(mock_create_client: MagicMock) -> None:
-    mock_client = MagicMock()
-    mock_client.aio.models.generate_content = AsyncMock(
-        return_value=_mock_genai_response(
-            {
-                "guidelines": [
-                    {
-                        "guideline_type": "avoid",
-                        "rule": "Don't use unclear timelines in stories",
-                        "evidence": "Comments pointed out date inconsistencies",
-                    }
-                ]
-            }
-        )
+    provider = MagicMock()
+    provider.generate_json = AsyncMock(
+        return_value=LLMResponse(text=json.dumps(json_data), raw=None)
     )
-    mock_create_client.return_value = mock_client
+    return provider
 
-    generator = GuidelineGenerator()
+
+async def test_analyze_reel_generates_guidelines() -> None:
+    provider = _mock_provider(
+        {
+            "guidelines": [
+                {
+                    "guideline_type": "avoid",
+                    "rule": "Don't use unclear timelines in stories",
+                    "evidence": "Comments pointed out date inconsistencies",
+                }
+            ]
+        }
+    )
+
+    generator = GuidelineGenerator(provider=provider)
     entry = _make_entry(view_count=100)
     entry = entry.model_copy(
         update={
@@ -112,10 +111,9 @@ async def test_analyze_reel_generates_guidelines(mock_create_client: MagicMock) 
     assert guidelines[0].source_video_id == "vid1"
 
 
-@patch("marketmenow.core.feedback.guideline_generator.create_genai_client")
-async def test_analyze_reel_no_metrics(mock_create_client: MagicMock) -> None:
-    mock_create_client.return_value = MagicMock()
-    generator = GuidelineGenerator()
+async def test_analyze_reel_no_metrics() -> None:
+    provider = _mock_provider({})
+    generator = GuidelineGenerator(provider=provider)
     entry = ReelIndexEntry(reel_id="aabb", video_id="vid1")
     guidelines = await generator.analyze_reel(entry, [])
     assert guidelines == []

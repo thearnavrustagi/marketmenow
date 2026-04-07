@@ -187,6 +187,14 @@ class TestGeneratedComment:
 
 
 class TestEngagementOrchestrator:
+    @pytest.fixture(autouse=True)
+    def _mock_llm(self) -> None:  # type: ignore[override]
+        with patch(
+            "adapters.facebook.comment_generator.create_llm_provider",
+            return_value=MagicMock(),
+        ):
+            yield
+
     async def test_generate_only_returns_comments(self, fb_settings: FacebookSettings) -> None:
         mock_browser = AsyncMock()
         mock_browser.scrape_group_feed = AsyncMock(

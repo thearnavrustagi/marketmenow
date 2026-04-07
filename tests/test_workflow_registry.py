@@ -1,9 +1,24 @@
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from marketmenow.core.workflow import Workflow, WorkflowError
 from marketmenow.core.workflow_registry import WorkflowRegistry, build_workflow_registry
+
+_mock_provider = MagicMock()
+
+
+@pytest.fixture(autouse=True)
+def _patch_llm_provider():
+    with (
+        patch(
+            "marketmenow.steps.repurpose_content.create_llm_provider", return_value=_mock_provider
+        ),
+        patch("marketmenow.steps.prepare_youtube.create_llm_provider", return_value=_mock_provider),
+    ):
+        yield
 
 
 def _make_workflow(name: str) -> Workflow:

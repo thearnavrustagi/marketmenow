@@ -3,10 +3,23 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+
+_mock_provider = MagicMock()
+
+
+@pytest.fixture(autouse=True)
+def _patch_llm_provider():
+    with (
+        patch(
+            "marketmenow.steps.repurpose_content.create_llm_provider", return_value=_mock_provider
+        ),
+        patch("marketmenow.steps.prepare_youtube.create_llm_provider", return_value=_mock_provider),
+    ):
+        yield
 
 
 def _make_content_item(**overrides: object) -> dict:

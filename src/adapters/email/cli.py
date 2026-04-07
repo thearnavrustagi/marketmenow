@@ -254,10 +254,7 @@ def send(
     rewriter: EmailParaphraser | None = None
     if paraphrase:
         _ensure_vertex_credentials(settings)
-        rewriter = EmailParaphraser(
-            vertex_project=settings.vertex_ai_project,
-            vertex_location=settings.vertex_ai_location,
-        )
+        rewriter = EmailParaphraser()
         console.print("[cyan]Paraphrase mode ON — each email will be uniquely rewritten[/cyan]")
 
     if dry_run:
