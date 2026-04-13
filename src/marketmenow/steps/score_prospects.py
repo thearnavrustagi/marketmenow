@@ -7,7 +7,7 @@ from marketmenow.outreach.models import CustomerProfile, ScoredProspect, UserPro
 
 
 class ScoreProspectsStep:
-    """Score each enriched user profile against the rubric using Gemini. Platform-agnostic."""
+    """Score each enriched user profile for product relevance. Platform-agnostic."""
 
     @property
     def name(self) -> str:
@@ -15,7 +15,7 @@ class ScoreProspectsStep:
 
     @property
     def description(self) -> str:
-        return "Evaluate prospects against ICP rubric"
+        return "Evaluate prospects for product relevance"
 
     async def execute(self, ctx: WorkflowContext) -> None:
         from marketmenow.outreach.scorer import ProspectScorer
@@ -26,17 +26,14 @@ class ScoreProspectsStep:
         if not profiles:
             raise WorkflowError("No enriched profiles to score.")
 
-        self._ensure_vertex_env(ctx)
+        min_score = customer_profile.ideal_customer.min_score
 
         ctx.console.print(
-            f"[bold cyan]Scoring {len(profiles)} profiles against rubric "
-            f"(min_score={customer_profile.ideal_customer.min_score})...[/bold cyan]"
+            f"[bold cyan]Scoring {len(profiles)} profiles for relevance "
+            f"(min_score={min_score})...[/bold cyan]"
         )
 
-        scorer = ProspectScorer(
-            vertex_project=self._get_vertex_project(),
-            vertex_location=self._get_vertex_location(),
-        )
+        scorer = ProspectScorer()
 
         scored: list[ScoredProspect] = []
         for i, profile in enumerate(profiles, start=1):
@@ -57,7 +54,7 @@ class ScoreProspectsStep:
             s
             for s in scored
             if s.disqualify_reason is None
-            and s.total_score >= customer_profile.ideal_customer.min_score
+            and s.total_score >= min_score
         ]
 
         min_score_override = int(ctx.get_param("min-score", 0) or 0)
@@ -93,25 +90,3 @@ class ScoreProspectsStep:
                 p.dm_angle[:60],
             )
         ctx.console.print(table)
-
-    @staticmethod
-    def _ensure_vertex_env(ctx: WorkflowContext) -> None:
-        import os
-        from pathlib import Path
-
-        creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "vertex.json")
-        p = Path(creds_path)
-        if p.exists():
-            os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(p.resolve()))
-
-    @staticmethod
-    def _get_vertex_project() -> str:
-        import os
-
-        return os.environ.get("VERTEX_AI_PROJECT", "")
-
-    @staticmethod
-    def _get_vertex_location() -> str:
-        import os
-
-        return os.environ.get("VERTEX_AI_LOCATION", "us-central1")

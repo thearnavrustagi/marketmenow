@@ -4,21 +4,25 @@ from dataclasses import dataclass
 
 from marketmenow.steps.discover_posts import DiscoverPostsStep
 from marketmenow.steps.discover_prospects import DiscoverProspectsStep
+from marketmenow.steps.discover_reddit_outreach import DiscoverRedditOutreachStep
 from marketmenow.steps.enrich_profiles import EnrichProfilesStep
 from marketmenow.steps.fetch_feedback import FetchYouTubeFeedbackStep
 from marketmenow.steps.generate_carousel import GenerateCarouselStep
 from marketmenow.steps.generate_messages import GenerateMessagesStep
+from marketmenow.steps.generate_outreach_comments import GenerateOutreachCommentsStep
 from marketmenow.steps.generate_reddit_post import GenerateRedditPostStep
 from marketmenow.steps.generate_reel import GenerateReelStep
 from marketmenow.steps.generate_replies import GenerateRepliesStep
 from marketmenow.steps.generate_thread import GenerateThreadStep
 from marketmenow.steps.inject_reel_id import InjectReelIdStep
 from marketmenow.steps.linkedin_post import LinkedInPostStep
+from marketmenow.steps.post_outreach_comments import PostOutreachCommentsStep
 from marketmenow.steps.post_replies import PostRepliesStep
 from marketmenow.steps.post_to_platform import PostToPlatformStep
 from marketmenow.steps.post_to_subreddits import PostToSubredditsStep
 from marketmenow.steps.prepare_youtube import PrepareYouTubeStep
 from marketmenow.steps.repurpose_content import RepurposeContentStep
+from marketmenow.steps.score_post_relevance import ScorePostRelevanceStep
 from marketmenow.steps.score_prospects import ScoreProspectsStep
 from marketmenow.steps.send_emails import SendEmailsStep
 from marketmenow.steps.send_messages import SendMessagesStep
@@ -43,10 +47,14 @@ _STEP_CLASSES: dict[str, type] = {
     "post-replies": PostRepliesStep,
     "discover-posts": DiscoverPostsStep,
     "discover-prospects": DiscoverProspectsStep,
+    "discover-reddit-outreach": DiscoverRedditOutreachStep,
     "enrich-profiles": EnrichProfilesStep,
+    "score-post-relevance": ScorePostRelevanceStep,
     "score-prospects": ScoreProspectsStep,
     "generate-messages": GenerateMessagesStep,
+    "generate-outreach-comments": GenerateOutreachCommentsStep,
     "send-messages": SendMessagesStep,
+    "post-outreach-comments": PostOutreachCommentsStep,
     "linkedin-post": LinkedInPostStep,
     "send-emails": SendEmailsStep,
     "youtube-upload": YouTubeUploadStep,
