@@ -26,10 +26,7 @@ class GenerateMessagesStep:
         if not prospects:
             raise WorkflowError("No scored prospects to generate messages for.")
 
-        generator = OutreachMessageGenerator(
-            vertex_project=self._get_vertex_project(),
-            vertex_location=self._get_vertex_location(),
-        )
+        generator = OutreachMessageGenerator()
 
         messages: list[OutreachMessage] = []
         for i, prospect in enumerate(prospects, start=1):
@@ -65,15 +62,3 @@ class GenerateMessagesStep:
                 m.message_text[:80],
             )
         ctx.console.print(table)
-
-    @staticmethod
-    def _get_vertex_project() -> str:
-        import os
-
-        return os.environ.get("VERTEX_AI_PROJECT", "")
-
-    @staticmethod
-    def _get_vertex_location() -> str:
-        import os
-
-        return os.environ.get("VERTEX_AI_LOCATION", "us-central1")

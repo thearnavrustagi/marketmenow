@@ -985,7 +985,7 @@ def version() -> None:
 
 @app.command(rich_help_panel="Utilities")
 def heal(
-    fix: bool = typer.Option(True, "--fix/--no-fix", help="Prompt to auto-fix via Cursor agent"),
+    fix: bool = typer.Option(True, "--fix/--no-fix", help="Prompt to auto-fix via Claude Code"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show full output"),
 ) -> None:
     """Run lint, format, and tests — then auto-fix failures with the Cursor agent."""
@@ -1146,24 +1146,29 @@ def heal(
     if not fix:
         raise typer.Exit(1)
 
-    if not shutil.which("agent"):
-        console.print("[yellow]Cursor agent CLI not found on PATH.[/yellow]")
-        console.print("[dim]Install it: curl https://cursor.com/install -fsS | bash[/dim]")
+    if not shutil.which("claude"):
+        console.print("[yellow]Claude Code CLI not found on PATH.[/yellow]")
+        console.print("[dim]Install it: npm install -g @anthropic-ai/claude-code[/dim]")
         raise typer.Exit(1)
 
-    if not typer.confirm("Fix remaining issues with Cursor agent?"):
+    if not typer.confirm("Fix remaining issues with Claude Code?"):
         raise typer.Exit(1)
 
     prompt = _build_heal_prompt(problems, project_root)
 
     console.print()
-    console.print("[bold]Handing off to Cursor agent...[/bold]\n")
+    console.print("[bold]Handing off to Claude Code...[/bold]\n")
 
-    subprocess.run(["agent", prompt], cwd=project_root)
+    subprocess.run(
+        ["claude", "--dangerously-skip-permissions", "--verbose", "-p", "-"],
+        input=prompt,
+        text=True,
+        cwd=project_root,
+    )
 
 
 def _build_heal_prompt(problems: list[str], project_root: Path) -> str:
-    """Construct the prompt sent to the Cursor agent for auto-healing."""
+    """Construct the prompt sent to Claude Code for auto-healing."""
     problem_block = "\n---\n".join(problems)
 
     return (

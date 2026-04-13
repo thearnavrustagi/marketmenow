@@ -94,3 +94,69 @@ company_accounts:
   - "@BrainPOP"
   - "@EdPuzzle"
   - "@IXLLearning"
+
+# Outreach discovery — pain search queries (Twitter search operators)
+search_queries:
+  - '"so many papers to grade" -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+  - '(teacher OR teaching) (grading OR "marking papers") (exhausted OR overwhelmed OR "takes forever") -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+  - '"up late grading" (students OR essays OR papers OR assignments) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+  - '"grading all weekend" (teacher OR school OR class) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+  - '(teacher OR educator) "grading burnout" -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+  - '"grade essays" OR "grade papers" OR "grading assignments" (tired OR hate OR exhausting) -pokemon -PSA -BGS -cards -coins -is:retweet lang:en'
+
+# Bio filtering for outreach prospects
+bio_blocklist:
+  - "pokemon"
+  - "PSA"
+  - "BGS"
+  - "CGC"
+  - "card grading"
+  - "card grader"
+  - "sports card"
+  - "coin grading"
+  - "coin dealer"
+  - "numismatic"
+  - "collectibles"
+  - "slab"
+  - "graded cards"
+  - "trading cards"
+  - "crypto"
+  - "forex"
+  - "NFT"
+  - "dropship"
+
+bio_require_any:
+  - "teacher"
+  - "educator"
+  - "teaching"
+  - "prof "
+  - "professor"
+  - "school"
+  - "classroom"
+  - "students"
+  - "grade "
+  - "grading"
+  - "k-12"
+  - "k12"
+  - "kindergarten"
+  - "elementary"
+  - "middle school"
+  - "high school"
+  - "math teacher"
+  - "english teacher"
+  - "science teacher"
+  - "history teacher"
+  - "special ed"
+  - "sped"
+  - "ELA"
+  - "EdTech"
+  - "instructional"
+  - "principal"
+  - "tutor"
+  - "homeschool"
+  - "TA "
+
+# Messaging config overrides
+messaging:
+  tone: "casual, helpful, peer-to-peer — like a fellow teacher sharing a find, not a salesperson"
+  max_message_length: 280

@@ -79,6 +79,8 @@ class PostDiscoverer:
         subreddits: list[str],
         queries: list[str],
         max_per_query: int = 3,
+        sort: str = "relevance",
+        min_score: int = 2,
     ) -> list[DiscoveredPost]:
         posts: list[DiscoveredPost] = []
         pairs = [(s, q) for s in subreddits for q in queries]
@@ -89,13 +91,13 @@ class PostDiscoverer:
                 raw = await self._client.search_subreddit(
                     subreddit=sub,
                     query=query,
-                    sort="relevance",
+                    sort=sort,
                     time_filter="week",
                     limit=max_per_query,
                 )
                 for item in raw:
                     post = self._parse_post(item)
-                    if post and self._is_eligible(post):
+                    if post and self._is_eligible(post, min_score=min_score):
                         posts.append(post)
             except Exception:
                 logger.exception("Failed to search r/%s for '%s'", sub, query)
@@ -132,6 +134,36 @@ class PostDiscoverer:
         return self._dedupe(posts)
 
     # ------------------------------------------------------------------
+    # Discovery: new
+    # ------------------------------------------------------------------
+
+    async def discover_new_posts(
+        self,
+        subreddits: list[str],
+        max_per_sub: int = 5,
+    ) -> list[DiscoveredPost]:
+        """Discover the newest posts across subreddits (sort by new)."""
+        posts: list[DiscoveredPost] = []
+        shuffled = list(subreddits)
+        random.shuffle(shuffled)
+
+        for sub in shuffled:
+            try:
+                raw = await self._client.get_subreddit_posts(
+                    subreddit=sub,
+                    sort="new",
+                    limit=max_per_sub,
+                )
+                for item in raw:
+                    post = self._parse_post(item)
+                    if post and self._is_eligible(post, min_score=0):
+                        posts.append(post)
+            except Exception:
+                logger.exception("Failed to fetch new posts from r/%s", sub)
+
+        return self._dedupe(posts)
+
+    # ------------------------------------------------------------------
     # Parsing & filtering
     # ------------------------------------------------------------------
 
@@ -162,14 +194,14 @@ class PostDiscoverer:
             num_comments=int(data.get("num_comments", 0)),  # type: ignore[arg-type]
         )
 
-    def _is_eligible(self, post: DiscoveredPost) -> bool:
+    def _is_eligible(self, post: DiscoveredPost, min_score: int = 2) -> bool:
         if self.already_commented(post.post_id):
             return False
         if post.author.lower() == self._own_username:
             return False
         if post.author in ("[deleted]", "AutoModerator"):
             return False
-        if post.score < 2:
+        if post.score < min_score:
             return False
         return True
 

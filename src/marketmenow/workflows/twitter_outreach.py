@@ -9,7 +9,7 @@ from marketmenow.steps.send_messages import SendMessagesStep
 
 workflow = Workflow(
     name="twitter-outreach",
-    description="Discover, evaluate, and cold-DM prospects on Twitter/X based on a customer profile rubric.",
+    description="Discover, evaluate, and cold-DM prospects on Twitter/X using project config.",
     steps=(
         DiscoverProspectsStep(platform="twitter"),
         EnrichProfilesStep(platform="twitter"),
@@ -18,12 +18,6 @@ workflow = Workflow(
         SendMessagesStep(platform="twitter"),
     ),
     params=(
-        ParamDef(
-            name="profile",
-            type=ParamType.PATH,
-            required=True,
-            help="Path to customer profile YAML",
-        ),
         ParamDef(
             name="max-messages",
             type=ParamType.INT,
@@ -34,7 +28,7 @@ workflow = Workflow(
             name="min-score",
             type=ParamType.INT,
             default=0,
-            help="Override minimum rubric score from the profile YAML",
+            help="Minimum relevance score (0-10) to qualify a prospect",
         ),
         ParamDef(
             name="dry-run",
