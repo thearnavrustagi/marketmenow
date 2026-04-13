@@ -70,7 +70,9 @@ class DiscoverRedditOutreachStep:
 
         ctx.console.print(f"[dim]Project: {ctx.project.slug}[/dim]")
         ctx.console.print(f"[dim]Product: {brand.name} — {brand.tagline}[/dim]")
-        ctx.console.print(f"[dim]Subreddits: {len(subreddits)} | Queries: {len(search_queries)}[/dim]")
+        ctx.console.print(
+            f"[dim]Subreddits: {len(subreddits)} | Queries: {len(search_queries)}[/dim]"
+        )
         ctx.console.print(f"[dim]Features: {len(features)} loaded[/dim]")
 
         history_path = None
@@ -96,9 +98,7 @@ class DiscoverRedditOutreachStep:
         ctx.set_artifact("reddit_client", client)
 
         if not await client.is_logged_in():
-            raise WorkflowError(
-                "Not logged in to Reddit. Check REDDIT_SESSION cookie in .env."
-            )
+            raise WorkflowError("Not logged in to Reddit. Check REDDIT_SESSION cookie in .env.")
         ctx.console.print("[green]Reddit session active.[/green]")
 
         discoverer = PostDiscoverer(
@@ -127,10 +127,7 @@ class DiscoverRedditOutreachStep:
 
         all_posts = discoverer._dedupe(new_posts + search_posts)
 
-        filtered = [
-            p for p in all_posts
-            if not history.is_contacted("reddit", p.post_id)
-        ]
+        filtered = [p for p in all_posts if not history.is_contacted("reddit", p.post_id)]
 
         if not filtered:
             raise WorkflowError("No new posts discovered. Try different subreddits or queries.")

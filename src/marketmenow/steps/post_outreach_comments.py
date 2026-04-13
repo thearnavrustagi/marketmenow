@@ -46,9 +46,7 @@ class PostOutreachCommentsStep:
         min_delay = int(config.get("min_delay_seconds", 180))  # type: ignore[arg-type]
         max_delay = int(config.get("max_delay_seconds", 420))  # type: ignore[arg-type]
 
-        ctx.console.print(
-            f"[bold cyan]Posting {len(comments)} outreach comments...[/bold cyan]"
-        )
+        ctx.console.print(f"[bold cyan]Posting {len(comments)} outreach comments...[/bold cyan]")
 
         results: list[dict[str, object]] = []
         for i, comment in enumerate(comments, start=1):
@@ -62,12 +60,14 @@ class PostOutreachCommentsStep:
                 )
 
                 success = bool(resp)
-                results.append({
-                    "handle": comment.recipient_handle,
-                    "post_id": comment.post_id,
-                    "success": success,
-                    "error": None,
-                })
+                results.append(
+                    {
+                        "handle": comment.recipient_handle,
+                        "post_id": comment.post_id,
+                        "success": success,
+                        "error": None,
+                    }
+                )
 
                 history.record(
                     "reddit",
@@ -81,25 +81,23 @@ class PostOutreachCommentsStep:
                 ctx.console.print("    [green]Posted successfully[/green]")
 
                 if _looks_like_rate_limit(resp):
-                    ctx.console.print(
-                        "[red]Rate limit detected — halting outreach.[/red]"
-                    )
+                    ctx.console.print("[red]Rate limit detected — halting outreach.[/red]")
                     break
 
             except Exception as exc:
                 error_msg = str(exc)
-                results.append({
-                    "handle": comment.recipient_handle,
-                    "post_id": comment.post_id,
-                    "success": False,
-                    "error": error_msg,
-                })
+                results.append(
+                    {
+                        "handle": comment.recipient_handle,
+                        "post_id": comment.post_id,
+                        "success": False,
+                        "error": error_msg,
+                    }
+                )
                 ctx.console.print(f"    [red]Failed: {error_msg}[/red]")
 
                 if _looks_like_rate_limit(error_msg):
-                    ctx.console.print(
-                        "[red]Rate limit detected — halting outreach.[/red]"
-                    )
+                    ctx.console.print("[red]Rate limit detected — halting outreach.[/red]")
                     break
 
             if i < len(comments):

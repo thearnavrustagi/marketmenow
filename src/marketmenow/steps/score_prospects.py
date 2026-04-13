@@ -51,10 +51,7 @@ class ScoreProspectsStep:
                 ctx.console.print(f"    [yellow]Error: {exc}[/yellow]")
 
         qualified = [
-            s
-            for s in scored
-            if s.disqualify_reason is None
-            and s.total_score >= min_score
+            s for s in scored if s.disqualify_reason is None and s.total_score >= min_score
         ]
 
         min_score_override = int(ctx.get_param("min-score", 0) or 0)

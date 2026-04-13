@@ -71,9 +71,7 @@ class OutreachCommentGenerator:
         comment_text = response.text.strip().strip('"').strip("'")
 
         if not comment_text:
-            raise ValueError(
-                f"LLM returned empty response for post by u/{scored_post.author}"
-            )
+            raise ValueError(f"LLM returned empty response for post by u/{scored_post.author}")
 
         return OutreachComment(
             post_id=scored_post.post_id,

@@ -69,8 +69,7 @@ class ScorePostRelevanceStep:
                 ctx.console.print(f"    [yellow]Error: {exc}[/yellow]")
 
         qualified = [
-            s for s in scored
-            if s.disqualify_reason is None and s.relevance_score >= min_score
+            s for s in scored if s.disqualify_reason is None and s.relevance_score >= min_score
         ]
 
         qualified.sort(key=lambda s: s.relevance_score, reverse=True)

@@ -90,6 +90,7 @@ class TestBuildWorkflowRegistry:
             "twitter-outreach",
             "reddit-engage",
             "reddit-launch",
+            "reddit-outreach",
             "linkedin-post",
             "email-outreach",
             "youtube-short",

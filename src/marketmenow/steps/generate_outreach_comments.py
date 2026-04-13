@@ -51,9 +51,7 @@ class GenerateOutreachCommentsStep:
                 )
                 comments.append(comment)
             except Exception as exc:
-                ctx.console.print(
-                    f"  [yellow]Failed for u/{post.author}: {exc}[/yellow]"
-                )
+                ctx.console.print(f"  [yellow]Failed for u/{post.author}: {exc}[/yellow]")
 
         self._print_drafts(ctx, comments)
 
